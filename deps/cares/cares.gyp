@@ -157,6 +157,10 @@
           'include_dirs': [ 'config/linux' ],
           'sources': [ 'config/linux/ares_config.h' ]
         }],
+        [ 'OS=="kos"', {
+          'include_dirs': [ 'config/linux' ],
+          'sources': [ 'config/linux/ares_config.h' ]
+        }],
         [ 'OS=="mac" or OS=="ios"', {
           'include_dirs': [ 'config/darwin' ],
           'sources': [ 'config/darwin/ares_config.h' ]
