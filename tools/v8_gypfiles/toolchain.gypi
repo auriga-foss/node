@@ -93,7 +93,13 @@
       ['OS=="linux" and host_arch=="x64"', {
         'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
       }],
+      ['OS=="kos" and host_arch=="x64"', {
+        'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
+      }],
       ['OS=="linux" and host_arch=="ia32"', {
+        'binutils_dir%': 'third_party/binutils/Linux_ia32/Release/bin',
+      }],
+      ['OS=="kos" and host_arch=="ia32"', {
         'binutils_dir%': 'third_party/binutils/Linux_ia32/Release/bin',
       }],
     ],
@@ -559,6 +565,12 @@
           'V8_TARGET_OS_LINUX',
         ]
       }],
+      ['OS=="kos"', {
+        'defines': [
+          'V8_HAVE_TARGET_OS',
+          'V8_TARGET_OS_LINUX',
+        ]
+      }],
       ['OS=="mac"', {
         'defines': [
           'V8_HAVE_TARGET_OS',
@@ -571,7 +583,7 @@
           'V8_TARGET_OS_WIN',
         ]
       }],
-      ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
+      ['(OS=="linux" or OS=="kos" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
         v8_target_arch=="ia32"', {
         'cflags': [
@@ -580,7 +592,7 @@
           '-mmmx',  # Allows mmintrin.h for MMX intrinsics.
         ],
       }],
-      ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
+      ['(OS=="linux" or OS=="kos" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
         (v8_target_arch=="arm" or v8_target_arch=="ia32" or \
          v8_target_arch=="ppc")', {
@@ -623,7 +635,7 @@
           }],
         ],
       }],
-      ['(OS=="linux" or OS=="android") and \
+      ['(OS=="linux" or OS=="kos" or OS=="android") and \
         (v8_target_arch=="x64" or v8_target_arch=="arm64" or \
          v8_target_arch=="ppc64" or v8_target_arch=="s390x")', {
         'target_conditions': [
@@ -650,7 +662,7 @@
           'V8_ANDROID_LOG_STDOUT',
         ],
       }],
-      ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
+      ['OS=="linux" or OS=="kos" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="qnx" or OS=="aix"', {
         'conditions': [
           [ 'v8_no_strict_aliasing==1', {
@@ -700,6 +712,10 @@
             # Support for backtrace_symbols.
             'ldflags': [ '-rdynamic' ],
           }],
+          ['OS=="kos" and v8_enable_backtrace==1', {
+            # Support for backtrace_symbols.
+            'ldflags': [ '-rdynamic' ],
+          }],
           ['OS=="aix"', {
             'ldflags': [ '-Wl,-bbigtoc' ],
             'conditions': [
@@ -743,7 +759,7 @@
               'v8_enable_slow_dchecks%': 1,
             },
             'conditions': [
-              ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd" or \
+              ['OS=="linux" or OS=="kos" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd" or \
             OS=="qnx" or OS=="aix"', {
                 'cflags!': [
                   '-O3',
@@ -794,7 +810,7 @@
               'v8_enable_slow_dchecks%': 0,
             },
             'conditions': [
-              ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd" or \
+              ['OS=="linux" or OS=="kos" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd" or \
             OS=="qnx" or OS=="aix"', {
                 'cflags!': [
                   '-O0',
@@ -844,7 +860,7 @@
          # Temporary refs: https://github.com/nodejs/node/pull/23801
         'defines!': ['ENABLE_HANDLE_ZAPPING',],
         'conditions': [
-          ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd" \
+          ['OS=="linux" or OS=="kos" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd" \
             or OS=="aix"', {
             'cflags!': [
               '-Os',

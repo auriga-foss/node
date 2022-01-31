@@ -289,12 +289,12 @@
           'sources': [
             '<(V8_ROOT)/src/builtins/riscv/builtins-riscv.cc',
           ],
-        }],        
+        }],
         ['v8_target_arch=="loong64" or v8_target_arch=="loong64"', {
           'sources': [
             '<(V8_ROOT)/src/builtins/loong64/builtins-loong64.cc',
           ],
-        }],        
+        }],
         ['v8_target_arch=="mips64" or v8_target_arch=="mips64el"', {
           'sources': [
             '<(V8_ROOT)/src/builtins/mips64/builtins-mips64.cc',
@@ -585,7 +585,7 @@
               }],
               ['v8_enable_webassembly==1', {
                 'conditions': [
-                  ['OS=="linux" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
+                  ['OS=="linux" or OS=="kos" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
                     'sources': [
                       '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_header_set.\\"v8_internal_headers\\".*?v8_current_cpu == \\"x64\\".*?v8_enable_webassembly.*?is_linux.*?sources \\+= ")',
                     ],
@@ -616,12 +616,12 @@
               }],
               ['v8_enable_webassembly==1', {
                 'conditions': [
-                  ['OS=="mac" or (_toolset=="host" and host_arch=="x64" and OS=="linux")', {
+                  ['OS=="mac" or (_toolset=="host" and host_arch=="x64" and (OS=="linux" or OS=="kos"))', {
                     'sources': [
                       '<(V8_ROOT)/src/trap-handler/handler-inside-posix.h',
                     ],
                   }],
-                  ['_toolset=="host" and host_arch=="x64" and (OS=="linux" or OS=="mac" or OS=="win")', {
+                  ['_toolset=="host" and host_arch=="x64" and (OS=="linux" or OS=="mac" or OS=="win" or OS=="kos")', {
                     'sources': [
                       '<(V8_ROOT)/src/trap-handler/trap-handler-simulator.h',
                     ],
@@ -824,7 +824,7 @@
             }],
             ['v8_enable_webassembly==1', {
               'conditions': [
-                ['OS=="linux" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
+                ['OS=="linux" or OS=="kos" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
                   'sources': [
                     '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "\\"v8_base_without_compiler.*?v8_current_cpu == \\"x64\\".*?v8_enable_webassembly.*?is_linux.*?sources \\+= ")',
                   ],
@@ -857,14 +857,20 @@
                     '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
                   ],
                 }],
-                ['_toolset=="host" and host_arch=="x64" and OS=="win"', {
+                ['_toolset=="host" and host_arch=="x64" and OS=="kos"', {
+                  'sources': [
+                    '<(V8_ROOT)/src/trap-handler/handler-inside-posix.cc',
+                    '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
+                  ],
+                }],
+                ['_toolset=="host" and host_arch=="x64" and (OS=="win")', {
                   'sources': [
                     '<(V8_ROOT)/src/trap-handler/handler-inside-win.cc',
                     '<(V8_ROOT)/src/trap-handler/handler-outside-win.cc',
                   ],
                 }],
                 ['_toolset=="host" and host_arch=="x64" and '
-                 '(host_os=="linux" or host_os=="mac" or OS=="win")', {
+                 '(host_os=="linux" or host_os=="mac" or OS=="win" or OS=="kos")', {
                   'sources': [
                     '<(V8_ROOT)/src/trap-handler/handler-outside-simulator.cc',
                   ],
@@ -902,12 +908,12 @@
           'sources': [
             '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "\\"v8_base_without_compiler.*?v8_current_cpu == \\"riscv64\\".*?sources \\+= ")',
           ],
-        }],        
+        }],
         ['v8_target_arch=="loong64"', {
           'sources': [
             '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "\\"v8_base_without_compiler.*?v8_current_cpu == \\"loong64\\".*?sources \\+= ")',
           ],
-        }],        
+        }],
         ['OS=="win" and _toolset=="target"', {
           'msvs_precompiled_header': '<(V8_ROOT)/../../tools/msvs/pch/v8_pch.h',
           'msvs_precompiled_source': '<(V8_ROOT)/../../tools/msvs/pch/v8_pch.cc',
@@ -1084,6 +1090,21 @@
               '-ldl',
               '-lrt'
             ],
+           },
+        }],
+        ['OS=="kos"', {
+          'sources': [
+            '<(V8_ROOT)/src/base/debug/stack_trace_posix.cc',
+            '<(V8_ROOT)/src/base/platform/platform-linux.cc',
+          ],
+          'link_settings': {
+            'target_conditions': [
+              ['_toolset=="host"', {
+                'libraries': [
+                  '-ldl'
+                ],
+              }],
+            ],
           },
         }],
         ['OS=="aix"', {
@@ -1116,6 +1137,12 @@
           'link_settings': {
             'target_conditions': [
               ['_toolset=="host" and host_os=="linux"', {
+                'libraries': [
+                  '-ldl',
+                  '-lrt'
+                ],
+              }],
+              ['_toolset=="host" and host_os=="kos"', {
                 'libraries': [
                   '-ldl',
                   '-lrt'
@@ -1218,6 +1245,11 @@
                   '-lrt'
                 ],
               }],
+              ['_toolset=="host" and host_os=="kos"', {
+                'libraries': [
+                  '-lrt'
+                ],
+              }],
               ['_toolset=="target"', {
                 'libraries': [
                   '-lbacktrace'
@@ -1235,6 +1267,11 @@
           ],
           'target_conditions': [
             ['_toolset=="host" and host_os=="linux"', {
+              'sources': [
+                '<(V8_ROOT)/src/base/platform/platform-linux.cc'
+              ],
+            }],
+            ['_toolset=="host" and host_os=="kos"', {
               'sources': [
                 '<(V8_ROOT)/src/base/platform/platform-linux.cc'
               ],
