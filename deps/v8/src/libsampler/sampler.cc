@@ -15,7 +15,7 @@
 #include <sys/time.h>
 #include <atomic>
 
-#if !V8_OS_QNX && !V8_OS_AIX
+#if !V8_OS_QNX && !V8_OS_AIX && !defined(__KOS__)
 #include <sys/syscall.h>
 #endif
 
@@ -27,11 +27,13 @@
 #include <mach/mach.h>
 // OpenBSD doesn't have <ucontext.h>. ucontext_t lives in <signal.h>
 // and is a typedef for struct sigcontext. There is no uc_mcontext.
-#elif !V8_OS_OPENBSD
+#elif !V8_OS_OPENBSD && !defined(__KOS__)
 #include <ucontext.h>
 #endif
 
+#ifndef __KOS__
 #include <unistd.h>
+#endif
 
 #elif V8_OS_WIN || V8_OS_CYGWIN
 
@@ -69,7 +71,38 @@ using zx_thread_state_general_regs_t = zx_arm64_general_regs_t;
 #include "src/base/atomic-utils.h"
 #include "src/base/platform/platform.h"
 
-#if V8_OS_ANDROID && !defined(__BIONIC_HAVE_UCONTEXT_T)
+// KOS: TODO: supplementary structures for KOS build.
+#if defined(__KOS__) && defined(__arm__)
+  // Completely bogus structure, only for first compile purposes.
+  struct mcontext_t {
+    uint32_t arm_pc;
+    uint32_t arm_sp;
+    uint32_t arm_fp;
+    uint32_t arm_lr;
+  };
+  struct ucontext_t {
+    uint32_t uc_flags;
+    struct ucontext* uc_link;
+    uint32_t uc_stack;
+    mcontext_t uc_mcontext;
+    // Other fields are not used by V8, don't define them here.
+  };
+#elif defined(__KOS__) && defined(__aarch64__)
+  // Completly bogus structure, only for first compile purposes
+  struct mcontext_t {
+    uint64_t arm_pc;
+    uint64_t arm_sp;
+    uint64_t arm_fp;
+    uint64_t arm_lr;
+  };
+  struct ucontext_t {
+    uint64_t uc_flags;
+    struct ucontext* uc_link;
+    uint64_t uc_stack;
+    mcontext_t uc_mcontext;
+    // Other fields are not used by V8, don't define them here.
+  };
+#elif V8_OS_ANDROID && !defined(__BIONIC_HAVE_UCONTEXT_T)
 
 // Not all versions of Android's C library provide ucontext_t.
 // Detect this and provide custom but compatible definitions. Note that these
@@ -338,6 +371,8 @@ class SignalHandler {
     sigemptyset(&sa.sa_mask);
 #if V8_OS_QNX
     sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
+#elif defined(__KOS__)
+    sa.sa_flags = SA_RESTART | SA_SIGINFO;
 #else
     sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK;
 #endif

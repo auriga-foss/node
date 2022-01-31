@@ -13,7 +13,10 @@
 #elif V8_OS_STARBOARD
 #define __ARM_NR_cacheflush 0x0f0002
 #else
+// KOS: TODO: disable with respect to KOS limitations.
+#if !defined(__KOS__)
 #include <sys/syscall.h>  // for cache flushing.
+#endif
 #endif
 #endif
 
@@ -27,7 +30,8 @@ namespace internal {
 // The inlining of this seems to trigger an LTO bug that clobbers a register,
 // see https://crbug.com/952759 and https://bugs.llvm.org/show_bug.cgi?id=41575.
 V8_NOINLINE void CpuFeatures::FlushICache(void* start, size_t size) {
-#if !defined(USE_SIMULATOR)
+// KOS: TODO: disable with respect to KOS limitations.
+#if !defined(USE_SIMULATOR) && !defined(__KOS__)
 #if V8_OS_QNX
   msync(start, size, MS_SYNC | MS_INVALIDATE_ICACHE);
 #elif V8_OS_FREEBSD
@@ -56,7 +60,7 @@ V8_NOINLINE void CpuFeatures::FlushICache(void* start, size_t size) {
       : "r"(beg), "r"(end), "r"(flg), [scno] "i"(__ARM_NR_cacheflush)
       : "memory");
 #endif
-#endif  // !USE_SIMULATOR
+#endif  // !USE_SIMULATOR && !__KOS__
 }
 
 }  // namespace internal

@@ -12,9 +12,11 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef __KOS__
 #include <sys/prctl.h>
-#include <sys/resource.h>
 #include <sys/syscall.h>
+#endif
+#include <sys/resource.h>
 #include <sys/time.h>
 
 // Ubuntu Dapper requires memory pages to be marked as
@@ -77,7 +79,13 @@ void OS::AdjustSchedulingParams() {}
 
 void* OS::RemapShared(void* old_address, void* new_address, size_t size) {
   void* result =
+#ifndef __KOS__
       mremap(old_address, 0, size, MREMAP_FIXED | MREMAP_MAYMOVE, new_address);
+#else
+      MAP_FAILED;
+      // KOS: TODO: will need to revisit and check behaviour of
+      //            mremap(old_address, 0, new_address, size, 0);
+#endif
 
   if (result == MAP_FAILED) {
     return nullptr;

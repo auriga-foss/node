@@ -197,6 +197,8 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   internal::itoa_r(signal, buf, sizeof(buf), 10, 0);
   PrintToStderr(buf);
   if (signal == SIGBUS) {
+// KOS: due to KOS limitations we need to disable this.
+#if !defined(__KOS__)
     if (info->si_code == BUS_ADRALN)
       PrintToStderr(" BUS_ADRALN ");
     else if (info->si_code == BUS_ADRERR)
@@ -204,8 +206,11 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
     else if (info->si_code == BUS_OBJERR)
       PrintToStderr(" BUS_OBJERR ");
     else
+#endif
       PrintToStderr(" <unknown> ");
   } else if (signal == SIGFPE) {
+// KOS: due to KOS limitations we need to disable this.
+#if !defined(__KOS__)
     if (info->si_code == FPE_FLTDIV)
       PrintToStderr(" FPE_FLTDIV ");
     else if (info->si_code == FPE_FLTINV)
@@ -223,8 +228,11 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
     else if (info->si_code == FPE_INTOVF)
       PrintToStderr(" FPE_INTOVF ");
     else
+#endif
       PrintToStderr(" <unknown> ");
   } else if (signal == SIGILL) {
+// KOS: due to KOS limitations we need to disable this.
+#if !defined(__KOS__)
     if (info->si_code == ILL_BADSTK)
       PrintToStderr(" ILL_BADSTK ");
     else if (info->si_code == ILL_COPROC)
@@ -240,13 +248,17 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
     else if (info->si_code == ILL_PRVREG)
       PrintToStderr(" ILL_PRVREG ");
     else
+#endif
       PrintToStderr(" <unknown> ");
   } else if (signal == SIGSEGV) {
+// KOS: due to KOS limitations we need to disable this.
+#if !defined(__KOS__)
     if (info->si_code == SEGV_MAPERR)
       PrintToStderr(" SEGV_MAPERR ");
     else if (info->si_code == SEGV_ACCERR)
       PrintToStderr(" SEGV_ACCERR ");
     else
+#endif
       PrintToStderr(" <unknown> ");
   }
   if (signal == SIGBUS || signal == SIGFPE || signal == SIGILL ||
@@ -341,7 +353,12 @@ bool EnableInProcessStackDumping() {
 
   struct sigaction action;
   memset(&action, 0, sizeof(action));
+// KOS: TODO: due to KOS limitations we need to disable this.
+#if !defined(__KOS__)
   action.sa_flags = SA_RESETHAND | SA_SIGINFO;
+#else
+  action.sa_flags = 0;
+#endif
   action.sa_sigaction = &StackDumpSignalHandler;
   sigemptyset(&action.sa_mask);
 
@@ -350,7 +367,10 @@ bool EnableInProcessStackDumping() {
   success &= (sigaction(SIGFPE, &action, nullptr) == 0);
   success &= (sigaction(SIGBUS, &action, nullptr) == 0);
   success &= (sigaction(SIGSEGV, &action, nullptr) == 0);
+// KOS: TODO: due to KOS limitations we need to disable this.
+#if !defined(__KOS__)
   success &= (sigaction(SIGSYS, &action, nullptr) == 0);
+#endif
 
   dump_stack_in_signal_handler = true;
 

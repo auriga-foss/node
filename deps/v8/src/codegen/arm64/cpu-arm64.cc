@@ -47,6 +47,8 @@ class CacheLineSizes {
 };
 
 void CpuFeatures::FlushICache(void* address, size_t length) {
+// KOS: TODO: disable with respect to KOS limitation.
+#if !defined(USE_SIMULATOR) && !defined(__KOS__)
 #if defined(V8_HOST_ARCH_ARM64)
 #if defined(V8_OS_WIN)
   ::FlushInstructionCache(GetCurrentProcess(), address, length);
@@ -118,6 +120,7 @@ void CpuFeatures::FlushICache(void* address, size_t length) {
       : "cc", "memory");
 #endif  // V8_OS_WIN
 #endif  // V8_HOST_ARCH_ARM64
+#endif  // !USE_SIMULATOR && !__KOS__
 }
 
 }  // namespace internal

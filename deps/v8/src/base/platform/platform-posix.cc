@@ -67,7 +67,7 @@
 #include <sys/resource.h>
 #endif
 
-#if !defined(_AIX) && !defined(V8_OS_FUCHSIA)
+#if !defined(_AIX) && !defined(V8_OS_FUCHSIA) && !defined(__KOS__)
 #include <sys/syscall.h>
 #endif
 
@@ -199,7 +199,8 @@ int GetProtectionFromMemoryPermission(OS::MemoryPermission access) {
   UNREACHABLE();
 }
 
-#if V8_OS_LINUX || V8_OS_FREEBSD
+// KOS: TODO: enforce code for KOS platform.
+#if V8_OS_LINUX || V8_OS_FREEBSD || defined(__KOS__)
 #ifdef __arm__
 
 bool OS::ArmUsingHardFloat() {
@@ -286,7 +287,11 @@ size_t OS::AllocatePageSize() {
 // static
 size_t OS::CommitPageSize() {
   // Commit and allocate page size are the same on posix.
+#if defined(__KOS__)
+  return static_cast<size_t>(sysconf(_SC_PAGESIZE));
+#else
   return OS::AllocatePageSize();
+#endif
 }
 
 // static

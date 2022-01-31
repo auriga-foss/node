@@ -304,8 +304,13 @@ class MultiMappedAllocator : public ArrayBufferAllocatorBase {
       // get deleted, which is important so that we can remap it again in the
       // next iteration of this loop.
       void* result =
+#if !defined(__KOS__)
           mremap(real_alloc, 0, kChunkSize, MREMAP_MAYMOVE | MREMAP_FIXED,
                  reinterpret_cast<void*>(to_map));
+#else
+         // KOS: TODO: KOS lacks mremap implementation, need to fix if possible.
+         ((void*)-1);
+#endif
       if (reinterpret_cast<intptr_t>(result) == -1) {
         if (errno == ENOMEM) {
           // Undo earlier, successful mappings.
