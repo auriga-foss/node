@@ -116,6 +116,9 @@
       ['OS == "zos"', {
         # use ICU data file on z/OS
         'icu_use_data_file_flag%': 1
+      }],
+      ['OS=="kos"', {
+        'node_section_ordering_info%': ''
       }]
     ],
   },
@@ -203,6 +206,20 @@
               }],
             ],
           }],
+          ['OS=="kos"', {
+            'conditions': [
+              ['node_section_ordering_info!=""', {
+                'cflags': [
+                  '-fuse-ld=gold',
+                  '-ffunction-sections',
+                ],
+                'ldflags': [
+                  '-fuse-ld=gold',
+                  '-Wl,--section-ordering-file=<(node_section_ordering_info)',
+                ],
+              }],
+            ],
+          }],
           ['OS=="solaris"', {
             # pull in V8's postmortem metadata
             'ldflags': [ '-Wl,-z,allextract' ]
@@ -218,6 +235,18 @@
             'cflags': [ '-fno-omit-frame-pointer' ],
           }],
           ['OS=="linux"', {
+            'conditions': [
+              ['enable_pgo_generate=="true"', {
+                'cflags': ['<(pgo_generate)'],
+                'ldflags': ['<(pgo_generate)'],
+              },],
+              ['enable_pgo_use=="true"', {
+                'cflags': ['<(pgo_use)'],
+                'ldflags': ['<(pgo_use)'],
+              },],
+            ],
+          },],
+          ['OS=="kos"', {
             'conditions': [
               ['enable_pgo_generate=="true"', {
                 'cflags': ['<(pgo_generate)'],
@@ -397,15 +426,15 @@
           'BUILDING_UV_SHARED=1',
         ],
       }],
-      [ 'OS in "linux freebsd openbsd solaris aix"', {
+      [ 'OS in "linux kos freebsd openbsd solaris aix"', {
         'cflags': [ '-pthread' ],
         'ldflags': [ '-pthread' ],
       }],
-      [ 'OS in "linux freebsd openbsd solaris android aix cloudabi"', {
+      [ 'OS in "linux kos freebsd openbsd solaris android aix cloudabi"', {
         'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', ],
         'cflags_cc': [ '-fno-rtti', '-fno-exceptions', '-std=gnu++17' ],
         'defines': [ '__STDC_FORMAT_MACROS' ],
-        'ldflags': [ '-rdynamic' ],
+        #'ldflags': [ '-rdynamic' ],
         'target_conditions': [
           # The 1990s toolchain on SmartOS can't handle thin archives.
           ['_type=="static_library" and OS=="solaris"', {
@@ -566,12 +595,12 @@
           'OPENSSL_NO_PINSHARED'
         ],
       }],
-      ['node_shared_openssl!="true"', {
-        # `OPENSSL_THREADS` is defined via GYP for openSSL for all architectures.
-        'defines': [
-          'OPENSSL_THREADS',
-        ],
-      }],
+      #['node_shared_openssl!="true"', {
+      #  # `OPENSSL_THREADS` is defined via GYP for openSSL for all architectures.
+      #  'defines': [
+      #    'OPENSSL_THREADS',
+      #  ],
+      #}],
       ['node_shared_openssl!="true" and openssl_no_asm==1', {
         'defines': [
           'OPENSSL_NO_ASM',
