@@ -318,7 +318,9 @@ static struct global_handle_map_t {
 DLib::DLib(const char* filename, int flags)
     : filename_(filename), flags_(flags), handle_(nullptr) {}
 
-#ifdef __POSIX__
+// KOS: TODO: due to KOS limitations we can't use dynamic linking
+//            so will use UV calls instead (at least for now).
+#if defined(__POSIX__) && !defined(__KOS__)
 bool DLib::Open() {
   handle_ = dlopen(filename_.c_str(), flags_);
   if (handle_ != nullptr) return true;
@@ -349,7 +351,7 @@ void DLib::Close() {
 void* DLib::GetSymbolAddress(const char* name) {
   return dlsym(handle_, name);
 }
-#else   // !__POSIX__
+#else   // !__POSIX__ || __KOS__
 bool DLib::Open() {
   int ret = uv_dlopen(filename_.c_str(), &lib_);
   if (ret == 0) {
@@ -374,7 +376,7 @@ void* DLib::GetSymbolAddress(const char* name) {
   if (0 == uv_dlsym(&lib_, name, &address)) return address;
   return nullptr;
 }
-#endif  // !__POSIX__
+#endif  // !__POSIX__ || __KOS__
 
 void DLib::SaveInGlobalHandleMap(node_module* mp) {
   has_entry_in_global_handle_map_ = true;
