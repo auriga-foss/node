@@ -1,0 +1,5 @@
+entity vfs.NetVfs
+
+components {
+    vfs: kl.Vfs
+}

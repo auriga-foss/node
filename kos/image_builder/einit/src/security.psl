@@ -1,0 +1,182 @@
+use trusted._
+
+use EDL node.Node
+use EDL vfs.NetVfs
+use EDL env.Env
+use EDL kl.drivers.RAMDisk
+use EDL kl.drivers.BSP
+use EDL kl.drivers.GPIO
+
+/* Return of errors is allowed */
+error {
+    grant ()
+}
+
+/**
+ * This instruction enables to start up system entities by KOS kernel.
+ */
+execute src=kl.core.Core, dst=kl.core.Core
+{
+    grant()
+}
+
+execute src = Einit, dst = kl.drivers.GPIO
+{
+    grant()
+}
+
+request src = kl.drivers.GPIO, dst = kl.core.Core
+{
+    grant()
+}
+
+response src = kl.core.Core, dst = kl.drivers.GPIO
+{
+    grant()
+}
+
+execute src=kl.core.Core, dst=Einit
+{
+    grant()
+}
+
+/**
+ * This instruction enables to start up and initialize non-platform entities.
+ */
+execute src=Einit
+{
+    grant()
+}
+
+
+/**
+ * This instruction enables to start up and initialize entities.
+ */
+execute src = Einit, dst = kl.drivers.RAMDisk
+{
+    grant()
+}
+
+execute src=Einit, dst=node.Node
+{
+    grant()
+}
+
+execute src=Einit, dst=vfs.NetVfs
+{
+    grant()
+}
+
+execute src=Einit, dst=env.Env
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from entities to KOS kernel and get
+ * responses. It makes able to use system calls by entities.
+ */
+request src=vfs.NetVfs, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=vfs.NetVfs
+{
+    grant()
+}
+
+request src=env.Env, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=env.Env
+{
+    grant()
+}
+
+request src=node.Node, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=node.Node
+{
+    grant()
+}
+
+request src=node.Node, dst=vfs.NetVfs
+{
+    grant()
+}
+
+response src=vfs.NetVfs, dst=node.Node
+{
+    grant()
+}
+
+request src=node.Node, dst=env.Env
+{
+    grant()
+}
+
+response src=env.Env, dst=node.Node
+{
+    grant()
+}
+
+request src=vfs.NetVfs, dst=env.Env
+{
+    grant()
+}
+
+response src=env.Env, dst=vfs.NetVfs
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RAMDisk entity to KOS kernel
+ * and get responses.
+ */
+request src = kl.drivers.RAMDisk, dst = kl.core.Core
+{
+    grant()
+}
+
+response src = kl.core.Core, dst = kl.drivers.RAMDisk
+{
+    grant()
+}
+
+
+security src = kl.drivers.RAMDisk, method = Register
+{
+    grant ()
+}
+
+/**
+ * This code enables to send requests from VfsRamFs entity to RAMDisk entity
+ * and get responses.
+ */
+request src = vfs.NetVfs, dst = kl.drivers.RAMDisk
+{
+    grant()
+}
+
+response src = kl.drivers.RAMDisk, dst = vfs.NetVfs
+{
+    grant()
+}
+
+
+request src=kl.drivers.BSP, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.BSP
+{
+    grant()
+}

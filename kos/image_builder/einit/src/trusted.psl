@@ -1,0 +1,34 @@
+/* Security configuration of the "net2_with_separate_vfs" example. */
+
+use nk.base._
+
+/* Declaration of entities. */
+use EDL kl.core.Core
+use EDL Einit
+
+/**
+ * This instruction enables to start up system entities by KOS kernel.
+ */
+execute src=kl.core.Core, dst=kl.core.Core
+{
+    grant()
+}
+
+execute src=kl.core.Core, dst=Einit
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from Einit entity to KOS kernel and get
+ * responses. It makes able to use system calls by Einit.
+ */
+request src=Einit, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=Einit
+{
+    grant()
+}
