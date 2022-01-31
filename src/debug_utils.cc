@@ -14,7 +14,7 @@
 
 #if defined(__linux__) && !defined(__GLIBC__) || \
     defined(__UCLIBC__) || \
-    defined(_AIX)
+    defined(_AIX) || defined(__KOS__)
 #define HAVE_EXECINFO_H 0
 #else
 #define HAVE_EXECINFO_H 1
@@ -92,8 +92,12 @@ void EnabledDebugList::Parse(const std::string& cats) {
 #if HAVE_EXECINFO_H
 class PosixSymbolDebuggingContext final : public NativeSymbolDebuggingContext {
  public:
-  PosixSymbolDebuggingContext() : pagesize_(getpagesize()) { }
-
+  #ifdef __KOS__
+    PosixSymbolDebuggingContext()
+        : pagesize_(static_cast<size_t>(sysconf(_SC_PAGESIZE))) { }
+  #else
+    PosixSymbolDebuggingContext() : pagesize_(getpagesize()) { }
+  #endif
   SymbolInfo LookupSymbol(void* address) override {
     Dl_info info;
     const bool have_info = dladdr(address, &info);

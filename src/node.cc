@@ -483,7 +483,7 @@ static void PlatformInit(ProcessInitializationFlags::Flags flags) {
   }
 
   if (!(flags & ProcessInitializationFlags::kNoDefaultSignalHandling)) {
-#if HAVE_INSPECTOR
+#if HAVE_INSPECTOR && !defined(__KOS__)
     sigset_t sigmask;
     sigemptyset(&sigmask);
     sigaddset(&sigmask, SIGUSR1);
@@ -592,7 +592,7 @@ void ResetStdio() {
   }
 
   uv_tty_reset_mode();
-#ifdef __POSIX__
+#if defined(__POSIX__) && !defined(__KOS__)
   for (auto& s : stdio) {
     const int fd = &s - stdio;
 
