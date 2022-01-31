@@ -25,7 +25,9 @@
 #include <errno.h>
 #include <string.h>
 
+#ifndef __KOS__
 #include <syscall.h>
+#endif
 #include <unistd.h>
 
 

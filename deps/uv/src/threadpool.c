@@ -19,6 +19,14 @@
  * IN THE SOFTWARE.
  */
 
+/* KOS: TODO: due to KOS limitations put local stub. */
+#ifdef __KOS__
+static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
+                          void (*child)(void)) {
+  return 0;
+}
+#endif
+
 #include "uv-common.h"
 
 #if !defined(_WIN32)

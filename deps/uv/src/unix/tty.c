@@ -52,7 +52,7 @@
  */
 static int isreallyatty(int file) {
   int rc;
- 
+
   rc = !ioctl(file, TXISATTY + 0x81, NULL);
   if (!rc && errno != EBADF)
       errno = ENOTTY;
@@ -112,6 +112,9 @@ static int uv__tty_is_slave(const int fd) {
     abort();
 
   result = (pts == major(sb.st_rdev));
+#elif defined(__KOS__)
+  /* KOS: TODO: consider implementing ioctl() TIOCGPTN, or ptsname(). */
+  result = 0;
 #else
   /* Fallback to ptsname
    */
@@ -231,7 +234,7 @@ skip:
 static void uv__tty_make_raw(struct termios* tio) {
   assert(tio != NULL);
 
-#if defined __sun || defined __MVS__
+#if defined __sun || defined __MVS__ || defined __KOS__
   /*
    * This implementation of cfmakeraw for Solaris and derivatives is taken from
    * http://www.perkin.org.uk/posts/solaris-portability-cfmakeraw.html.
@@ -262,7 +265,7 @@ static void uv__tty_make_raw(struct termios* tio) {
   tio->c_cc[VTIME] = 0;
 #else
   cfmakeraw(tio);
-#endif /* #ifdef __sun */
+#endif /* #ifdef __sun || __MVS__ || __KOS__ */
 }
 
 int uv_tty_set_mode(uv_tty_t* tty, uv_tty_mode_t mode) {
@@ -316,6 +319,14 @@ int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
   struct winsize ws;
   int err;
 
+  fprintf(stderr, "!!! KOS DEBUG !!! %s(%s:%d)\n",
+          __func__, __FILE__, __LINE__);
+  *width = 80;
+  *height = 25;
+  fprintf(stderr, "!!! KOS DEBUG !!! (fake) %s(%s:%d)\n",
+          __func__, __FILE__, __LINE__);
+  return 0;
+
   do
     err = ioctl(uv__stream_fd(tty), TIOCGWINSZ, &ws);
   while (err == -1 && errno == EINTR);
@@ -325,6 +336,10 @@ int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
 
   *width = ws.ws_col;
   *height = ws.ws_row;
+
+  /* KOS: TODO: check & remove if not needed for a non-debug build. */
+  fprintf(stderr, "!!! KOS DEBUG !!! %s(%s:%d) [%dx%d]\n",
+          __func__, __FILE__, __LINE__, ws.ws_col, ws.ws_row);
 
   return 0;
 }

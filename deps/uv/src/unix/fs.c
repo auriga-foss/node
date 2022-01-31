@@ -88,7 +88,8 @@
       defined(__MVS__)    || \
       defined(__NetBSD__) || \
       defined(__HAIKU__)  || \
-      defined(__QNX__)
+      defined(__QNX__)    || \
+      defined(__KOS__)
 # include <sys/statvfs.h>
 #else
 # include <sys/statfs.h>
@@ -289,22 +290,24 @@ static ssize_t uv__fs_mkdtemp(uv_fs_t* req) {
 
 static int (*uv__mkostemp)(char*, int);
 
-
+/* KOS: TODO: can't use #ifdef __KOS__ due to build system limitation. */
 static void uv__mkostemp_initonce(void) {
-  /* z/os doesn't have RTLD_DEFAULT but that's okay
-   * because it doesn't have mkostemp(O_CLOEXEC) either.
-   */
-#ifdef RTLD_DEFAULT
-  uv__mkostemp = (int (*)(char*, int)) dlsym(RTLD_DEFAULT, "mkostemp");
-
-  /* We don't care about errors, but we do want to clean them up.
-   * If there has been no error, then dlerror() will just return
-   * NULL.
-   */
-  dlerror();
-#endif  /* RTLD_DEFAULT */
+    uv__mkostemp = &mkostemp;  /* from stdlib.h */
 }
+// static void uv__mkostemp_initonce(void) {
+//  /* z/os doesn't have RTLD_DEFAULT but that's okay
+//   * because it doesn't have mkostemp(O_CLOEXEC) either.
+//   */
+// #ifdef RTLD_DEFAULT
+//  uv__mkostemp = (int (*)(char*, int)) dlsym(RTLD_DEFAULT, "mkostemp");
 
+//  /* We don't care about errors, but we do want to clean them up.
+//   * If there has been no error, then dlerror() will just return
+//   * NULL.
+//   */
+//  dlerror();
+// #endif  /* RTLD_DEFAULT */
+// }
 
 static int uv__fs_mkstemp(uv_fs_t* req) {
   static uv_once_t once = UV_ONCE_INIT;
@@ -655,7 +658,8 @@ static int uv__fs_statfs(uv_fs_t* req) {
     defined(__MVS__)    || \
     defined(__NetBSD__) || \
     defined(__HAIKU__)  || \
-    defined(__QNX__)
+    defined(__QNX__)    || \
+    defined(__KOS__)
   struct statvfs buf;
 
   if (0 != statvfs(req->path, &buf))
@@ -677,7 +681,8 @@ static int uv__fs_statfs(uv_fs_t* req) {
     defined(__OpenBSD__)  || \
     defined(__NetBSD__)   || \
     defined(__HAIKU__)    || \
-    defined(__QNX__)
+    defined(__QNX__)      || \
+    defined(__KOS__)
   stat_fs->f_type = 0;  /* f_type is not supported. */
 #else
   stat_fs->f_type = buf.f_type;

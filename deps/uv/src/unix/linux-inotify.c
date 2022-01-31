@@ -29,6 +29,27 @@
 #include <assert.h>
 #include <errno.h>
 
+#ifdef __KOS__
+
+/* KOS: TODO: complete stub, bogus return for now. */
+int uv__inotify_fork(uv_loop_t* loop, void* old_watchers) {
+  return 0;
+};
+int uv_fs_event_init(uv_loop_t* loop, uv_fs_event_t* handle) {
+  return 0;
+};
+int uv_fs_event_start(uv_fs_event_t* handle, uv_fs_event_cb cb,
+                      const char* path, unsigned int flags) {
+  return 0;
+};
+int uv_fs_event_stop(uv_fs_event_t* handle) {
+  return 0;
+};
+void uv__fs_event_close(uv_fs_event_t* handle) {
+};
+
+#else
+
 #include <sys/inotify.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -325,3 +346,4 @@ int uv_fs_event_stop(uv_fs_event_t* handle) {
 void uv__fs_event_close(uv_fs_event_t* handle) {
   uv_fs_event_stop(handle);
 }
+#endif /* __KOS__ */

@@ -208,7 +208,8 @@ static void uv__write_errno(int error_fd) {
 }
 
 
-#if !(defined(__APPLE__) && (TARGET_OS_TV || TARGET_OS_WATCH))
+#if !((defined(__APPLE__) && (TARGET_OS_TV || TARGET_OS_WATCH)) || \
+      defined(__KOS__))
 /* execvp is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED, so must be
  * avoided. Since this isn't called on those targets, the function
  * doesn't even need to be defined for them.
@@ -344,7 +345,10 @@ static void uv__process_child_init(const uv_process_options_t* options,
 int uv_spawn(uv_loop_t* loop,
              uv_process_t* process,
              const uv_process_options_t* options) {
-#if defined(__APPLE__) && (TARGET_OS_TV || TARGET_OS_WATCH)
+#if (defined(__APPLE__) && (TARGET_OS_TV || TARGET_OS_WATCH)) || \
+    defined(__KOS__)
+  fprintf(stderr, "!!! KOS DEBUG !!! [attempt to SPAWN (fork)] %s(%s:%d)\n",
+          __func__,__FILE__, __LINE__);
   /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
   return UV_ENOSYS;
 #else

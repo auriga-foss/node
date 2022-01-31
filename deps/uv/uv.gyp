@@ -60,6 +60,9 @@
           ['OS == "linux"', {
             'defines': [ '_POSIX_C_SOURCE=200112' ],
           }],
+          ['OS == "kos"', {
+            'defines': [ '_POSIX_C_SOURCE=200112' ],
+          }],
         ],
       },
       'sources': [
@@ -209,7 +212,7 @@
             }],
           ],
         }],
-        [ 'OS in "linux mac ios android zos"', {
+        [ 'OS in "linux kos mac ios android zos"', {
           'sources': [ 'src/unix/proctitle.c' ],
         }],
         [ 'OS != "zos"', {
@@ -221,7 +224,6 @@
             '-Wextra',
             '-Wno-unused-parameter',
             '-Wstrict-prototypes',
-            '-fno-strict-aliasing',
           ],
         }],
         [ 'OS in "mac ios"', {
@@ -248,9 +250,27 @@
             'src/unix/random-getrandom.c',
             'src/unix/random-sysctl-linux.c',
           ],
-          'link_settings': {
-            'libraries': [ '-ldl', '-lrt' ],
-          },
+          # KOS: TODO: disable linker options due to KOS limitations
+          #'link_settings': {
+          #  'libraries':  [ '-ldl', '-lrt' ],
+          #},
+        }],
+        [ 'OS=="kos"', {
+          'defines': [ '_GNU_SOURCE' ],
+          'sources': [
+            'src/unix/posix-poll.c',
+            'src/unix/no-fsevents.c',
+            'src/unix/linux-core.c',
+            'src/unix/linux-syscalls.c',
+            'src/unix/linux-syscalls.h',
+            'src/unix/procfs-exepath.c',
+            'src/unix/random-getrandom.c',
+            'src/unix/random-sysctl-linux.c',
+          ],
+          # KOS: TODO: disable linker options due to KOS limitations
+          #'link_settings': {
+          #  'libraries':  [ '-ldl', '-lrt' ],
+          #},
         }],
         [ 'OS=="android"', {
           'sources': [

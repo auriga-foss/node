@@ -22,7 +22,9 @@
 #include "linux-syscalls.h"
 #include <unistd.h>
 #include <signal.h>
+#ifndef __KOS__
 #include <sys/syscall.h>
+#endif
 #include <sys/types.h>
 #include <errno.h>
 
@@ -34,6 +36,7 @@
 # endif
 #endif /* __arm__ */
 
+#ifndef __KOS__
 #ifndef __NR_recvmmsg
 # if defined(__x86_64__)
 #  define __NR_recvmmsg 299
@@ -139,6 +142,7 @@
 #  define __NR_getrandom 349
 # endif
 #endif /* __NR_getrandom */
+#endif /* !__KOS__ */
 
 struct uv__mmsghdr;
 

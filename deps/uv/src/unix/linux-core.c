@@ -35,15 +35,47 @@
 #include <errno.h>
 
 #include <net/if.h>
+#ifdef __KOS__
+/* KOS: TODO: complete stub (to be used instead of sys/epoll.h), bogus return
+ *            for now.
+ */
+
+struct sysinfo {
+  long uptime;             /* Number of seconds since system boot. */
+  unsigned long loads[3];  /* Average 1-, 5-, and 15-minutes system load. */
+  unsigned long totalram;  /* Total RAM size. */
+  unsigned long freeram;   /* Free RAM size. */
+  unsigned long sharedram; /* Shared RAM size. */
+  unsigned long bufferram; /* RAM size used for buffers. */
+  unsigned long totalswap; /* Total swap area size. */
+  unsigned long freeswap;  /* Free swap area size. */
+  unsigned short procs;    /* Number of processes. */
+  unsigned long totalhigh; /* Total high memory size. */
+  unsigned long freehigh;  /* Free high memory size. */
+  unsigned int mem_unit;   /* Memory unit size in bytes. */
+  char _f[20-2*sizeof(long)-sizeof(int)]; /* Filler bytes for libc5. */
+};
+
+static int sysinfo(struct sysinfo *info) {
+  fprintf(stderr, "!!! KOS - sysinfo !!!\n");
+  return 0;
+};
+
+#include <ifaddrs.h>
+#else
 #include <sys/epoll.h>
-#include <sys/param.h>
 #include <sys/prctl.h>
 #include <sys/sysinfo.h>
+#endif /* __KOS__ */
+#include <sys/param.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
 
+#ifndef __KOS__
+/* KOS: TODO: don't need this for KOS port. */
 #define HAVE_IFADDRS_H 1
+#endif
 
 #ifdef __UCLIBC__
 # if __UCLIBC_MAJOR__ < 0 && __UCLIBC_MINOR__ < 9 && __UCLIBC_SUBLEVEL__ < 32
@@ -82,8 +114,9 @@ static int read_times(FILE* statfile_fp,
 static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci);
 static uint64_t read_cpufreq(unsigned int cpunum);
 
+#ifdef LINUX_WITH_EPOLL
 int uv__platform_loop_init(uv_loop_t* loop) {
-  
+
   loop->inotify_fd = -1;
   loop->inotify_watchers = NULL;
 
@@ -115,7 +148,7 @@ void uv__platform_loop_delete(uv_loop_t* loop) {
   uv__close(loop->inotify_fd);
   loop->inotify_fd = -1;
 }
-
+#endif /* LINUX_WITH_EPOLL */
 
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
@@ -243,7 +276,7 @@ int uv_uptime(double* uptime) {
   int r;
 
   /* Try /proc/uptime first, then fallback to clock_gettime(). */
-  
+
   if (0 == uv__slurp("/proc/uptime", buf, sizeof(buf)))
     if (1 == sscanf(buf, "%lf", uptime))
       return 0;
@@ -650,8 +683,11 @@ static int uv__ifaddr_exclude(struct ifaddrs *ent, int exclude_type) {
    * On Linux getifaddrs returns information related to the raw underlying
    * devices. We're not interested in this information yet.
    */
+#ifndef __KOS__
+  /* KOS: TODO: disable due to KOS limitations. */
   if (ent->ifa_addr->sa_family == PF_PACKET)
     return exclude_type;
+#endif
   return !exclude_type;
 }
 

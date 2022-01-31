@@ -655,16 +655,16 @@ int uv__udp_connect(uv_udp_t* handle,
 }
 
 /* From https://pubs.opengroup.org/onlinepubs/9699919799/functions/connect.html
- * Any of uv supported UNIXs kernel should be standardized, but the kernel 
+ * Any of uv supported UNIXs kernel should be standardized, but the kernel
  * implementation logic not same, let's use pseudocode to explain the udp
  * disconnect behaviors:
- * 
+ *
  * Predefined stubs for pseudocode:
  *   1. sodisconnect: The function to perform the real udp disconnect
  *   2. pru_connect: The function to perform the real udp connect
  *   3. so: The kernel object match with socket fd
  *   4. addr: The sockaddr parameter from user space
- * 
+ *
  * BSDs:
  *   if(sodisconnect(so) == 0) { // udp disconnect succeed
  *     if (addr->sa_len != so->addr->sa_len) return EINVAL;
@@ -694,13 +694,13 @@ int uv__udp_disconnect(uv_udp_t* handle) {
 #endif
 
     memset(&addr, 0, sizeof(addr));
-    
+
 #if defined(__MVS__)
     addr.ss_family = AF_UNSPEC;
 #else
     addr.sa_family = AF_UNSPEC;
 #endif
-    
+
     do {
       errno = 0;
       r = connect(handle->io_watcher.fd, (struct sockaddr*) &addr, sizeof(addr));
@@ -927,7 +927,8 @@ static int uv__udp_set_membership6(uv_udp_t* handle,
     !defined(__NetBSD__) &&                                         \
     !defined(__ANDROID__) &&                                        \
     !defined(__DragonFly__) &&                                      \
-    !defined(__QNX__)
+    !defined(__QNX__) &&                                            \
+    !defined(__KOS__)
 static int uv__udp_set_source_membership4(uv_udp_t* handle,
                                           const struct sockaddr_in* multicast_addr,
                                           const char* interface_addr,
@@ -1119,7 +1120,8 @@ int uv_udp_set_source_membership(uv_udp_t* handle,
     !defined(__NetBSD__) &&                                         \
     !defined(__ANDROID__) &&                                        \
     !defined(__DragonFly__) &&                                      \
-    !defined(__QNX__)
+    !defined(__QNX__) &&                                            \
+    !defined(__KOS__)
   int err;
   union uv__sockaddr mcast_addr;
   union uv__sockaddr src_addr;
@@ -1226,7 +1228,7 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
  * and use the general uv__setsockopt_maybe_char call on other platforms.
  */
 #if defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
-    defined(__MVS__) || defined(__QNX__)
+    defined(__MVS__) || defined(__QNX__) || defined(__KOS__)
 
   return uv__setsockopt(handle,
                         IP_TTL,
@@ -1235,7 +1237,7 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
                         sizeof(ttl));
 
 #else /* !(defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
-           defined(__MVS__) || defined(__QNX__)) */
+           defined(__MVS__) || defined(__QNX__)) || defined(__KOS__) */
 
   return uv__setsockopt_maybe_char(handle,
                                    IP_TTL,
@@ -1243,7 +1245,7 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
                                    ttl);
 
 #endif /* defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
-          defined(__MVS__) || defined(__QNX__) */
+          defined(__MVS__) || defined(__QNX__) || defined(__KOS__) */
 }
 
 

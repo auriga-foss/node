@@ -22,7 +22,96 @@
 #include "uv.h"
 #include "internal.h"
 #include <errno.h>
-#include <sys/epoll.h>
+
+#ifdef __KOS__
+  /* KOS: TODO: complete stub (to be used instead of sys/epoll.h),
+   *            bogus return for now.
+   */
+  /* Flags to be passed to epoll_create1. */
+  enum {
+    EPOLL_CLOEXEC = 02000000
+  #define EPOLL_CLOEXEC EPOLL_CLOEXEC
+  };
+
+  #define __EPOLL_PACKED __attribute__ ((__packed__))
+  enum EPOLL_EVENTS {
+    EPOLLIN = 0x001,
+  #define EPOLLIN EPOLLIN
+    EPOLLPRI = 0x002,
+  #define EPOLLPRI EPOLLPRI
+    EPOLLOUT = 0x004,
+  #define EPOLLOUT EPOLLOUT
+    EPOLLRDNORM = 0x040,
+  #define EPOLLRDNORM EPOLLRDNORM
+    EPOLLRDBAND = 0x080,
+  #define EPOLLRDBAND EPOLLRDBAND
+    EPOLLWRNORM = 0x100,
+  #define EPOLLWRNORM EPOLLWRNORM
+    EPOLLWRBAND = 0x200,
+  #define EPOLLWRBAND EPOLLWRBAND
+    EPOLLMSG = 0x400,
+  #define EPOLLMSG EPOLLMSG
+    EPOLLERR = 0x008,
+  #define EPOLLERR EPOLLERR
+    EPOLLHUP = 0x010,
+  #define EPOLLHUP EPOLLHUP
+    EPOLLRDHUP = 0x2000,
+  #define EPOLLRDHUP EPOLLRDHUP
+    EPOLLEXCLUSIVE = 1u << 28,
+  #define EPOLLEXCLUSIVE EPOLLEXCLUSIVE
+    EPOLLWAKEUP = 1u << 29,
+  #define EPOLLWAKEUP EPOLLWAKEUP
+    EPOLLONESHOT = 1u << 30,
+  #define EPOLLONESHOT EPOLLONESHOT
+    EPOLLET = 1u << 31
+  #define EPOLLET EPOLLET
+  };
+
+  /* Valid opcodes ("op" parameter) to be passed to epoll_ctl(). */
+  #define EPOLL_CTL_ADD 1 /* Add a file descriptor to the interface. */
+  #define EPOLL_CTL_DEL 2 /* Remove a file descriptor from the interface. */
+  #define EPOLL_CTL_MOD 3 /* Change file descriptor epoll_event structure. */
+
+  typedef union epoll_data {
+    void *ptr;
+    int fd;
+    uint32_t u32;
+    uint64_t u64;
+  } epoll_data_t;
+
+  struct epoll_event {
+    uint32_t events; /* Epoll events. */
+    epoll_data_t data; /* User data variable. */
+  } __EPOLL_PACKED;
+
+  #define _SIGSET_NWORDS (1024 / (8 * sizeof (unsigned long int)))
+  typedef struct {
+    unsigned long int __val[_SIGSET_NWORDS];
+  } __sigset_t;
+
+  static int epoll_create(int __size) {
+    return 0;
+  }
+  static int epoll_create1(int __flags) {
+    return 0;
+  }
+  static int epoll_ctl(int __epfd, int __op, int __fd,
+                       struct epoll_event *__event) {
+    return 0;
+  }
+  static int epoll_wait(int __epfd, struct epoll_event *__events,
+                        int __maxevents, int __timeout) {
+    return 0;
+  }
+  static int epoll_pwait(int __epfd, struct epoll_event *__events,
+                         int __maxevents, int __timeout,
+                         const __sigset_t *__ss) {
+    return 0;
+  }
+#else
+  #include <sys/epoll.h>
+#endif /* __KOS__ */
+
 
 int uv__epoll_init(uv_loop_t* loop) {
   int fd;
