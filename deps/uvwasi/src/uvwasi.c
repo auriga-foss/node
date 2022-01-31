@@ -29,8 +29,8 @@
 #include "wasi_serdes.h"
 #include "debug.h"
 
-/* IBMi PASE does not support posix_fadvise() */
-#ifdef __PASE__
+/* IBMi PASE and KOS do not support posix_fadvise() */
+#if defined(__PASE__) || defined(__KOS__)
 # undef POSIX_FADV_NORMAL
 #endif
 
