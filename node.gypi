@@ -269,7 +269,7 @@
         'NODE_PLATFORM="sunos"',
       ],
     }],
-    [ '(OS=="freebsd" or OS=="linux") and node_shared=="false"'
+    [ '(OS=="freebsd" or OS=="linux" or OS=="kos") and node_shared=="false"'
         ' and force_load=="true"', {
       'ldflags': [
         '-Wl,-z,noexecstack',
@@ -294,7 +294,7 @@
         ],
       },
     }],
-    [ 'coverage=="true" and node_shared=="false" and OS in "mac freebsd linux"', {
+    [ 'coverage=="true" and node_shared=="false" and OS in "mac freebsd linux kos"', {
       'cflags!': [ '-O3' ],
       'ldflags': [ '--coverage',
                    '-g',
@@ -331,7 +331,12 @@
         '-lrt'
       ],
     }],
-    [ 'OS in "freebsd linux"', {
+    [ 'OS=="kos"', {
+      'libraries!': [
+        '-lrt'
+      ],
+    }],
+    [ 'OS in "freebsd linux kos"', {
       'ldflags': [ '-Wl,-z,relro',
                    '-Wl,-z,now' ]
     }],
@@ -363,7 +368,7 @@
                 },
               },
               'conditions': [
-                ['OS in "linux freebsd" and node_shared=="false"', {
+                ['OS in "linux kos freebsd" and node_shared=="false"', {
                   'ldflags': [
                     '-Wl,--whole-archive,'
                       '<(obj_dir)/deps/openssl/<(openssl_product)',
