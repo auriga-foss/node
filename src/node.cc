@@ -396,7 +396,13 @@ void RegisterSignalHandler(int signal,
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
   sa.sa_sigaction = handler;
+#if !defined(__KOS__)
   sa.sa_flags = reset_handler ? SA_RESETHAND : 0;
+#else
+  // KOS: TODO: POSIX signals aren't supported, so there is
+  //            nothing to restore. Disable it to prevent system failure.
+  sa.sa_flags = 0;
+#endif
   sigfillset(&sa.sa_mask);
   CHECK_EQ(sigaction(signal, &sa, nullptr), 0);
 }
