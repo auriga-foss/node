@@ -73,9 +73,11 @@ class DLib {
   const int flags_;
   std::string errmsg_;
   void* handle_;
-#ifndef __POSIX__
+// KOS: TODO: can't use #ifdef __KOS__ due to build
+//            system limitation. Disable it for now.
+// #ifndef __POSIX__
   uv_lib_t lib_;
-#endif
+// #endif
   bool has_entry_in_global_handle_map_ = false;
 
   DLib(const DLib&) = delete;
