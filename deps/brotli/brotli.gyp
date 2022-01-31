@@ -10,6 +10,11 @@
             'OS_LINUX'
           ]
         }],
+        ['OS=="kos"', {
+          'defines': [
+            'OS_KOS'
+          ]
+        }],
         ['OS=="freebsd"', {
           'defines': [
             'OS_FREEBSD'

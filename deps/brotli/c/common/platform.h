@@ -28,7 +28,9 @@
 #include <brotli/port.h>
 #include <brotli/types.h>
 
-#if defined(OS_LINUX) || defined(OS_CYGWIN) || defined(__EMSCRIPTEN__)
+#if defined(__KOS__)
+#include <machine/endian.h>
+#elif defined(OS_LINUX) || defined(OS_CYGWIN) || defined(__EMSCRIPTEN__)
 #include <endian.h>
 #elif defined(OS_FREEBSD)
 #include <machine/endian.h>
