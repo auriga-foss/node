@@ -116,6 +116,9 @@
       ['OS == "linux" and llvm_version != "0.0"', {
         'libraries': ['-latomic'],
       }],
+      ['OS == "kos" and llvm_version != "0.0"', {
+        'libraries': ['-latomic'],
+      }],
     ],
   },
 
@@ -124,7 +127,7 @@
       'target_name': 'node_text_start',
       'type': 'none',
       'conditions': [
-        [ 'OS in "linux freebsd solaris" and '
+        [ 'OS in "linux kos freebsd solaris" and '
           'target_arch=="x64"', {
           'type': 'static_library',
           'sources': [
@@ -182,6 +185,9 @@
       'msvs_disabled_warnings!': [4244],
 
       'conditions': [
+        ['OS == "kos"', {
+          'ldflags': ['-Wl,--whole-archive', '-lvfs_remote', '-Wl,--no-whole-archive'],
+        }],
         [ 'error_on_warn=="true"', {
           'cflags': ['-Werror'],
           'xcode_settings': {
@@ -347,7 +353,7 @@
             'src/node_snapshot_stub.cc'
           ],
         }],
-        [ 'OS in "linux freebsd" and '
+        [ 'OS in "linux kos freebsd" and '
           'target_arch=="x64"', {
           'dependencies': [ 'node_text_start' ],
           'ldflags+': [
@@ -809,7 +815,7 @@
             'src/node_crypto.h'
           ],
         }],
-        [ 'OS in "linux freebsd mac solaris" and '
+        [ 'OS in "linux kos freebsd mac solaris" and '
           'target_arch=="x64" and '
           'node_target_type=="executable"', {
           'defines': [ 'NODE_ENABLE_LARGE_CODE_PAGES=1' ],
@@ -912,8 +918,11 @@
         ['OS=="linux"', {
           'ldflags': [ '-fsanitize=fuzzer' ]
         }],
-        # Ensure that ossfuzz flag has been set and that we are on Linux
-        [ 'OS!="linux" or ossfuzz!="true"', {
+        ['OS=="kos"', {
+          'ldflags': [ '-fsanitize=fuzzer' ]
+        }],
+        # Ensure that ossfuzz flag has been set and that we are on Linux or KOS
+        [ 'OS not in "linux kos" or ossfuzz!="true"', {
           'type': 'none',
         }],
       ],
@@ -951,8 +960,11 @@
         ['OS=="linux"', {
           'ldflags': [ '-fsanitize=fuzzer' ]
         }],
-        # Ensure that ossfuzz flag has been set and that we are on Linux
-        [ 'OS!="linux" or ossfuzz!="true"', {
+        ['OS=="kos"', {
+          'ldflags': [ '-fsanitize=fuzzer' ]
+        }],
+        # Ensure that ossfuzz flag has been set and that we are on Linux or KOS
+        [ 'OS not in "linux kos" or ossfuzz!="true"', {
           'type': 'none',
         }],
       ],
@@ -1246,5 +1258,24 @@
        },
      ],
    }], # end win section
+    # TODO(RaisinTen): Enable this to build on other platforms as well.
+    ['(OS=="kos" and target_arch=="x64") and node_use_openssl=="true"', {
+      'targets': [
+        {
+          'target_name': 'test_crypto_engine',
+          'type': 'shared_library',
+          'include_dirs': ['deps/openssl/openssl/include'],
+          'sources': ['test/fixtures/test_crypto_engine.c'],
+          'conditions': [
+            ['OS=="kos" and target_arch=="x64"', {
+              'cflags': [
+                '-Wno-deprecated-declarations',
+                '-fPIC',
+              ],
+            }],
+          ],
+        }, # test_crypto_engine
+      ], # end targets
+    }], # end node_use_openssl section
   ], # end conditions block
 }
