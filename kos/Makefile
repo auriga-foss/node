@@ -43,7 +43,7 @@ help:
 	@echo "                    project;"
 	@echo "  compile         - do compile NodeJS and its' dependencies;"
 	@echo "  run NODE_ARG=<> - build and run using qemu (same as"
-	@echo "                    make && ./node NODE_ARG) - NOT WORKING YET;"
+	@echo "                    make && ./node NODE_ARG=<>);"
 	@echo "  realhw          - do build image to be flashed and started on"
 	@echo "                    real HW;"
 	@echo "  helloworld      - build, link and run test project image using"
