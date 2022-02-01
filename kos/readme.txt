@@ -12,4 +12,3 @@ make helloworld      - build and run a trivial test using QEMU (similar to
                        make && ./node test/message/hello_world.js)
 make run NODE_ARG=<> - build and run using QEMU (similar to
                        make && ./node NODE_ARG)
-make w/o arguments runs make compile (subject for future changes).
