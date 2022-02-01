@@ -318,7 +318,7 @@ static struct global_handle_map_t {
 DLib::DLib(const char* filename, int flags)
     : filename_(filename), flags_(flags), handle_(nullptr) {}
 
-// KOS: TODO: due to KOS limitations we can't use dynamic linking
+// KOS: TODO: due to KOS specifics we can't use dynamic linking
 //            so will use UV calls instead (at least for now).
 #if defined(__POSIX__) && !defined(__KOS__)
 bool DLib::Open() {

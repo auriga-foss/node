@@ -250,7 +250,7 @@
             'src/unix/random-getrandom.c',
             'src/unix/random-sysctl-linux.c',
           ],
-          # KOS: TODO: disable linker options due to KOS limitations
+          # KOS: TODO: disable linker options due to KOS specifics
           #'link_settings': {
           #  'libraries':  [ '-ldl', '-lrt' ],
           #},
@@ -267,7 +267,7 @@
             'src/unix/random-getrandom.c',
             'src/unix/random-sysctl-linux.c',
           ],
-          # KOS: TODO: disable linker options due to KOS limitations
+          # KOS: TODO: disable linker options due to KOS specifics
           #'link_settings': {
           #  'libraries':  [ '-ldl', '-lrt' ],
           #},

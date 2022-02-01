@@ -60,14 +60,14 @@
 
 /* Define to 1 if you have the <arpa/nameser_compat.h> header file. */
 #ifndef __KOS__
-/* KOS: disable option due to KOS limitations */
+/* KOS: disable option due to KOS specifics */
 #define HAVE_ARPA_NAMESER_COMPAT_H 1
 #endif
 
 
 /* Define to 1 if you have the <arpa/nameser.h> header file. */
 #ifndef __KOS__
-/* KOS: disable option due to KOS limitations */
+/* KOS: disable option due to KOS specifics */
 #define HAVE_ARPA_NAMESER_H 1
 #endif
 
@@ -136,7 +136,7 @@
 
 /* Define to 1 if you have the getservbyport_r function. */
 #ifndef __KOS__
-/* KOS: disable option due to KOS limitations */
+/* KOS: disable option due to KOS specifics */
 #define HAVE_GETSERVBYPORT_R 1
 #endif
 

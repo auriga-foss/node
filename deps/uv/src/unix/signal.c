@@ -19,7 +19,7 @@
  */
 
 #ifdef __KOS__
-/* KOS: TODO: put stub due to KOS limitations. */
+/* KOS: TODO: put stub due to KOS specifics. */
 static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
                           void (*child)(void)) {
   return 0;
@@ -256,7 +256,7 @@ static int uv__signal_register_handler(int signum, int oneshot) {
   sa.sa_handler = uv__signal_handler;
   sa.sa_flags = SA_RESTART;
 #ifndef __KOS__
-  /* KOS: TODO: disabled due to KOS limitations. */
+  /* KOS: TODO: disabled due to KOS specifics. */
   if (oneshot)
     sa.sa_flags |= SA_RESETHAND;
 #endif

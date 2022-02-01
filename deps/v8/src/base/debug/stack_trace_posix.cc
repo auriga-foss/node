@@ -197,7 +197,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   internal::itoa_r(signal, buf, sizeof(buf), 10, 0);
   PrintToStderr(buf);
   if (signal == SIGBUS) {
-// KOS: due to KOS limitations we need to disable this.
+// KOS: due to KOS specifics we need to disable this.
 #if !defined(__KOS__)
     if (info->si_code == BUS_ADRALN)
       PrintToStderr(" BUS_ADRALN ");
@@ -209,7 +209,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 #endif
       PrintToStderr(" <unknown> ");
   } else if (signal == SIGFPE) {
-// KOS: due to KOS limitations we need to disable this.
+// KOS: due to KOS specifics we need to disable this.
 #if !defined(__KOS__)
     if (info->si_code == FPE_FLTDIV)
       PrintToStderr(" FPE_FLTDIV ");
@@ -231,7 +231,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 #endif
       PrintToStderr(" <unknown> ");
   } else if (signal == SIGILL) {
-// KOS: due to KOS limitations we need to disable this.
+// KOS: due to KOS specifics we need to disable this.
 #if !defined(__KOS__)
     if (info->si_code == ILL_BADSTK)
       PrintToStderr(" ILL_BADSTK ");
@@ -251,7 +251,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 #endif
       PrintToStderr(" <unknown> ");
   } else if (signal == SIGSEGV) {
-// KOS: due to KOS limitations we need to disable this.
+// KOS: due to KOS specifics we need to disable this.
 #if !defined(__KOS__)
     if (info->si_code == SEGV_MAPERR)
       PrintToStderr(" SEGV_MAPERR ");
@@ -353,7 +353,7 @@ bool EnableInProcessStackDumping() {
 
   struct sigaction action;
   memset(&action, 0, sizeof(action));
-// KOS: TODO: due to KOS limitations we need to disable this.
+// KOS: TODO: due to KOS specifics we need to disable this.
 #if !defined(__KOS__)
   action.sa_flags = SA_RESETHAND | SA_SIGINFO;
 #else
@@ -367,7 +367,7 @@ bool EnableInProcessStackDumping() {
   success &= (sigaction(SIGFPE, &action, nullptr) == 0);
   success &= (sigaction(SIGBUS, &action, nullptr) == 0);
   success &= (sigaction(SIGSEGV, &action, nullptr) == 0);
-// KOS: TODO: due to KOS limitations we need to disable this.
+// KOS: TODO: due to KOS specifics we need to disable this.
 #if !defined(__KOS__)
   success &= (sigaction(SIGSYS, &action, nullptr) == 0);
 #endif
