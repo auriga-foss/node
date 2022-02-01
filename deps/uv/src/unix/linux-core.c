@@ -41,19 +41,19 @@
  */
 
 struct sysinfo {
-  long uptime;             /* Number of seconds since system boot. */
-  unsigned long loads[3];  /* Average 1-, 5-, and 15-minutes system load. */
-  unsigned long totalram;  /* Total RAM size. */
-  unsigned long freeram;   /* Free RAM size. */
-  unsigned long sharedram; /* Shared RAM size. */
-  unsigned long bufferram; /* RAM size used for buffers. */
-  unsigned long totalswap; /* Total swap area size. */
-  unsigned long freeswap;  /* Free swap area size. */
-  unsigned short procs;    /* Number of processes. */
+  long uptime;             /* Seconds since boot. */
+  unsigned long loads[3];  /* 1, 5, and 15 minute load averages. */
+  unsigned long totalram;  /* Total usable main memory size. */
+  unsigned long freeram;   /* Available memory size. */
+  unsigned long sharedram; /* Amount of shared memory. */
+  unsigned long bufferram; /* Memory used by buffers. */
+  unsigned long totalswap; /* Total swap space size. */
+  unsigned long freeswap;  /* Swap space still available. */
+  unsigned short procs;    /* Number of current processes. */
   unsigned long totalhigh; /* Total high memory size. */
-  unsigned long freehigh;  /* Free high memory size. */
+  unsigned long freehigh;  /* Available high memory size. */
   unsigned int mem_unit;   /* Memory unit size in bytes. */
-  char _f[20-2*sizeof(long)-sizeof(int)]; /* Filler bytes for libc5. */
+  char _f[20-2*sizeof(long)-sizeof(int)]; /* Structure padding for libc5. */
 };
 
 static int sysinfo(struct sysinfo *info) {
@@ -62,7 +62,7 @@ static int sysinfo(struct sysinfo *info) {
 };
 
 #include <ifaddrs.h>
-#else
+#else /* if not defined(__KOS__) */
 #include <sys/epoll.h>
 #include <sys/prctl.h>
 #include <sys/sysinfo.h>
@@ -684,7 +684,7 @@ static int uv__ifaddr_exclude(struct ifaddrs *ent, int exclude_type) {
    * devices. We're not interested in this information yet.
    */
 #ifndef __KOS__
-  /* KOS: TODO: disable due to KOS limitations. */
+  /* KOS: TODO: disable due to KOS specifics. */
   if (ent->ifa_addr->sa_family == PF_PACKET)
     return exclude_type;
 #endif

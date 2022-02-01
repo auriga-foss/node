@@ -294,20 +294,6 @@ static int (*uv__mkostemp)(char*, int);
 static void uv__mkostemp_initonce(void) {
     uv__mkostemp = &mkostemp;  /* from stdlib.h */
 }
-// static void uv__mkostemp_initonce(void) {
-//  /* z/os doesn't have RTLD_DEFAULT but that's okay
-//   * because it doesn't have mkostemp(O_CLOEXEC) either.
-//   */
-// #ifdef RTLD_DEFAULT
-//  uv__mkostemp = (int (*)(char*, int)) dlsym(RTLD_DEFAULT, "mkostemp");
-
-//  /* We don't care about errors, but we do want to clean them up.
-//   * If there has been no error, then dlerror() will just return
-//   * NULL.
-//   */
-//  dlerror();
-// #endif  /* RTLD_DEFAULT */
-// }
 
 static int uv__fs_mkstemp(uv_fs_t* req) {
   static uv_once_t once = UV_ONCE_INIT;

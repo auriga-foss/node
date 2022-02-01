@@ -45,7 +45,7 @@
 
 #include "uv/threadpool.h"
 
-/* KOS: TODO: use uv/posix API instaead of generic API */
+/* KOS: TODO: use uv/posix API instead of generic API */
 #if defined(__KOS__)
 # include "uv/posix.h"
 #elif defined(__linux__)

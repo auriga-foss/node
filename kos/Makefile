@@ -87,11 +87,11 @@ endif
 		-kernel $(BUILD)/einit/kos-qemu-image
 
 clean-arch:
-	@echo "	RM	arch-build directory for $(TARGET_ARCH)."
+	@echo " RM	arch-build directory for $(TARGET_ARCH)."
 	$(Q)rm -rf $(BUILD)
 
 clean-node:
-	@echo "	RM	NodeJS 'out' directory."
+	@echo " RM	NodeJS 'out' directory."
 	$(Q)rm -rf ../out;
 
 clean-tmp:
@@ -99,7 +99,7 @@ clean-tmp:
 	$(Q)rm -f /tmp/psl-base-c.*
 
 # obvious ...
-clean-all: clean-arch clean-node clean-tmp clean-image
+clean-all: clean-arch clean-node clean-tmp
 	$(Q)$(MAKE) clean -C ../
 
 

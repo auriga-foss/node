@@ -250,10 +250,9 @@
             'src/unix/random-getrandom.c',
             'src/unix/random-sysctl-linux.c',
           ],
-          # KOS: TODO: disable linker options due to KOS specifics
-          #'link_settings': {
-          #  'libraries':  [ '-ldl', '-lrt' ],
-          #},
+          'link_settings': {
+            'libraries':  [ '-ldl', '-lrt' ],
+          },
         }],
         [ 'OS=="kos"', {
           'defines': [ '_GNU_SOURCE' ],

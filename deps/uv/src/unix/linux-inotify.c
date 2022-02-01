@@ -48,7 +48,7 @@ int uv_fs_event_stop(uv_fs_event_t* handle) {
 void uv__fs_event_close(uv_fs_event_t* handle) {
 };
 
-#else
+#else /* !defined (__KOS__) */
 
 #include <sys/inotify.h>
 #include <sys/types.h>

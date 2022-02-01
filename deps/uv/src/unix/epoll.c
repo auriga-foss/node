@@ -24,7 +24,6 @@
 #include <errno.h>
 #include <sys/epoll.h>
 
-
 int uv__epoll_init(uv_loop_t* loop) {
   int fd;
   fd = epoll_create1(O_CLOEXEC);

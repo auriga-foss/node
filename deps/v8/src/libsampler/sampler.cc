@@ -15,7 +15,7 @@
 #include <sys/time.h>
 #include <atomic>
 
-#if !V8_OS_QNX && !V8_OS_AIX && !defined(__KOS__)
+#if !V8_OS_QNX && !V8_OS_AIX && !V8_OS_KOS
 #include <sys/syscall.h>
 #endif
 
@@ -27,11 +27,11 @@
 #include <mach/mach.h>
 // OpenBSD doesn't have <ucontext.h>. ucontext_t lives in <signal.h>
 // and is a typedef for struct sigcontext. There is no uc_mcontext.
-#elif !V8_OS_OPENBSD && !defined(__KOS__)
+#elif !V8_OS_OPENBSD && !V8_OS_KOS
 #include <ucontext.h>
 #endif
 
-#ifndef __KOS__
+#ifndef V8_OS_KOS
 #include <unistd.h>
 #endif
 
@@ -72,7 +72,7 @@ using zx_thread_state_general_regs_t = zx_arm64_general_regs_t;
 #include "src/base/platform/platform.h"
 
 // KOS: TODO: supplementary structures for KOS build.
-#if defined(__KOS__) && defined(__arm__)
+#if (V8_OS_KOS) && defined(__arm__)
   // Completely bogus structure, only for first compile purposes.
   struct mcontext_t {
     uint32_t arm_pc;
@@ -87,7 +87,7 @@ using zx_thread_state_general_regs_t = zx_arm64_general_regs_t;
     mcontext_t uc_mcontext;
     // Other fields are not used by V8, don't define them here.
   };
-#elif defined(__KOS__) && defined(__aarch64__)
+#elif (V8_OS_KOS) && defined(__aarch64__)
   // Completly bogus structure, only for first compile purposes
   struct mcontext_t {
     uint64_t arm_pc;
@@ -371,7 +371,7 @@ class SignalHandler {
     sigemptyset(&sa.sa_mask);
 #if V8_OS_QNX
     sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
-#elif defined(__KOS__)
+#elif V8_OS_KOS
     sa.sa_flags = SA_RESTART | SA_SIGINFO;
 #else
     sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK;

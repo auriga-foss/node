@@ -67,7 +67,7 @@
 #include <sys/resource.h>
 #endif
 
-#if !defined(_AIX) && !defined(V8_OS_FUCHSIA) && !defined(__KOS__)
+#if !defined(_AIX) && !defined(V8_OS_FUCHSIA) && !defined(V8_OS_KOS)
 #include <sys/syscall.h>
 #endif
 
