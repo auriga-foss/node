@@ -760,7 +760,7 @@
             'Ws2_32',
           ],
         }],
-        [ 'node_use_openssl=="true"', {
+        [ 'node_use_openssl=="true" or OS=="kos"', {
           'sources': [
             'src/crypto/crypto_aes.cc',
             'src/crypto/crypto_bio.cc',

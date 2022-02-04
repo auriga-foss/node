@@ -1548,7 +1548,10 @@ def configure_static(o):
       return
 
     if options.fully_static:
-      o['libraries'] += ['-static', '-Wl,--whole-archive', '-lpthread', '-Wl,--no-whole-archive']
+      o['libraries'] += ['-static', '-lcrypto', '-lssl',
+                         '-Wl,--whole-archive',
+                         '-lpthread',
+                         '-Wl,--no-whole-archive']
     elif options.partly_static:
       o['libraries'] += ['-static-libgcc', '-static-libstdc++']
       if options.enable_asan:

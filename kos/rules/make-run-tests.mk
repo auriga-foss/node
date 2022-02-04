@@ -21,3 +21,11 @@ pi:
 .PHONY: http
 http:
 	$(Q)$(MAKE) run NODE_ARG="test/kos/http.js" NODE_PORT=$(NODE_PORT) QEMU_NET=1
+
+.PHONY: crypto-classes
+crypto-classes:
+	$(Q)$(MAKE) run NODE_ARG="test/parallel/test-crypto-classes.js"
+
+.PHONY: crypto-hash
+crypto-hash:
+	$(Q)$(MAKE) run NODE_ARG="test/parallel/test-crypto-hash.js"

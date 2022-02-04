@@ -397,5 +397,9 @@
     }, {
       'defines': [ 'HAVE_OPENSSL=0' ]
     }],
+    [ 'OS=="kos"', {
+       'defines!': [ 'HAVE_OPENSSL=0' ],
+       'defines': [ 'HAVE_OPENSSL=1' ]
+    }]
   ],
 }
