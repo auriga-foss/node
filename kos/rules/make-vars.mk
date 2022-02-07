@@ -105,6 +105,7 @@ export CCX_HOST
 
 export SDK_PREFIX
 export PATH
+export BUILD_ROOT
 export BUILD
 export ROOTFS_SOURCE
 export RAMDISK0

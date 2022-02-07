@@ -1,10 +1,9 @@
-/* Security configuration of the "net2_with_separate_vfs" example. */
-
 use nk.base._
 
 /* Declaration of entities. */
 use EDL kl.core.Core
 use EDL Einit
+use EDL kl.TlsEntity
 
 /**
  * This instruction enables to start up system entities by KOS kernel.
@@ -29,6 +28,36 @@ request src=Einit, dst=kl.core.Core
 }
 
 response src=kl.core.Core, dst=Einit
+{
+    grant()
+}
+
+request src=kl.TlsEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.TlsEntity
+{
+    grant()
+}
+
+request src=Einit, dst=kl.TlsEntity
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.TlsEntity
+{
+    grant()
+}
+
+request src=Einit, dst=kl.TlsEntity
+{
+    grant()
+}
+
+response src=kl.TlsEntity, dst=Einit
 {
     grant()
 }

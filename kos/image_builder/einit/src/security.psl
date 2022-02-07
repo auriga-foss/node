@@ -2,6 +2,7 @@ use trusted._
 
 use EDL node.Node
 use EDL vfs.NetVfs
+use EDL kl.VfsNet
 use EDL env.Env
 use EDL kl.drivers.RAMDisk
 use EDL kl.drivers.BSP
@@ -9,7 +10,13 @@ use EDL kl.drivers.GPIO
 
 /* Return of errors is allowed */
 error {
-    grant ()
+    grant()
+}
+
+
+execute src=Einit, dst=kl.drivers.GPIO
+{
+    grant()
 }
 
 /**
@@ -20,22 +27,12 @@ execute src=kl.core.Core, dst=kl.core.Core
     grant()
 }
 
-execute src = Einit, dst = kl.drivers.GPIO
+request src=kl.drivers.GPIO, dst=kl.core.Core
 {
     grant()
 }
 
-request src = kl.drivers.GPIO, dst = kl.core.Core
-{
-    grant()
-}
-
-response src = kl.core.Core, dst = kl.drivers.GPIO
-{
-    grant()
-}
-
-execute src=kl.core.Core, dst=Einit
+response src=kl.core.Core, dst=kl.drivers.GPIO
 {
     grant()
 }
@@ -52,7 +49,7 @@ execute src=Einit
 /**
  * This instruction enables to start up and initialize entities.
  */
-execute src = Einit, dst = kl.drivers.RAMDisk
+execute src=Einit, dst=kl.drivers.RAMDisk
 {
     grant()
 }
@@ -111,7 +108,27 @@ request src=node.Node, dst=vfs.NetVfs
     grant()
 }
 
+request src=kl.TlsEntity, dst=node.Node
+{
+    grant()
+}
+
+request src=node.Node, dst=kl.TlsEntity
+{
+    grant()
+}
+
 response src=vfs.NetVfs, dst=node.Node
+{
+    grant()
+}
+
+response src=node.Node, dst=kl.TlsEntity
+{
+    grant()
+}
+
+response src=kl.TlsEntity, dst=node.Node
 {
     grant()
 }
@@ -140,32 +157,32 @@ response src=env.Env, dst=vfs.NetVfs
  * This code enables to send requests from RAMDisk entity to KOS kernel
  * and get responses.
  */
-request src = kl.drivers.RAMDisk, dst = kl.core.Core
+request src=kl.drivers.RAMDisk, dst=kl.core.Core
 {
     grant()
 }
 
-response src = kl.core.Core, dst = kl.drivers.RAMDisk
+response src=kl.core.Core, dst=kl.drivers.RAMDisk
 {
     grant()
 }
 
 
-security src = kl.drivers.RAMDisk, method = Register
+security src=kl.drivers.RAMDisk, method=Register
 {
-    grant ()
+    grant()
 }
 
 /**
  * This code enables to send requests from VfsRamFs entity to RAMDisk entity
  * and get responses.
  */
-request src = vfs.NetVfs, dst = kl.drivers.RAMDisk
+request src=vfs.NetVfs, dst=kl.drivers.RAMDisk
 {
     grant()
 }
 
-response src = kl.drivers.RAMDisk, dst = vfs.NetVfs
+response src=kl.drivers.RAMDisk, dst=vfs.NetVfs
 {
     grant()
 }
@@ -177,6 +194,37 @@ request src=kl.drivers.BSP, dst=kl.core.Core
 }
 
 response src=kl.core.Core, dst=kl.drivers.BSP
+{
+    grant()
+}
+
+
+request src=kl.TlsEntity, dst=vfs.NetVfs
+{
+    grant()
+}
+
+request src=vfs.NetVfs, dst=kl.TlsEntity
+{
+    grant()
+}
+
+response src=vfs.NetVfs, dst=kl.TlsEntity
+{
+    grant()
+}
+
+response src=kl.TlsEntity, dst=vfs.NetVfs
+{
+    grant()
+}
+
+request src=kl.TlsEntity, dst=env.Env
+{
+    grant()
+}
+
+response src=env.Env, dst=kl.TlsEntity
 {
     grant()
 }

@@ -13,7 +13,9 @@ entities:
     - target: env.Env
       id: {var: ENV_SERVICE_NAME, include: env/env.h}
     - target: vfs.NetVfs
-      id: VFS1
+      id: vfs.NetVfs
+    - target: kl.TlsEntity
+      id: kl.TlsEntity
   @INIT_Node_ENTITY_CONNECTIONS@
 
 @INIT_EXTERNAL_ENTITIES@

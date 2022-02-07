@@ -11,5 +11,6 @@ nk_build_edl_files (node_edl_files
                     EDL "${CMAKE_SOURCE_DIR}/resources/edl/Node.edl")
 
 add_executable (Node IMPORTED GLOBAL)
-set_property(TARGET Node PROPERTY IMPORTED_LOCATION $ENV{ROOTFS_SOURCE}/Node)
+set_property (TARGET Node PROPERTY IMPORTED_LOCATION $ENV{ROOTFS_SOURCE}/Node)
 add_dependencies (Node node_edl_files)
+target_link_libraries (Node)

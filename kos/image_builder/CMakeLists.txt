@@ -8,6 +8,9 @@ initialize_platform ()
 # Add functions for installing artefacts.
 include (platform/install)
 
+# Toolchain for work with NK-parser.
+include (platform/nk)
+
 # Attach a package with the virtual file system implementation.
 find_package (vfs REQUIRED)
 include_directories (${vfs_INCLUDE})
@@ -23,6 +26,10 @@ include_directories (${LWEXT4_INCLUDE})
 
 # Attach a package with the DNET file system implementation.
 find_package (dnet REQUIRED COMPONENTS IMPLEMENTATION_LIB)
+
+# Attach a package with TLS entity and client lib implementations
+find_package (tls REQUIRED)
+include_directories (${tls_INCLUDE})
 
 # Payload
 add_subdirectory (node)

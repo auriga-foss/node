@@ -16,6 +16,7 @@ add_dependencies (NetVfs net_vfs_edl_files)
 target_link_libraries (NetVfs ${vfs_SERVER_LIB}
                               ${LWEXT4_LIB}
                               ${vfs_IMPLEMENTATION_LIB}
-                              ${dnet_IMPLEMENTATION_LIB})
+                              ${dnet_IMPLEMENTATION_LIB}
+                              ${TLS_CLIENT_LIB})
 set_target_properties (NetVfs
                        PROPERTIES ${blkdev_ENTITY}_REPLACEMENT ${ramdisk_ENTITY})
