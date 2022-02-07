@@ -3,6 +3,9 @@ project (env)
 # Toolchain for work with NK-parser.
 include (platform/nk)
 
+# Use TLS terminator.
+add_compile_definitions (USE_TLS=0)
+
 # Set compilation flags.
 project_header_default ("STANDARD_GNU_11:YES" "STRICT_WARNINGS:NO")
 

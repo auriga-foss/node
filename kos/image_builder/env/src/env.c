@@ -12,8 +12,6 @@
 #endif
 #define TST_VFS_CONNECTION_ID "vfs.NetVfs"
 
-#define USE_TLS 1
-
 int main(int argc, char** argv)
 {
   const char* NetVfsArgs[] = {
