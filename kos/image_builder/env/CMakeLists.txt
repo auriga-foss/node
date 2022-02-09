@@ -4,7 +4,7 @@ project (env)
 include (platform/nk)
 
 # Use TLS terminator.
-add_compile_definitions (USE_TLS=0)
+add_compile_definitions (USE_TLS=$ENV{USE_TLS})
 
 # Set compilation flags.
 project_header_default ("STANDARD_GNU_11:YES" "STRICT_WARNINGS:NO")
