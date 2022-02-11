@@ -13,10 +13,11 @@ void Method(const FunctionCallbackInfo<Value>& args) {
   Isolate * isolate = args.GetIsolate();
   args.GetReturnValue().Set(
       String::NewFromUtf8(isolate, "Addons-custom: hello from C++ addon!").
-        ToLocalChecked());
+          ToLocalChecked());
 }
 
 void Initialize(Local<Object> exports) {
+  fprintf(stderr, "[test_addon] %s:%d: invoked.\n", __func__, __LINE__);
   NODE_SET_METHOD(exports, "hello", Method);
 }
 

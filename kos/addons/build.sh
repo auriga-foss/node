@@ -13,13 +13,16 @@ export AS="${HOST}-as"
 export LD="$CXX"
 export LINK="$CXX"
 export PATH=$PATH:/opt/KasperskyOS-Community-Edition-1.1.0.76/toolchain/bin
-# export GYP_DEFINES="armv7=0"
 
 rm -rf build
 
 node-gyp --arch aarch64 --dest-cpu=arm64 --fully-static configure build \
   --nodedir $PWD/../../
 
-#pushd build
 
-#make
+pushd build/Release
+
+echo "Workaround: by some reasons we can't get prefix lib ..."
+cp test_addon.a libtest_addon.a
+
+popd
