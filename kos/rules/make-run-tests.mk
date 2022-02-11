@@ -18,6 +18,10 @@ consolestderr:
 pi:
 	$(Q)$(MAKE) run NODE_ARG="test/kos/pi_10000x25.js"
 
+.PHONY: sysinfo
+sysinfo:
+	$(Q)$(MAKE) run NODE_ARG="test/kos/sysinfo.js"
+
 .PHONY: http
 http:
 	$(Q)$(MAKE) run NODE_ARG="test/kos/http.js" NODE_PORT=$(NODE_PORT) QEMU_NET=1
