@@ -12,8 +12,7 @@
 #endif
 #define TST_VFS_CONNECTION_ID "vfs.NetVfs"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   const char* NetVfsArgs[] = {
     "-l", "nodev /tmp ramfs 0",
     "-l", "romfs /romfs romfs 0",

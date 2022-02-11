@@ -1410,6 +1410,8 @@ LINT_CPP_EXCLUDE += src/tracing/trace_event.h src/tracing/trace_event_common.h
 
 LINT_CPP_FILES = $(filter-out $(LINT_CPP_EXCLUDE), $(wildcard \
 	benchmark/napi/*/*.cc \
+	kos/addons/*/*.cc \
+	kos/addons/*/*.h \
 	src/*.c \
 	src/*.cc \
 	src/*.h \
