@@ -2,7 +2,8 @@
   "targets": [
     {
       "target_name": "test_addon",
-      "sources": [ "hello/hello.cc" ]
+      "sources": [ "hello/hello.cc" ],
+      "type": "static_library",
     }
   ]
 }
