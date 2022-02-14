@@ -1,2 +1,3 @@
 /rootfs/*
 image_builder/build-*
+addons/build
