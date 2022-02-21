@@ -32,4 +32,12 @@ crypto-classes:
 
 .PHONY: crypto-hash
 crypto-hash:
-	$(Q)$(MAKE) run NODE_ARG="test/parallel/test-crypto-hash.js"
+	$(Q)$(MAKE) run NODE_ARG='\"test/parallel/test-crypto-hash.js\"'
+
+.PHONY: test-addon
+test-addon:
+	$(Q)$(MAKE) run NODE_ARG='\"test/kos/test_addon.js\"'
+
+.PHONY: tests
+tests: clean-arch
+	python ./test.py $(options)
