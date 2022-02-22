@@ -26,6 +26,7 @@
     'node_lib_target_name%': 'libnode',
     'node_intermediate_lib_type%': 'static_library',
     'node_builtin_modules_path%': '',
+    'node_addons_lib_path%': '$(NODE_ADDONS_BUILD_PATH)',
     # We list the deps/ files out instead of globbing them in js2c.py since we
     # only include a subset of all the files under these directories.
     # The lengths of their file names combined should not exceed the
@@ -186,7 +187,14 @@
 
       'conditions': [
         ['OS == "kos"', {
-          'ldflags': ['-Wl,--whole-archive', '-lvfs_remote', '-Wl,--no-whole-archive'],
+          # KOS: TODO: need to workout proper way to provide addons library path
+          'ldflags': [
+            '-L<(node_addons_lib_path)',
+            '-Wl,--whole-archive',
+            '-lvfs_remote',
+            '-ltest_addon',
+            '-Wl,--no-whole-archive'
+          ],
         }],
         [ 'error_on_warn=="true"', {
           'cflags': ['-Werror'],
@@ -1189,6 +1197,12 @@
             'Dbghelp.lib',
             'winmm.lib',
             'Ws2_32.lib',
+          ],
+        }],
+        ['OS=="kos"', {
+          'libraries' : [
+            '-L<(node_addons_lib_path)',
+            '-ltest_addon',
           ],
         }],
       ],

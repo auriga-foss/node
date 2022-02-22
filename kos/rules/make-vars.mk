@@ -72,8 +72,7 @@ NODE_ADDONS_BUILD_PATH ?= $(BUILD_ROOT)/addons/build/Release
 
 # NodeJS configure arguments list
 CONFIG_ARGS = --dest-cpu=$(DEST_CPU) --cross-compiling --dest-os=kos \
-              --fully-static --without-ssl -C --without-dtrace $(ARCH_CFG_ARGS) \
-              --node-builtin-modules-path=$(NODE_ADDONS_BUILD_PATH)
+              --fully-static --without-ssl -C --without-dtrace $(ARCH_CFG_ARGS)
 
 # default qemu gdb port
 GDB_SERVER_PORT = 1234
@@ -119,6 +118,7 @@ export ROOTFS_SOURCE
 export RAMDISK0
 export INSTALL_PREFIX
 export PKG_CONFIG
+export NODE_ADDONS_BUILD_PATH
 
 # export qemu control variabled
 export QEMU_OPTS
