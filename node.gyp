@@ -26,6 +26,7 @@
     'node_lib_target_name%': 'libnode',
     'node_intermediate_lib_type%': 'static_library',
     'node_builtin_modules_path%': '',
+    'node_addons_lib_enabled%': 0,
     'node_addons_lib_path%': '$(NODE_ADDONS_BUILD_PATH)',
     # We list the deps/ files out instead of globbing them in js2c.py since we
     # only include a subset of all the files under these directories.
@@ -187,13 +188,16 @@
 
       'conditions': [
         ['OS == "kos"', {
-          # KOS: TODO: need to workout proper way to provide addons library path
           'ldflags': [
-            '-L<(node_addons_lib_path)',
             '-Wl,--whole-archive',
             '-lvfs_remote',
-            '-ltest_addon',
             '-Wl,--no-whole-archive'
+          ],
+        }],
+        ['OS=="kos" and node_addons_lib_enabled==1', {
+          'ldflags': [
+            '-L<(node_addons_lib_path)',
+            '-ltest_addon',
           ],
         }],
         [ 'error_on_warn=="true"', {
@@ -1199,7 +1203,7 @@
             'Ws2_32.lib',
           ],
         }],
-        ['OS=="kos"', {
+        ['OS=="kos" and node_addons_lib_enabled==1', {
           'libraries' : [
             '-L<(node_addons_lib_path)',
             '-ltest_addon',
