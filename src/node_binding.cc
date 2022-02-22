@@ -245,6 +245,18 @@ static thread_local node_module* thread_local_modpending;
 // This is set by node::Init() which is used by embedders
 bool node_is_initialized = false;
 
+inline struct node_module* FindModule(struct node_module* list,
+                                      const char* name,
+                                      int flag) {
+  struct node_module* mp;
+  for (mp = list; mp != nullptr; mp = mp->nm_link) {
+    if (strcmp(mp->nm_modname, name) == 0) break;
+  }
+
+  CHECK(mp == nullptr || (mp->nm_flags & flag) != 0);
+  return mp;
+}
+
 extern "C" void node_module_register(void* m) {
   struct node_module* mp = reinterpret_cast<struct node_module*>(m);
 
@@ -465,6 +477,20 @@ void DLOpen(const FunctionCallbackInfo<Value>& args) {
       return false;
     }
 
+#if defined(__KOS__)
+    if (mp == nullptr) {
+      /* KOS:
+       *     in order to trigger dlopen() .. call flow we need to name our
+       *     addon module with '.node' suffix (in the file system). Then in
+       *     order to properly 'find' such addon in the external modules linked
+       *     list (which is already linked), we need to cut off this suffix
+      *      (get addon name from uv lib by library handle).
+       */
+      mp = FindModule(modlist_linked, uv_get_addon_name(dlib->lib_.handle),
+                      NM_F_LINKED);
+    }
+#endif
+
     if (mp != nullptr) {
       if (mp->nm_context_register_func == nullptr) {
         if (env->force_context_aware()) {
@@ -539,19 +565,6 @@ void DLOpen(const FunctionCallbackInfo<Value>& args) {
 
   // Tell coverity that 'handle' should not be freed when we return.
   // coverity[leaked_storage]
-}
-
-inline struct node_module* FindModule(struct node_module* list,
-                                      const char* name,
-                                      int flag) {
-  struct node_module* mp;
-
-  for (mp = list; mp != nullptr; mp = mp->nm_link) {
-    if (strcmp(mp->nm_modname, name) == 0) break;
-  }
-
-  CHECK(mp == nullptr || (mp->nm_flags & flag) != 0);
-  return mp;
 }
 
 static Local<Object> InitModule(Environment* env,
