@@ -27,13 +27,54 @@
 #include <string.h>
 #include <locale.h>
 
+#if defined(__KOS__)
+
+struct addon_t {
+  char *file_name;
+  void *addon_name;
+};
+
+#define ADDON_ENTRY(_id, _fn, _nm) \
+  [_id] = { .file_name = _fn, .addon_name = _nm }
+
+static char* error_addon_str = "error:not found";
+
+/* Allowed addons list */
+static struct addon_t addons[] = {
+  ADDON_ENTRY(0, "/test/kos/addons/test_addon.node", "test_addon"),
+};
+
+const char* uv_get_addon_name(void* handle) {
+  if (!handle) {
+    return error_addon_str;
+  }
+
+  return (const char*)((struct addon_t*)handle)->addon_name;
+}
+
+#endif /* __KOS__ */
+
 static int uv__dlerror(uv_lib_t* lib);
 
+static void* get_addon_handle(const char* filename) {
+  int i;
+  for (i = 0; i < sizeof(addons) / sizeof(addons[0]); i++) {
+    if (!strcmp(addons[i].file_name, filename)) {
+      return (void*)&addons[i];
+    }
+  }
+  return (void*)0;
+}
 
 int uv_dlopen(const char* filename, uv_lib_t* lib) {
   dlerror(); /* Reset error status. */
   lib->errmsg = NULL;
   lib->handle = dlopen(filename, RTLD_LAZY);
+#if defined(__KOS__)
+  if (!lib->handle) {
+    lib->handle = get_addon_handle(filename);
+  }
+#endif
   return lib->handle ? 0 : uv__dlerror(lib);
 }
 

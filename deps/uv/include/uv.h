@@ -1719,7 +1719,9 @@ UV_EXTERN int uv_dlopen(const char* filename, uv_lib_t* lib);
 UV_EXTERN void uv_dlclose(uv_lib_t* lib);
 UV_EXTERN int uv_dlsym(uv_lib_t* lib, const char* name, void** ptr);
 UV_EXTERN const char* uv_dlerror(const uv_lib_t* lib);
-
+#if defined(__KOS__)
+UV_EXTERN const char* uv_get_addon_name(void* handle);
+#endif
 UV_EXTERN int uv_mutex_init(uv_mutex_t* handle);
 UV_EXTERN int uv_mutex_init_recursive(uv_mutex_t* handle);
 UV_EXTERN void uv_mutex_destroy(uv_mutex_t* handle);
