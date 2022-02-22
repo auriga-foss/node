@@ -69,6 +69,7 @@ CCX_HOST=$(HOST)-g++
 # build folder.
 # By default we have it at the <nodejs root>/kos/addons/build/Release.
 NODE_ADDONS_BUILD_PATH ?= $(BUILD_ROOT)/addons/build/Release
+NODE_ADDONS_LIB_ENABLED ?= 0
 
 # NodeJS configure arguments list
 CONFIG_ARGS = --dest-cpu=$(DEST_CPU) --cross-compiling --dest-os=kos \
@@ -119,6 +120,7 @@ export RAMDISK0
 export INSTALL_PREFIX
 export PKG_CONFIG
 export NODE_ADDONS_BUILD_PATH
+export NODE_ADDONS_LIB_ENABLED
 
 # export qemu control variabled
 export QEMU_OPTS
