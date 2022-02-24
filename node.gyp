@@ -26,8 +26,8 @@
     'node_lib_target_name%': 'libnode',
     'node_intermediate_lib_type%': 'static_library',
     'node_builtin_modules_path%': '',
-    'node_addons_lib_enabled%': '$(NODE_ADDONS_LIB_ENABLED)',
-    'node_addons_lib_path%': '$(NODE_ADDONS_BUILD_PATH)',
+    'node_addons_lib_enabled': '<!(echo $NODE_ADDONS_LIB_ENABLED)',
+    'node_addons_lib_path': '<!(echo $NODE_ADDONS_BUILD_PATH)',
     # We list the deps/ files out instead of globbing them in js2c.py since we
     # only include a subset of all the files under these directories.
     # The lengths of their file names combined should not exceed the
@@ -146,6 +146,7 @@
         'NODE_ARCH="<(target_arch)"',
         'NODE_PLATFORM="<(OS)"',
         'NODE_WANT_INTERNALS=1',
+        '_DL_USE_FAKE_LOAD=<(node_addons_lib_enabled)',
       ],
 
       'includes': [
@@ -188,6 +189,9 @@
 
       'conditions': [
         ['OS == "kos"', {
+          'defines': [
+            '_DL_USE_FAKE_LOAD=<(node_addons_lib_enabled)',
+          ],
           'ldflags': [
             '-Wl,--whole-archive',
             '-lvfs_remote',
@@ -197,7 +201,9 @@
         ['OS=="kos" and node_addons_lib_enabled==1', {
           'ldflags': [
             '-L<(node_addons_lib_path)',
+            '-Wl,--whole-archive',
             '-ltest_addon',
+            '-Wl,--no-whole-archive'
           ],
         }],
         [ 'error_on_warn=="true"', {
@@ -711,6 +717,7 @@
         # Warn when using deprecated V8 APIs.
         'V8_DEPRECATION_WARNINGS=1',
         'NODE_OPENSSL_SYSTEM_CERT_PATH="<(openssl_system_ca_path)"',
+        '_DL_USE_FAKE_LOAD=<(node_addons_lib_enabled)',
       ],
 
       # - "C4244: conversion from 'type1' to 'type2', possible loss of data"
@@ -1207,6 +1214,9 @@
           'libraries' : [
             '-L<(node_addons_lib_path)',
             '-ltest_addon',
+          ],
+          'defines': [
+            '_DL_USE_FAKE_LOAD=<(node_addons_lib_enabled)',
           ],
         }],
       ],

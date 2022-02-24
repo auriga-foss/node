@@ -477,7 +477,7 @@ void DLOpen(const FunctionCallbackInfo<Value>& args) {
       return false;
     }
 
-#if defined(__KOS__)
+#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
     if (mp == nullptr) {
       /* KOS:
        *     in order to trigger dlopen() .. call flow we need to name our

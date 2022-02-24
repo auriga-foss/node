@@ -1,5 +1,6 @@
 {
   'variables': {
+    'node_addons_lib_enabled': '<!(echo $NODE_ADDONS_LIB_ENABLED)',
     'conditions': [
       ['OS=="win"', {
         'shared_unix_defines': [ ],
@@ -33,6 +34,13 @@
       }, {
         'shared_zos_defines': [ ],
       }],
+      ['OS == "kos"', {
+        'shared_kos_defines': [
+          '_DL_USE_FAKE_LOAD=<(node_addons_lib_enabled)'
+        ],
+      }, {
+        'shared_kos_defines': [ ],
+      }],
     ],
   },
 
@@ -48,6 +56,7 @@
         '<@(shared_mac_defines)',
         '<@(shared_unix_defines)',
         '<@(shared_zos_defines)',
+        '<@(shared_kos_defines)',
       ],
       'direct_dependent_settings': {
         'defines': [

@@ -27,7 +27,7 @@
 #include <string.h>
 #include <locale.h>
 
-#if defined(__KOS__)
+#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
 
 struct addon_t {
   char *file_name;
@@ -56,6 +56,7 @@ const char* uv_get_addon_name(void* handle) {
 
 static int uv__dlerror(uv_lib_t* lib);
 
+#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
 static void* get_addon_handle(const char* filename) {
   int i;
   for (i = 0; i < sizeof(addons) / sizeof(addons[0]); i++) {
@@ -65,12 +66,13 @@ static void* get_addon_handle(const char* filename) {
   }
   return (void*)0;
 }
+#endif
 
 int uv_dlopen(const char* filename, uv_lib_t* lib) {
   dlerror(); /* Reset error status. */
   lib->errmsg = NULL;
   lib->handle = dlopen(filename, RTLD_LAZY);
-#if defined(__KOS__)
+#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
   if (!lib->handle) {
     lib->handle = get_addon_handle(filename);
   }

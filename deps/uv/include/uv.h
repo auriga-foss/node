@@ -1719,7 +1719,7 @@ UV_EXTERN int uv_dlopen(const char* filename, uv_lib_t* lib);
 UV_EXTERN void uv_dlclose(uv_lib_t* lib);
 UV_EXTERN int uv_dlsym(uv_lib_t* lib, const char* name, void** ptr);
 UV_EXTERN const char* uv_dlerror(const uv_lib_t* lib);
-#if defined(__KOS__)
+#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
 UV_EXTERN const char* uv_get_addon_name(void* handle);
 #endif
 UV_EXTERN int uv_mutex_init(uv_mutex_t* handle);

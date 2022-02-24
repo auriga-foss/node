@@ -17,6 +17,8 @@ dump-vars:
 	@echo "	[VAR]	RAMDISK0=$(RAMDISK0)"
 	@echo "	[VAR]	PATH=$(PATH)"
 	@echo "	[VAR]	TARGET=$(TARGET)"
+	@echo "	[VAR]   NODE_ADDONS_LIB_ENABLED=$(NODE_ADDONS_LIB_ENABLED)"
+	@echo "	[VAR]   NODE_ADDONS_BUILD_PATH=$(NODE_ADDONS_BUILD_PATH)"
 
 # Help info with respect to build/make targets
 .PHONY: help
