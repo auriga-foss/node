@@ -27,7 +27,8 @@
 #include <string.h>
 #include <locale.h>
 
-#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
+#if defined(__KOS__)
+#if _DL_USE_FAKE_LOAD == 1
 
 struct addon_t {
   char *file_name;
@@ -52,7 +53,8 @@ const char* uv_get_addon_name(void* handle) {
   return (const char*)((struct addon_t*)handle)->addon_name;
 }
 
-#endif /* __KOS__ */
+#endif /* _DL_USE_FAKE_LOAD == 1 */
+#endif /* defined(__KOS__) */
 
 static int uv__dlerror(uv_lib_t* lib);
 

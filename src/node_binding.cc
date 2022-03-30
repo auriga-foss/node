@@ -477,7 +477,8 @@ void DLOpen(const FunctionCallbackInfo<Value>& args) {
       return false;
     }
 
-#if defined(__KOS__) && (_DL_USE_FAKE_LOAD == 1)
+#if defined(__KOS__)
+#if _DL_USE_FAKE_LOAD == 1
     if (mp == nullptr) {
       /* KOS:
        *     in order to trigger dlopen() .. call flow we need to name our
@@ -489,7 +490,8 @@ void DLOpen(const FunctionCallbackInfo<Value>& args) {
       mp = FindModule(modlist_linked, uv_get_addon_name(dlib->lib_.handle),
                       NM_F_LINKED);
     }
-#endif
+#endif /* _DL_USE_FAKE_LOAD == 1 */
+#endif /* defined(__KOS__) */
 
     if (mp != nullptr) {
       if (mp->nm_context_register_func == nullptr) {
