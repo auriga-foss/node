@@ -11,6 +11,26 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@echo "KasperskyOS disk image creator doesn't follow symlinks, so copy" \
 				" the whole 'test' folder"
 	@cp -r $< $@
+	# copy files needed by tests
+	mkdir -p $@/benchmark
+	@cp -r $(BUILD_ROOT)/../benchmark/_cli.js $@/benchmark/
+	mkdir -p $@/deps/corepack
+	@cp -r $(BUILD_ROOT)/../deps/corepack/package.json \
+		$@/deps/corepack/package.json
+	mkdir -p $@/deps/npm
+	@cp -r $(BUILD_ROOT)/../deps/npm/package.json $@/deps/npm/package.json
+	mkdir -p $@/tools/icu
+	@cp -r $(BUILD_ROOT)/../tools/icu/icu_versions.json \
+		$@/tools/icu/icu_versions.json
+	@cp -r $(BUILD_ROOT)/../deps/v8/src/objects $@/deps/v8/src/
+	@cp -r $(BUILD_ROOT)/../config.gypi $@
+	mkdir -p $@/doc/api
+	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/doc/api
+	@mkdir -p $@/etc
+	@cp /etc/hosts $@/etc
+	@cp /etc/resolv.conf $@/etc
+	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
+				" your OS config"
 
 $(PART_0): $(ROOTFS_DIR)
 	@echo "Preparing partition for ramdisk ..."
