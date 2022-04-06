@@ -145,8 +145,26 @@ int uv_tty_init(uv_loop_t* loop, uv_tty_t* tty, int fd, int unused) {
   newfd = -1;
 
   /* Save the fd flags in case we need to restore them due to an error. */
-  do
+  do {
     saved_flags = fcntl(fd, F_GETFL);
+    /* KNOWN_TEMP_FIX
+     * Since KOS libc returns O_RDONLY for stderr instead of O_RDWR like Linux
+     * libc does, deps/uv/src/unix/stream.c -> uv__check_before_write fails on
+     * if (!(stream->flags & UV_HANDLE_WRITABLE))
+     *   return UV_EPIPE;
+     * So we have broken console.error in JavaScript.
+     * Here is WA for this issue.
+     * TODO: remove this WA.
+     */
+#if defined(TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
+#error(test and remove w/a)
+#else
+#if defined(__KOS__)
+#warning "WA for stderr wrong O_RDONLY flag coming from KOS libc"
+    if (fd==stderr->_file) saved_flags = (O_NOCTTY | O_RDWR);
+#endif // defined(__KOS__)
+#endif // defined(TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
+  }
   while (saved_flags == -1 && errno == EINTR);
 
   if (saved_flags == -1)
