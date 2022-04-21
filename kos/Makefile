@@ -68,7 +68,7 @@ run: compile ${RAMDISK0}
 	@echo "Running QEMU ($(QEMU)) with node arg='${NODE_ARG}'"
 	$(Q)rm -f $(ROOTFS_SOURCE)/Node
 	$(Q)cp ../out/Release/node  $(ROOTFS_SOURCE)/Node
-	@echo \"${NODE_ARG}\" > $(BUILD)/../env/src/cmdline.txt
+	@echo "UART_OPTION: $(UART_OPTION)"
 	@echo " Linking test (ramdisk) with KOS-qemu image ..."
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
 		cmake -G "Unix Makefiles" \

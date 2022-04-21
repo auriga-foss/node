@@ -22,7 +22,7 @@ endif
 ifeq ($(strip $(TARGET_ARCH)),arm64)
 TARGET       := aarch64-kos
 HOST          = x86_64-linux-gnu
-SDK_VERSION  := 1.1.0.76
+SDK_VERSION  := 1.1.0.66
 DEST_CPU      = arm64
 ARCH_CFG_ARGS =
 QEMU          = qemu-system-aarch64
@@ -50,7 +50,7 @@ ifeq ($(strip $(QEMU_NET)),1)
 QEMU_OPTS += -nic user,hostfwd=tcp:127.0.0.1:${NODE_PORT}-10.0.2.10:8080
 endif
 
-SDK_PREFIX     = /opt/KasperskyOS-Community-Edition-$(SDK_VERSION)
+SDK_PREFIX     = /opt/KasperskyOS-Buddies-Edition-$(SDK_VERSION)
 # system varibale, will be exported among the others later
 PATH          := ${PATH}:/usr/sbin:$(SDK_PREFIX)/toolchain/bin
 BUILD          = $(BUILD_ROOT)/image_builder/build-$(TARGET_ARCH)

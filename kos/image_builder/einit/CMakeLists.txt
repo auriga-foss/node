@@ -17,6 +17,15 @@ set (FILES
      $ENV{BUILD_ROOT}/image_builder/certs/server.key
      $ENV{BUILD_ROOT}/image_builder/certs/rootCA.crt)
 
+if (NOT "$ENV{NODE_ARG}" STREQUAL "")
+    set (PROG_ARGS "args:")
+    list (APPEND PROG_PARAMS $ENV{NODE_ARG})
+    foreach (ARG IN LISTS PROG_PARAMS)
+      __append_string_on_new_line(PROG_ARGS "    - ${ARG}")
+    endforeach ()
+    set (NODE_ARGS ${PROG_ARGS})
+endif()
+
 set (EXTRA_CONNECTIONS "\
     - target: env.Env
       id: {var: ENV_SERVICE_NAME, include: env/env.h}
