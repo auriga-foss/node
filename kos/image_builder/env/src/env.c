@@ -21,7 +21,7 @@
 
 #ifdef ARGV_THRU_SERIAL
 static int read_argv_from_uart(const char** pp_argv,
-                               uint32_t* p_finded_parameters) {
+                               uint32_t* p_found_parameters) {
   if (pp_argv == NULL) {
     printk("pp_argv is NULL\n");
     return EXIT_FAILURE;
@@ -76,7 +76,7 @@ static int read_argv_from_uart(const char** pp_argv,
       }
 
       if(temp[ch_cnt-1] == '\r') {
-        *p_finded_parameters = par_cnt;
+        *p_found_parameters = par_cnt;
         return_value = EXIT_SUCCESS;
         break;
       }
@@ -98,13 +98,13 @@ static int read_argv_from_uart(const char** pp_argv,
 int main(int argc, char** argv) {
 #ifdef ARGV_THRU_SERIAL
   const char* NodeArgs[VARGS_MAX_PARAMETERS_COUNT] = {0};
-  uint32_t finded_parameters = 0;
-  if (read_argv_from_uart(NodeArgs, &finded_parameters) == EXIT_FAILURE) {
+  uint32_t found_parameters = 0;
+  if (read_argv_from_uart(NodeArgs, &found_parameters) == EXIT_FAILURE) {
     printk("read_argv_from_uart return EXIT_FAILURE\n");
     return EXIT_FAILURE;
   }
   int i;
-  for(i = 0; i < finded_parameters; i++)
+  for(i = 0; i < found_parameters; i++)
     printk("NodeArgs[%d]: %s\n", i, NodeArgs[i]);
 
   const char* NodeEnvs[] = {
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 	_VFS_FILESYSTEM_BACKEND"=client:"TST_VFS_CONNECTION_ID,
   };
 
-  envRegisterArgs("Node", (int)finded_parameters, NodeArgs);
+  envRegisterArgs("Node", (int)found_parameters, NodeArgs);
   ENV_REGISTER_VARS("Node", NodeEnvs);
 #endif
 
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
   envServerRun();
 
 #ifdef ARGV_THRU_SERIAL
-  for(i = 0; i < finded_parameters; i++)
+  for(i = 0; i < found_parameters; i++)
     free(NodeArgs + i);
 #endif
   return EXIT_SUCCESS;
