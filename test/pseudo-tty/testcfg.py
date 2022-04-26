@@ -50,10 +50,11 @@ class TTYTestCase(test.TestCase):
     self.mode = mode
     self.parallel = True
 
-  def IgnoreLine(self, str_arg):
+  def IgnoreLine(self, str_arg, output):
     """Ignore empty lines and valgrind output."""
     if not str_arg.strip(): return True
-    else: return str_arg.startswith('==') or str_arg.startswith('**')
+    else: return (str_arg.startswith('==') or str_arg.startswith('**')
+                  or super().IgnoreLine(str_arg, output))
 
   def IsFailureOutput(self, output):
     f = open(self.expected)
@@ -69,7 +70,8 @@ class TTYTestCase(test.TestCase):
       patterns.append(pattern)
     # Compare actual output with the expected
     raw_lines = (output.stdout + output.stderr).split('\n')
-    outlines = [ s.rstrip() for s in raw_lines if not self.IgnoreLine(s) ]
+    outlines = [ s.rstrip()
+                  for s in raw_lines if not self.IgnoreLine(s, output) ]
     if len(outlines) != len(patterns):
       print(" length differs.")
       print("expect=%d" % len(patterns))

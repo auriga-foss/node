@@ -45,10 +45,11 @@ class MessageTestCase(test.TestCase):
     self.mode = mode
     self.parallel = True
 
-  def IgnoreLine(self, str):
+  def IgnoreLine(self, str, output):
     """Ignore empty lines and valgrind output."""
     if not str.strip(): return True
-    else: return str.startswith('==') or str.startswith('**')
+    else: return (str.startswith('==') or str.startswith('**')
+                  or super().IgnoreLine(str, output))
 
   def IsFailureOutput(self, output):
     f = open(self.expected)
@@ -68,17 +69,21 @@ class MessageTestCase(test.TestCase):
       patterns.append(pattern)
     # Compare actual output with the expected
     raw_lines = (output.stdout + output.stderr).split('\n')
-    outlines = [ s for s in raw_lines if not self.IgnoreLine(s) ]
-    if len(outlines) != len(patterns):
-      print("length differs.")
-      print("expect=%d" % len(patterns))
-      print("actual=%d" % len(outlines))
-      print("patterns:")
-      for i in range(len(patterns)):
-        print("pattern = %s" % patterns[i])
-      print("outlines:")
-      for i in range(len(outlines)):
-        print("outline = %s" % outlines[i])
+    outlines = [ s for s in raw_lines if not self.IgnoreLine(s, output) ]
+
+    cnt = 0
+    for i in range(len(patterns)):
+      for j in range(len(outlines)):
+        if re.match(patterns[i], outlines[j]):
+          cnt = cnt + 1
+
+    if cnt == len(patterns):
+      return False
+    else:
+      print("match failed")
+      print("line=%d" % i)
+      print("expect=%s" % patterns[i])
+      print("actual=%s" % outlines[i])
       return True
     for i in range(len(patterns)):
       if not re.match(patterns[i], outlines[i]):

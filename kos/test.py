@@ -128,7 +128,7 @@ class ProgressIndicator(object):
     self.shutdown_event = threading.Event()
     self.file = open("report.csv", mode="w", encoding='utf-8')
     self.file_writer = csv.writer(self.file, delimiter = ",", lineterminator="\r")
-    self.file_writer.writerow(["NAME", "COMMAND", "PATH", "STATUS","SPAWN","SKIP"])
+    self.file_writer.writerow(["NAME", "COMMAND", "PATH", "STATUS", "SPAWN", "SKIP", "SEGFAULT"])
 
   def GetFailureOutput(self, failure):
     output = []
@@ -244,7 +244,7 @@ class ProgressIndicator(object):
           outcome = 'FAIL'
       else:
         outcome = 'pass'
-      self.file_writer.writerow([output.test.GetName(), output.command, output.command[len(output.command)-1], outcome, output.output.spawned, output.output.skipped])
+      self.file_writer.writerow([output.test.GetName(), output.command, output.command[len(output.command)-1], outcome, output.output.spawned, output.output.skipped, output.output.segfault])
       self.lock.release()
 
 
@@ -564,7 +564,7 @@ PROGRESS_INDICATORS = {
 
 class CommandOutput(object):
 
-  def __init__(self, exit_code, timed_out, stdout, stderr, spawned, skipped):
+  def __init__(self, exit_code, timed_out, stdout, stderr, spawned, skipped, segfault):
     self.exit_code = exit_code
     self.timed_out = timed_out
     self.stdout = stdout
@@ -572,6 +572,8 @@ class CommandOutput(object):
     self.failed = None
     self.spawned = spawned
     self.skipped = skipped
+    self.segfault = segfault
+    self.reach_test_body = False
 
 
 class TestCase(object):
@@ -594,6 +596,16 @@ class TestCase(object):
     if output.failed is None:
       output.failed = self.IsFailureOutput(output)
     return output.failed
+
+  def IgnoreLine(self, str, output):
+    if output.reach_test_body:
+      #Ignore KOS debug messages
+      return str.startswith('!!!') or str.startswith('KOS')
+    else:
+      if str.startswith('!!! KOS - sysinfo !!!'):
+        output.reach_test_body = True;
+      #Ignore all input before !!! KOS - sysinfo !!!
+      return True
 
   def IsFailureOutput(self, output):
     return output.exit_code != 0
@@ -741,6 +753,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
   is_send = 0
   spawned = '-'
   skipped = '-'
+  segfault = '-'
 
   while exit_code is None:
     if (not end_time is None) and (time.time() >= end_time):
@@ -761,24 +774,26 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
 
         if line.find(b'attempt to SPAWN') != -1:
           spawned = '+'
-          KillTimedOutProcess(context, process.pid)
-          exit_code = 1
-          print("\nNODE FAILED by spawn attempt")
+          print("\nAttempt to SPAWN")
+
+        if line.find(b'Call Trace') != -1:
+          segfault = '+'
+          print("\nCall trace detected")
+
         if line.find(b'1..0 # Skipped:') != -1:
           skipped = line.decode('utf-8').rstrip()
           KillTimedOutProcess(context, process.pid)
           exit_code = 1
           print("\nNODE FAILED by test skipping")
-
-        if line.find(b'Node exit_code = 0') != -1:
+        elif line.find(b'Node exit_code = 0') != -1:
           KillTimedOutProcess(context, process.pid)
           exit_code = 0
           print("\nNODE SUCCESSED")
-        elif line.find(b'Abnormal') != -1 or line.find(b'throw err;') != -1 or line.find(b'throw er;') != -1 or line.find(b'throw new') != -1:
+        elif line.find(b'Abnormal') != -1 or line.find(b'Terminating task') != -1:
           KillTimedOutProcess(context, process.pid)
           exit_code = -1
           print("\nNODE CRASHED")
-        elif line.find(b'Node exit_code') != -1 or line.find(b'TypeError:') != -1:
+        elif line.find(b'Node exit_code') != -1 or line.find(b'TypeError:') != -1 or line.find(b'Node.js v18.0.0-pre') != -1:
           KillTimedOutProcess(context, process.pid)
           exit_code = 1
           print("\nNODE FAILED")
@@ -788,7 +803,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
       if sleep_time > MAX_SLEEP_TIME:
         sleep_time = MAX_SLEEP_TIME
   #shutil.rmtree(build_dir, ignore_errors = True)
-  return (exit_code, timed_out, spawned, skipped)
+  return (exit_code, timed_out, spawned, skipped, segfault)
 
 
 def PrintError(str):
@@ -838,7 +853,7 @@ def Execute(args, context, timeout=None, env=None, disable_core_files=False, std
       resource.setrlimit(resource.RLIMIT_CORE, (0,0))
     preexec_fn = disableCoreFiles
 
-  (exit_code, timed_out, spawned, skipped) = RunProcess(
+  (exit_code, timed_out, spawned, skipped, segfault) = RunProcess(
     context,
     timeout,
     fd_out,
@@ -858,7 +873,7 @@ def Execute(args, context, timeout=None, env=None, disable_core_files=False, std
   CheckedUnlink(outname)
   CheckedUnlink(errname)
 
-  return CommandOutput(exit_code, timed_out, output, errors, spawned, skipped)
+  return CommandOutput(exit_code, timed_out, output, errors, spawned, skipped, segfault)
 
 
 def CarCdr(path):
@@ -1777,7 +1792,7 @@ def Main():
         if not exists(vm):
           print("Can't find shell executable: '%s'" % vm)
           continue
-        archEngineContext = CommandOutput(0, 0, "arm", "", "", "") #Execute([vm, "-p", "process.arch"], context)
+        archEngineContext = CommandOutput(0, 0, "arm", "", "", "", "") #Execute([vm, "-p", "process.arch"], context)
         vmArch = archEngineContext.stdout.rstrip()
         if archEngineContext.exit_code != 0 or vmArch == "undefined":
           print("Can't determine the arch of: '%s'" % vm)
