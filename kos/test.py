@@ -597,12 +597,12 @@ class TestCase(object):
       output.failed = self.IsFailureOutput(output)
     return output.failed
 
-  def IgnoreLine(self, str, output):
+  def IgnoreLine(self, line, output):
     if output.reach_test_body:
       #Ignore KOS debug messages
-      return str.startswith('!!!') or str.startswith('KOS')
+      return line.startswith('!!!') or line.startswith('KOS')
     else:
-      if str.startswith('!!! KOS - sysinfo !!!'):
+      if line.startswith('!!! KOS - sysinfo !!!'):
         output.reach_test_body = True;
       #Ignore all input before !!! KOS - sysinfo !!!
       return True
