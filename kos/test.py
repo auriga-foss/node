@@ -793,7 +793,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
           KillTimedOutProcess(context, process.pid)
           exit_code = -1
           print("\nNODE CRASHED")
-        elif line.find(b'Node exit_code') != -1 or line.find(b'TypeError:') != -1 or line.find(b'Node.js v18.0.0-pre') != -1:
+        elif line.find(b'Node exit_code') != -1 or line.find(b'TypeError:') != -1 or line.find(b'Node.js v') != -1:
           KillTimedOutProcess(context, process.pid)
           exit_code = 1
           print("\nNODE FAILED")
