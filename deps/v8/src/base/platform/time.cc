@@ -108,6 +108,19 @@ V8_INLINE int64_t ClockNow(clockid_t clk_id) {
 #endif  // defined(__PASE__)
   }
 #endif  // defined(V8_OS_AIX)
+#if defined(V8_OS_KOS)
+#if defined(TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
+#error "test and remove w/a"
+#else
+#warning "WA Check if new version of KOS supports CLOCK_THREAD_CPUTIME_ID " \
+"and CLOCK_PROCESS_CPUTIME_ID"
+#endif
+  if (clk_id == CLOCK_THREAD_CPUTIME_ID || clk_id == CLOCK_PROCESS_CPUTIME_ID) {
+    // CLOCK_THREAD_CPUTIME_ID and CLOCK_PROCESS_CPUTIME_ID aren't supported
+    // in KOS
+    return 0;
+  }
+#endif
   struct timespec ts;
   if (clock_gettime(clk_id, &ts) != 0) {
     UNREACHABLE();
@@ -806,7 +819,7 @@ ThreadTicks ThreadTicks::Now() {
 #elif V8_OS_FUCHSIA
   return ThreadTicks(GetFuchsiaThreadTicks());
 #elif(defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)) || \
-  defined(V8_OS_ANDROID)
+  defined(V8_OS_ANDROID) || defined(V8_OS_KOS)
   return ThreadTicks(ClockNow(CLOCK_THREAD_CPUTIME_ID));
 #elif V8_OS_SOLARIS
   return ThreadTicks(gethrvtime() / Time::kNanosecondsPerMicrosecond);
