@@ -1671,7 +1671,7 @@ def get_next_cmdline(popen_args):
     result = result + it + " "
   testcase_fullpath = popen_args[-1]
   parts = Path(testcase_fullpath).parts
-  result = result + "test/" + parts[-2] + "/" + parts[-1] + "\r"
+  result = result + "opt/node/test/" + parts[-2] + "/" + parts[-1] + "\r"
   return result
 
 def copy_kos_env(build_dir, kos_target):

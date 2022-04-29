@@ -10,7 +10,8 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@rm -rf $@ && mkdir -p $@
 	@echo "KasperskyOS disk image creator doesn't follow symlinks, so copy" \
 				" the whole 'test' folder"
-	@cp -r $< $@
+	mkdir -p $@/opt/node/
+	@cp -r $< $@/opt/node/
 	# copy files needed by tests
 	mkdir -p $@/benchmark
 	@cp -r $(BUILD_ROOT)/../benchmark/_cli.js $@/benchmark/
