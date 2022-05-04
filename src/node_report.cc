@@ -258,12 +258,16 @@ static void PrintVersionInformation(JSONWriter* writer) {
   buf.str("");
 
 #ifndef _WIN32
+#ifndef __KOS__
   // Report compiler and runtime glibc versions where possible.
   const char* (*libc_version)();
   *(reinterpret_cast<void**>(&libc_version)) =
       dlsym(RTLD_DEFAULT, "gnu_get_libc_version");
   if (libc_version != nullptr)
     writer->json_keyvalue("glibcVersionRuntime", (*libc_version)());
+#else /* __KOS__ */
+  writer->json_keyvalue("glibcVersionRuntime", "Not supported by KOS SDK");
+#endif /* __KOS__ */
 #endif /* _WIN32 */
 
 #ifdef __GLIBC__
