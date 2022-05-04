@@ -1668,10 +1668,10 @@ def copy_whole_tests(build_dir):
 def get_next_cmdline(popen_args):
   result = ""
   for it in popen_args[1:-1]:
-    result = result + it + " "
+    result = result + re.sub('\./test/', '/opt/node/test/', it) + " "
   testcase_fullpath = popen_args[-1]
   parts = Path(testcase_fullpath).parts
-  result = result + "opt/node/test/" + parts[-2] + "/" + parts[-1] + "\r"
+  result = result + "/opt/node/test/" + parts[-2] + "/" + parts[-1] + "\r"
   return result
 
 def copy_kos_env(build_dir, kos_target):
