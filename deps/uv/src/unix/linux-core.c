@@ -327,13 +327,13 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   unsigned int numcpus;
   uv_cpu_info_t* ci;
   int err;
-#ifndef V8_OS_KOS
+#ifndef __KOS__
   FILE* statfile_fp;
-#endif /* V8_OS_KOS */
+#endif /* __KOS__ */
   *cpu_infos = NULL;
   *count = 0;
 
-#ifndef V8_OS_KOS
+#ifndef __KOS__
   statfile_fp = uv__open_file("/proc/stat");
   if (statfile_fp == NULL)
     return UV__ERR(errno);
@@ -362,23 +362,24 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   if (ci[0].speed == 0)
     read_speeds(numcpus, ci);
 
-  *cpu_infos = ci;
-  *count = numcpus;
-#else /* V8_OS_KOS */
+out:
+
+  if (fclose(statfile_fp))
+    if (errno != EINTR && errno != EINPROGRESS)
+      abort();
+
+#else /* __KOS__ */
   numcpus = 1;
   ci = uv__calloc(numcpus, sizeof(*ci));
   if (ci == NULL)
     return UV_ENOMEM;
   memset(ci, 0, sizof(*ci))
   ci[0].model = "CPU info is not supported by KOS SDK"
-#endif /* V8_OS_KOS */
+#endif /* __KOS__ */
+
+  *cpu_infos = ci;
+  *count = numcpus;
   err = 0;
-
-out:
-
-  if (fclose(statfile_fp))
-    if (errno != EINTR && errno != EINPROGRESS)
-      abort();
 
   return err;
 }
