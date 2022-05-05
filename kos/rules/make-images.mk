@@ -13,20 +13,22 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	mkdir -p $@/opt/node/
 	@cp -r $< $@/opt/node/
 	# copy files needed by tests
-	mkdir -p $@/benchmark
-	@cp -r $(BUILD_ROOT)/../benchmark/_cli.js $@/benchmark/
-	mkdir -p $@/deps/corepack
+	mkdir -p $@/opt/node/benchmark
+	@cp -r $(BUILD_ROOT)/../benchmark/_cli.js $@/opt/node/benchmark/
+	mkdir -p $@/opt/node/deps/corepack
 	@cp -r $(BUILD_ROOT)/../deps/corepack/package.json \
-		$@/deps/corepack/package.json
-	mkdir -p $@/deps/npm
-	@cp -r $(BUILD_ROOT)/../deps/npm/package.json $@/deps/npm/package.json
-	mkdir -p $@/tools/icu
+		$@/opt/node/deps/corepack/package.json
+	mkdir -p $@/opt/node/deps/npm
+	@cp -r $(BUILD_ROOT)/../deps/npm/package.json \
+		$@/opt/node/deps/npm/package.json
+	mkdir -p $@/opt/node/tools/icu
 	@cp -r $(BUILD_ROOT)/../tools/icu/icu_versions.json \
-		$@/tools/icu/icu_versions.json
-	@cp -r $(BUILD_ROOT)/../deps/v8/src/objects $@/deps/v8/src/
+		$@/opt/node/tools/icu/icu_versions.json
+	mkdir -p $@/opt/node/deps/v8/src
+	@cp -r $(BUILD_ROOT)/../deps/v8/src/objects $@/opt/node/deps/v8/src/
 	@cp -r $(BUILD_ROOT)/../config.gypi $@
-	mkdir -p $@/doc/api
-	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/doc/api
+	mkdir -p $@/opt/node/doc/api
+	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/opt/node/doc/api
 	@mkdir -p $@/etc
 	@cp /etc/hosts $@/etc
 	@cp /etc/resolv.conf $@/etc
