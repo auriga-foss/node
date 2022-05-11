@@ -1,5 +1,6 @@
 'use strict';
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Test that if there is a side effect in a getter invoked through the vm

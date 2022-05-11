@@ -3,9 +3,12 @@
 #include <precompiled_vfs/defs.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <uart/uart.h>
 #include <tls/defs.h>
 #include <vfs/rumpfs_client.h>
 #include <vfs/vfs.h>
+#include <coresrv/syscalls.h>
 
 #ifdef TST_VFS_CONNECTION_ID
 #undef TST_VFS_CONNECTION_ID
@@ -119,19 +122,6 @@ int main(int argc, char** argv) {
   envRegisterArgs("Node", (int)found_parameters, NodeArgs);
   ENV_REGISTER_VARS("Node", NodeEnvs);
 #endif
-
-  const char* NodeVfsArgs[] = {
-    #include "cmdline.txt"
-  };
-  const char* NodeVfsEnvs[] = {
-#if (USE_TLS != 1)
-    _VFS_NETWORK_BACKEND"=client:"TST_VFS_CONNECTION_ID,
-#else
-    _VFS_NETWORK_BACKEND"=client:"_TLS_CONNECTION_ID,
-#endif
-    _VFS_FILESYSTEM_BACKEND"=client:"TST_VFS_CONNECTION_ID,
-  };
-  ENV_REGISTER_PROGRAM_ENVIRONMENT("Node", NodeVfsArgs, NodeVfsEnvs);
 
   envServerRun();
 

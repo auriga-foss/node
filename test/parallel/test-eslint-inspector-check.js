@@ -17,6 +17,7 @@ new RuleTester().run('inspector-check', rule, {
   valid: [
     'foo;',
     'require("common")\n' +
+      '// Flags: --inspect --expose-internals\n' +
       'common.skipIfInspectorDisabled();\n' +
       'require("inspector")',
   ],
@@ -26,8 +27,9 @@ new RuleTester().run('inspector-check', rule, {
             'require("inspector")',
       errors: [{ message }],
       output: 'require("common")\n' +
-              'common.skipIfInspectorDisabled();\n' +
-              'require("inspector")'
+                '// Flags: --inspect --expose-internals\n' +
+                'common.skipIfInspectorDisabled();\n' +
+                'require("inspector")'
     },
   ]
 });

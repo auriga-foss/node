@@ -3,6 +3,7 @@
 
 const common = require('../common');
 
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 common.skipIfWorker(); // https://github.com/nodejs/node/issues/22767
 

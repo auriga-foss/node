@@ -7,17 +7,46 @@ use EDL env.Env
 use EDL kl.drivers.RAMDisk
 use EDL kl.drivers.BSP
 use EDL kl.drivers.GPIO
+use EDL kl.drivers.UART
 
 /* Return of errors is allowed */
-error {
+error
+{
     grant()
 }
 
+/* UART */
+execute src=Einit, dst=kl.drivers.UART
+{
+    grant()
+}
 
+request src=kl.drivers.UART, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.UART
+{
+    grant()
+}
+
+request src=env.Env, dst=kl.drivers.UART
+{
+    grant()
+}
+
+response src=kl.drivers.UART, dst=env.Env
+{
+    grant()
+}
+
+/* GPIO */
 execute src=Einit, dst=kl.drivers.GPIO
 {
     grant()
 }
+
 
 /**
  * This instruction enables to start up system entities by KOS kernel.

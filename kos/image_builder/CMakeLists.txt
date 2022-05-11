@@ -27,6 +27,11 @@ include_directories (${LWEXT4_INCLUDE})
 # Attach a package with the DNET file system implementation.
 find_package (dnet REQUIRED COMPONENTS IMPLEMENTATION_LIB)
 
+if (NOT EXISTS "env/src/cmdline.txt")
+    find_package (uart REQUIRED)
+    include_directories (${uart_INCLUDE})
+endif ()
+
 # Attach a package with TLS entity and client lib implementations
 find_package (tls REQUIRED)
 include_directories (${tls_INCLUDE})

@@ -1,5 +1,6 @@
 'use strict';
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Test that read-only process.env access is considered to have no

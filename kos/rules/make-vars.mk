@@ -52,7 +52,7 @@ endif
 
 SDK_PREFIX     = /opt/KasperskyOS-Buddies-Edition-$(SDK_VERSION)
 # system varibale, will be exported among the others later
-PATH          := ${PATH}:/usr/sbin:$(SDK_PREFIX)/toolchain/bin
+PATH          :=/usr/sbin:$(SDK_PREFIX)/toolchain/bin:${PATH}
 BUILD          = $(BUILD_ROOT)/image_builder/build-$(TARGET_ARCH)
 ROOTFS_SOURCE  = $(BUILD)/rootfs
 RAMDISK0       = $(BUILD)/ramdisk0.img

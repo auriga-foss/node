@@ -1,5 +1,6 @@
 'use strict';
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Regression test for https://github.com/nodejs/node/issues/27518.

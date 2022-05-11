@@ -1,5 +1,6 @@
 'use strict';
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 const { NodeInstance } = require('../common/inspector-helper.js');
 const assert = require('assert');

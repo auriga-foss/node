@@ -5,6 +5,7 @@ const common = require('../common');
 // The inspector attempts to start when Node starts. Once started, the inspector
 // warns on the use of a SIGPROF listener.
 
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 if (common.isWindows)

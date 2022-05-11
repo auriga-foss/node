@@ -1,5 +1,6 @@
 'use strict';
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // A test to ensure that cluster properly interoperates with the

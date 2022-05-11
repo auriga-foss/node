@@ -1,6 +1,7 @@
 'use strict';
 
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 const spawn = require('child_process').spawn;
 

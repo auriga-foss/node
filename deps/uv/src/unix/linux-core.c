@@ -73,10 +73,7 @@ static int sysinfo(struct sysinfo *info) {
 #include <fcntl.h>
 #include <time.h>
 
-#ifndef __KOS__
-/* KOS: TODO: don't need this for KOS port. */
 #define HAVE_IFADDRS_H 1
-#endif
 
 #ifdef __UCLIBC__
 # if __UCLIBC_MAJOR__ < 0 && __UCLIBC_MINOR__ < 9 && __UCLIBC_SUBLEVEL__ < 32
@@ -91,8 +88,10 @@ static int sysinfo(struct sysinfo *info) {
 #  include <ifaddrs.h>
 # endif
 # include <sys/socket.h>
+#ifndef __KOS__
 # include <net/ethernet.h>
 # include <netpacket/packet.h>
+#endif
 #endif /* HAVE_IFADDRS_H */
 
 /* Available from 2.6.32 onwards. */

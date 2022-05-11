@@ -7,6 +7,7 @@ const { REPLServer } = require('repl');
 const { Stream } = require('stream');
 const { inspect } = require('util');
 
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Ignore terminal settings. This is so the test can be run intact if TERM=dumb.

@@ -6,6 +6,7 @@
 // debuggers that use that value for navigating from console messages to code.
 
 const common = require('../common');
+// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 const assert = require('assert');

@@ -85,14 +85,6 @@ class MessageTestCase(test.TestCase):
       print("expect=%s" % patterns[i])
       print("actual=%s" % outlines[i])
       return True
-    for i in range(len(patterns)):
-      if not re.match(patterns[i], outlines[i]):
-        print("match failed")
-        print("line=%d" % i)
-        print("expect=%s" % patterns[i])
-        print("actual=%s" % outlines[i])
-        return True
-    return False
 
   def GetLabel(self):
     return "%s %s" % (self.mode, self.GetName())

@@ -94,6 +94,18 @@ int wmain(int argc, wchar_t* wargv[]) {
 // UNIX
 
 int main(int argc, char* argv[]) {
+#if defined (__KOS__)
+  // Disable stdio buffering, it interacts poorly with printf()
+  // calls elsewhere in the program (e.g., any logging from V8.)
+  setvbuf(stdout, nullptr, _IONBF, 0);
+  setvbuf(stderr, nullptr, _IONBF, 0);
+  // we need retur code for testing script
+  // to understand the result of the test
+  int exit_code = node::Start(argc, argv);
+  fprintf(stderr, "Node exit_code = %d\n", exit_code);
+  return exit_code;
+#else
   return node::Start(argc, argv);
+#endif
 }
 #endif

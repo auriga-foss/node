@@ -1,6 +1,7 @@
 entities:
 
 - name: env.Env
+@INIT_Env_ENTITY_CONNECTIONS@
 
 - name: vfs.NetVfs
   args:

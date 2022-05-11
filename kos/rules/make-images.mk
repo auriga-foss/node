@@ -7,7 +7,7 @@ ROOTFS_DIR ?= $(ROOTFS_SOURCE)/ramdisk0
 # prepare test files to be placed to ramfs partition 0
 $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@echo "First re-create $@"
-	@rm -rf $@ && mkdir -p $@
+	@rm -rf $@ && mkdir -p $@/deps/v8/src
 	@echo "KasperskyOS disk image creator doesn't follow symlinks, so copy" \
 				" the whole 'test' folder"
 	mkdir -p $@/opt/node/

@@ -1,4 +1,3 @@
-beginning
 middle
 test.vm:1
 throw new Error("boo!")

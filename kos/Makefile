@@ -64,7 +64,12 @@ compile:
 	$(Q)CC=$(CC) CXX=$(CXX) CC_host=$(CC_HOST) CXX_host=$(CCX_HOST) $(MAKE) -C ../
 
 .PHONY: run
-run: compile ${RAMDISK0}
+run: clean-arch ${RAMDISK0}
+	$(Q)$(MAKE) qemubuild
+	$(Q)$(MAKE) qemurun
+
+.PHONY: qemubuild
+qemubuild: ${RAMDISK0}
 	@echo "Running QEMU ($(QEMU)) with node arg='${NODE_ARG}'"
 	$(Q)rm -f $(ROOTFS_SOURCE)/Node
 	$(Q)cp ../out/Release/node  $(ROOTFS_SOURCE)/Node
@@ -75,6 +80,7 @@ run: compile ${RAMDISK0}
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
+		$(UART_OPTION) \
 		../ && make kos-qemu-image
 ifeq  ($(QEMU_NET),1)
 ifneq (${NODE_PORT},0)
@@ -85,6 +91,9 @@ else
 	# Debian/Ubuntu
 endif
 endif
+
+.PHONY: qemurun
+qemurun:
 	$(Q)$(SDK_PREFIX)/toolchain/bin/$(QEMU) $(QEMU_OPTS) \
 		-kernel $(BUILD)/einit/kos-qemu-image
 
