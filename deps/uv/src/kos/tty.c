@@ -30,96 +30,14 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
-#if defined(__MVS__) && !defined(IMAXBEL)
-#define IMAXBEL 0
-#endif
-
-#if defined(__PASE__)
-/* On IBM i PASE, for better compatibility with running interactive programs in
- * a 5250 environment, isatty() will return true for the stdin/stdout/stderr
- * streams created by QSH/QP2TERM.
- *
- * For more, see docs on PASE_STDIO_ISATTY in
- * https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_74/apis/pase_environ.htm
- *
- * This behavior causes problems for Node as it expects that if isatty() returns
- * true that TTY ioctls will be supported by that fd (which is not an
- * unreasonable expectation) and when they don't it crashes with assertion
- * errors.
- *
- * Here, we create our own version of isatty() that uses ioctl() to identify
- * whether the fd is *really* a TTY or not.
- */
-static int isreallyatty(int file) {
-  int rc;
-
-  rc = !ioctl(file, TXISATTY + 0x81, NULL);
-  if (!rc && errno != EBADF)
-      errno = ENOTTY;
-
-  return rc;
-}
-#define isatty(fd) isreallyatty(fd)
-#endif
-
 static int orig_termios_fd = -1;
 static struct termios orig_termios;
 static uv_spinlock_t termios_spinlock = UV_SPINLOCK_INITIALIZER;
 
 static int uv__tty_is_slave(const int fd) {
   int result;
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-  int dummy;
-
-  result = ioctl(fd, TIOCGPTN, &dummy) != 0;
-#elif defined(__APPLE__)
-  char dummy[256];
-
-  result = ioctl(fd, TIOCPTYGNAME, &dummy) != 0;
-#elif defined(__NetBSD__)
-  /*
-   * NetBSD as an extension returns with ptsname(3) and ptsname_r(3) the slave
-   * device name for both descriptors, the master one and slave one.
-   *
-   * Implement function to compare major device number with pts devices.
-   *
-   * The major numbers are machine-dependent, on NetBSD/amd64 they are
-   * respectively:
-   *  - master tty: ptc - major 6
-   *  - slave tty:  pts - major 5
-   */
-
-  struct stat sb;
-  /* Lookup device's major for the pts driver and cache it. */
-  static devmajor_t pts = NODEVMAJOR;
-
-  if (pts == NODEVMAJOR) {
-    pts = getdevmajor("pts", S_IFCHR);
-    if (pts == NODEVMAJOR)
-      abort();
-  }
-
-  /* Lookup stat structure behind the file descriptor. */
-  if (fstat(fd, &sb) != 0)
-    abort();
-
-  /* Assert character device. */
-  if (!S_ISCHR(sb.st_mode))
-    abort();
-
-  /* Assert valid major. */
-  if (major(sb.st_rdev) == NODEVMAJOR)
-    abort();
-
-  result = (pts == major(sb.st_rdev));
-#elif defined(__KOS__)
   /* KOS: TODO: consider implementing ioctl() TIOCGPTN, or ptsname(). */
   result = 0;
-#else
-  /* Fallback to ptsname
-   */
-  result = ptsname(fd) == NULL;
-#endif
   return result;
 }
 
@@ -224,20 +142,6 @@ skip:
   if (!(flags & UV_HANDLE_BLOCKING_WRITES))
     uv__nonblock(fd, 1);
 
-#if defined(__APPLE__)
-  r = uv__stream_try_select((uv_stream_t*) tty, &fd);
-  if (r) {
-    int rc = r;
-    if (newfd != -1)
-      uv__close(newfd);
-    QUEUE_REMOVE(&tty->handle_queue);
-    do
-      r = fcntl(fd, F_SETFL, saved_flags);
-    while (r == -1 && errno == EINTR);
-    return rc;
-  }
-#endif
-
   if (mode != O_WRONLY)
     flags |= UV_HANDLE_READABLE;
   if (mode != O_RDONLY)
@@ -252,7 +156,6 @@ skip:
 static void uv__tty_make_raw(struct termios* tio) {
   assert(tio != NULL);
 
-#if defined __sun || defined __MVS__ || defined __KOS__
   /*
    * This implementation of cfmakeraw for Solaris and derivatives is taken from
    * http://www.perkin.org.uk/posts/solaris-portability-cfmakeraw.html.
@@ -281,9 +184,6 @@ static void uv__tty_make_raw(struct termios* tio) {
    */
   tio->c_cc[VMIN] = 1;
   tio->c_cc[VTIME] = 0;
-#else
-  cfmakeraw(tio);
-#endif /* defined __sun || defined __MVS__ || defined __KOS__ */
 }
 
 int uv_tty_set_mode(uv_tty_t* tty, uv_tty_mode_t mode) {
@@ -403,15 +303,6 @@ uv_handle_type uv_guess_handle(uv_file file) {
       return UV_UDP;
 
   if (type == SOCK_STREAM) {
-#if defined(_AIX) || defined(__DragonFly__)
-    /* on AIX/DragonFly the getsockname call returns an empty sa structure
-     * for sockets of type AF_UNIX.  For all other types it will
-     * return a properly filled in structure.
-     */
-    if (len == 0)
-      return UV_NAMED_PIPE;
-#endif /* defined(_AIX) || defined(__DragonFly__) */
-
     if (sa.sa_family == AF_INET || sa.sa_family == AF_INET6)
       return UV_TCP;
     if (sa.sa_family == AF_UNIX)

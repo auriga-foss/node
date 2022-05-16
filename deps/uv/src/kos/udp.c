@@ -27,9 +27,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-#if defined(__MVS__)
-#include <xti.h>
-#endif
 #include <sys/un.h>
 
 #if defined(IPV6_JOIN_GROUP) && !defined(IPV6_ADD_MEMBERSHIP)
@@ -184,6 +181,7 @@ static void uv__udp_io(uv_loop_t* loop, uv__io_t* w, unsigned int revents) {
 }
 
 #if HAVE_MMSG
+#warning "HAVE_MMSG"
 static int uv__udp_recvmmsg(uv_udp_t* handle, uv_buf_t* buf) {
   struct sockaddr_in6 peers[UV__MMSG_MAXWIDTH];
   struct iovec iov[UV__MMSG_MAXWIDTH];
@@ -479,19 +477,7 @@ static int uv__set_reuse(int fd) {
   int yes;
   yes = 1;
 
-#if defined(SO_REUSEPORT) && defined(__MVS__)
-  struct sockaddr_in sockfd;
-  unsigned int sockfd_len = sizeof(sockfd);
-  if (getsockname(fd, (struct sockaddr*) &sockfd, &sockfd_len) == -1)
-      return UV__ERR(errno);
-  if (sockfd.sin_family == AF_UNIX) {
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
-      return UV__ERR(errno);
-  } else {
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes)))
-       return UV__ERR(errno);
-  }
-#elif defined(SO_REUSEPORT) && !defined(__linux__)
+#if defined(SO_REUSEPORT)
   if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes)))
     return UV__ERR(errno);
 #else
@@ -509,18 +495,6 @@ static int uv__set_reuse(int fd) {
  * servers.
  */
 static int uv__set_recverr(int fd, sa_family_t ss_family) {
-#if defined(__linux__)
-  int yes;
-
-  yes = 1;
-  if (ss_family == AF_INET) {
-    if (setsockopt(fd, IPPROTO_IP, IP_RECVERR, &yes, sizeof(yes)))
-      return UV__ERR(errno);
-  } else if (ss_family == AF_INET6) {
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVERR, &yes, sizeof(yes)))
-       return UV__ERR(errno);
-  }
-#endif
   return 0;
 }
 
@@ -819,10 +793,6 @@ static int uv__udp_set_membership4(uv_udp_t* handle,
                  optname,
                  &mreq,
                  sizeof(mreq))) {
-#if defined(__MVS__)
-  if (errno == ENXIO)
-    return UV_ENODEV;
-#endif
     return UV__ERR(errno);
   }
 
@@ -866,117 +836,11 @@ static int uv__udp_set_membership6(uv_udp_t* handle,
                  optname,
                  &mreq,
                  sizeof(mreq))) {
-#if defined(__MVS__)
-  if (errno == ENXIO)
-    return UV_ENODEV;
-#endif
     return UV__ERR(errno);
   }
 
   return 0;
 }
-
-
-#if !defined(__OpenBSD__) &&                                        \
-    !defined(__NetBSD__) &&                                         \
-    !defined(__ANDROID__) &&                                        \
-    !defined(__DragonFly__) &&                                      \
-    !defined(__QNX__) &&                                            \
-    !defined(__KOS__)
-static int uv__udp_set_source_membership4(uv_udp_t* handle,
-                                          const struct sockaddr_in* multicast_addr,
-                                          const char* interface_addr,
-                                          const struct sockaddr_in* source_addr,
-                                          uv_membership membership) {
-  struct ip_mreq_source mreq;
-  int optname;
-  int err;
-
-  err = uv__udp_maybe_deferred_bind(handle, AF_INET, UV_UDP_REUSEADDR);
-  if (err)
-    return err;
-
-  memset(&mreq, 0, sizeof(mreq));
-
-  if (interface_addr != NULL) {
-    err = uv_inet_pton(AF_INET, interface_addr, &mreq.imr_interface.s_addr);
-    if (err)
-      return err;
-  } else {
-    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-  }
-
-  mreq.imr_multiaddr.s_addr = multicast_addr->sin_addr.s_addr;
-  mreq.imr_sourceaddr.s_addr = source_addr->sin_addr.s_addr;
-
-  if (membership == UV_JOIN_GROUP)
-    optname = IP_ADD_SOURCE_MEMBERSHIP;
-  else if (membership == UV_LEAVE_GROUP)
-    optname = IP_DROP_SOURCE_MEMBERSHIP;
-  else
-    return UV_EINVAL;
-
-  if (setsockopt(handle->io_watcher.fd,
-                 IPPROTO_IP,
-                 optname,
-                 &mreq,
-                 sizeof(mreq))) {
-    return UV__ERR(errno);
-  }
-
-  return 0;
-}
-
-
-static int uv__udp_set_source_membership6(uv_udp_t* handle,
-                                          const struct sockaddr_in6* multicast_addr,
-                                          const char* interface_addr,
-                                          const struct sockaddr_in6* source_addr,
-                                          uv_membership membership) {
-  struct group_source_req mreq;
-  struct sockaddr_in6 addr6;
-  int optname;
-  int err;
-
-  err = uv__udp_maybe_deferred_bind(handle, AF_INET6, UV_UDP_REUSEADDR);
-  if (err)
-    return err;
-
-  memset(&mreq, 0, sizeof(mreq));
-
-  if (interface_addr != NULL) {
-    err = uv_ip6_addr(interface_addr, 0, &addr6);
-    if (err)
-      return err;
-    mreq.gsr_interface = addr6.sin6_scope_id;
-  } else {
-    mreq.gsr_interface = 0;
-  }
-
-  STATIC_ASSERT(sizeof(mreq.gsr_group) >= sizeof(*multicast_addr));
-  STATIC_ASSERT(sizeof(mreq.gsr_source) >= sizeof(*source_addr));
-  memcpy(&mreq.gsr_group, multicast_addr, sizeof(*multicast_addr));
-  memcpy(&mreq.gsr_source, source_addr, sizeof(*source_addr));
-
-  if (membership == UV_JOIN_GROUP)
-    optname = MCAST_JOIN_SOURCE_GROUP;
-  else if (membership == UV_LEAVE_GROUP)
-    optname = MCAST_LEAVE_SOURCE_GROUP;
-  else
-    return UV_EINVAL;
-
-  if (setsockopt(handle->io_watcher.fd,
-                 IPPROTO_IPV6,
-                 optname,
-                 &mreq,
-                 sizeof(mreq))) {
-    return UV__ERR(errno);
-  }
-
-  return 0;
-}
-#endif
-
 
 int uv__udp_init_ex(uv_loop_t* loop,
                     uv_udp_t* handle,
@@ -1070,42 +934,7 @@ int uv_udp_set_source_membership(uv_udp_t* handle,
                                  const char* interface_addr,
                                  const char* source_addr,
                                  uv_membership membership) {
-#if !defined(__OpenBSD__) &&                                        \
-    !defined(__NetBSD__) &&                                         \
-    !defined(__ANDROID__) &&                                        \
-    !defined(__DragonFly__) &&                                      \
-    !defined(__QNX__) &&                                            \
-    !defined(__KOS__)
-  int err;
-  union uv__sockaddr mcast_addr;
-  union uv__sockaddr src_addr;
-
-  err = uv_ip4_addr(multicast_addr, 0, &mcast_addr.in);
-  if (err) {
-    err = uv_ip6_addr(multicast_addr, 0, &mcast_addr.in6);
-    if (err)
-      return err;
-    err = uv_ip6_addr(source_addr, 0, &src_addr.in6);
-    if (err)
-      return err;
-    return uv__udp_set_source_membership6(handle,
-                                          &mcast_addr.in6,
-                                          interface_addr,
-                                          &src_addr.in6,
-                                          membership);
-  }
-
-  err = uv_ip4_addr(source_addr, 0, &src_addr.in);
-  if (err)
-    return err;
-  return uv__udp_set_source_membership4(handle,
-                                        &mcast_addr.in,
-                                        interface_addr,
-                                        &src_addr.in,
-                                        membership);
-#else
   return UV_ENOSYS;
-#endif
 }
 
 
@@ -1134,25 +963,6 @@ static int uv__setsockopt(uv_udp_t* handle,
   return 0;
 }
 
-static int uv__setsockopt_maybe_char(uv_udp_t* handle,
-                                     int option4,
-                                     int option6,
-                                     int val) {
-#if defined(__sun) || defined(_AIX) || defined(__MVS__)
-  char arg = val;
-#elif defined(__OpenBSD__)
-  unsigned char arg = val;
-#else
-  int arg = val;
-#endif
-
-  if (val < 0 || val > 255)
-    return UV_EINVAL;
-
-  return uv__setsockopt(handle, option4, option6, &arg, sizeof(arg));
-}
-
-
 int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
   if (setsockopt(handle->io_watcher.fd,
                  SOL_SOCKET,
@@ -1170,36 +980,18 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
   if (ttl < 1 || ttl > 255)
     return UV_EINVAL;
 
-#if defined(__MVS__)
-  if (!(handle->flags & UV_HANDLE_IPV6))
-    return UV_ENOTSUP;  /* zOS does not support setting ttl for IPv4 */
-#endif
-
 /*
  * On Solaris and derivatives such as SmartOS, the length of socket options
  * is sizeof(int) for IP_TTL and IPV6_UNICAST_HOPS,
  * so hardcode the size of these options on this platform,
  * and use the general uv__setsockopt_maybe_char call on other platforms.
  */
-#if defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
-    defined(__MVS__) || defined(__QNX__) || defined(__KOS__)
-
-  return uv__setsockopt(handle,
+/*  return uv__setsockopt(handle,
                         IP_TTL,
                         IPV6_UNICAST_HOPS,
                         &ttl,
                         sizeof(ttl));
-
-#else /* !(defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
-           defined(__MVS__) || defined(__QNX__) || defined(__KOS__)) */
-
-  return uv__setsockopt_maybe_char(handle,
-                                   IP_TTL,
-                                   IPV6_UNICAST_HOPS,
-                                   ttl);
-
-#endif /* defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
-          defined(__MVS__) || defined(__QNX__) */
+*/
 }
 
 
@@ -1210,21 +1002,18 @@ int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl) {
  * IP_MULTICAST_TTL, so hardcode the size of the option in the IPv6 case,
  * and use the general uv__setsockopt_maybe_char call otherwise.
  */
-#if defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
-    defined(__MVS__) || defined(__QNX__)
   if (handle->flags & UV_HANDLE_IPV6)
     return uv__setsockopt(handle,
                           IP_MULTICAST_TTL,
                           IPV6_MULTICAST_HOPS,
                           &ttl,
                           sizeof(ttl));
-#endif /* defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
-    defined(__MVS__) || defined(__QNX__) */
-
+/*
   return uv__setsockopt_maybe_char(handle,
                                    IP_MULTICAST_TTL,
                                    IPV6_MULTICAST_HOPS,
                                    ttl);
+*/
 }
 
 
@@ -1235,21 +1024,18 @@ int uv_udp_set_multicast_loop(uv_udp_t* handle, int on) {
  * IP_MULTICAST_LOOP, so hardcode the size of the option in the IPv6 case,
  * and use the general uv__setsockopt_maybe_char call otherwise.
  */
-#if defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
-    defined(__MVS__) || defined(__QNX__)
   if (handle->flags & UV_HANDLE_IPV6)
     return uv__setsockopt(handle,
                           IP_MULTICAST_LOOP,
                           IPV6_MULTICAST_LOOP,
                           &on,
                           sizeof(on));
-#endif /* defined(__sun) || defined(_AIX) ||defined(__OpenBSD__) ||
-    defined(__MVS__) || defined(__QNX__) */
-
+/*
   return uv__setsockopt_maybe_char(handle,
                                    IP_MULTICAST_LOOP,
                                    IPV6_MULTICAST_LOOP,
                                    on);
+*/
 }
 
 int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr) {

@@ -35,7 +35,6 @@
 #include <errno.h>
 
 #include <net/if.h>
-#ifdef __KOS__
 #define KOS_CPU_INFO_NOT_SUPPORTED "CPU info is not supported by KOS SDK"
 /* KOS: TODO: complete stub (to be used instead of sys/epoll.h), bogus return
  *            for now.
@@ -63,11 +62,6 @@ static int sysinfo(struct sysinfo* info) {
 };
 
 #include <ifaddrs.h>
-#else /* if not defined(__KOS__) */
-#include <sys/epoll.h>
-#include <sys/prctl.h>
-#include <sys/sysinfo.h>
-#endif /* __KOS__ */
 #include <sys/param.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -82,16 +76,8 @@ static int sysinfo(struct sysinfo* info) {
 #endif
 
 #ifdef HAVE_IFADDRS_H
-# if defined(__ANDROID__)
-#  include "uv/android-ifaddrs.h"
-# else
 #  include <ifaddrs.h>
-# endif
 # include <sys/socket.h>
-#ifndef __KOS__
-# include <net/ethernet.h>
-# include <netpacket/packet.h>
-#endif
 #endif /* HAVE_IFADDRS_H */
 
 /* Available from 2.6.32 onwards. */
@@ -113,44 +99,6 @@ static int read_times(FILE* statfile_fp,
                       uv_cpu_info_t* ci);
 static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci);
 static uint64_t read_cpufreq(unsigned int cpunum);
-
-#if !defined(__KOS__)
-int uv__platform_loop_init(uv_loop_t* loop) {
-
-  loop->inotify_fd = -1;
-  loop->inotify_watchers = NULL;
-
-  return uv__epoll_init(loop);
-}
-
-
-int uv__io_fork(uv_loop_t* loop) {
-  int err;
-  void* old_watchers;
-
-  old_watchers = loop->inotify_watchers;
-
-  uv__close(loop->backend_fd);
-  loop->backend_fd = -1;
-  uv__platform_loop_delete(loop);
-
-  err = uv__platform_loop_init(loop);
-  if (err)
-    return err;
-
-  return uv__inotify_fork(loop, old_watchers);
-}
-
-
-void uv__platform_loop_delete(uv_loop_t* loop) {
-  if (loop->inotify_fd == -1) return;
-  uv__io_stop(loop, &loop->inotify_read_watcher, POLLIN);
-  uv__close(loop->inotify_fd);
-  loop->inotify_fd = -1;
-}
-
-#endif
-
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
   static clock_t fast_clock_id = -1;
@@ -333,7 +281,6 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   *cpu_infos = NULL;
   *count = 0;
 
-#ifdef __KOS__
   numcpus = 1;
   ci = uv__calloc(numcpus, sizeof(*ci));
   if (ci == NULL)
@@ -343,7 +290,6 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   *cpu_infos = ci;
   *count = numcpus;
   return 0;
-#endif /* __KOS__ */
 
   statfile_fp = uv__open_file("/proc/stat");
   if (statfile_fp == NULL)
@@ -401,13 +347,8 @@ static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci) {
  * Note: Simply returns on error, uv_cpu_info() takes care of the cleanup.
  */
 static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
-#if defined(__PPC__)
-  static const char model_marker[] = "cpu\t\t: ";
-  static const char speed_marker[] = "clock\t\t: ";
-#else
   static const char model_marker[] = "model name\t: ";
   static const char speed_marker[] = "cpu MHz\t\t: ";
-#endif
   const char* inferred_model;
   unsigned int model_idx;
   unsigned int speed_idx;
@@ -425,60 +366,6 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
 
   model_idx = 0;
   speed_idx = 0;
-
-#if defined(__arm__) || \
-    defined(__i386__) || \
-    defined(__mips__) || \
-    defined(__PPC__) || \
-    defined(__x86_64__)
-  fp = uv__open_file("/proc/cpuinfo");
-  if (fp == NULL)
-    return UV__ERR(errno);
-
-  while (fgets(buf, sizeof(buf), fp)) {
-    if (model_idx < numcpus) {
-      if (strncmp(buf, model_marker, sizeof(model_marker) - 1) == 0) {
-        model = buf + sizeof(model_marker) - 1;
-        model = uv__strndup(model, strlen(model) - 1);  /* Strip newline. */
-        if (model == NULL) {
-          fclose(fp);
-          return UV_ENOMEM;
-        }
-        ci[model_idx++].model = model;
-        continue;
-      }
-    }
-#if defined(__arm__) || defined(__mips__)
-    if (model_idx < numcpus) {
-#if defined(__arm__)
-      /* Fallback for pre-3.8 kernels. */
-      static const char model_marker[] = "Processor\t: ";
-#else	/* defined(__mips__) */
-      static const char model_marker[] = "cpu model\t\t: ";
-#endif
-      if (strncmp(buf, model_marker, sizeof(model_marker) - 1) == 0) {
-        model = buf + sizeof(model_marker) - 1;
-        model = uv__strndup(model, strlen(model) - 1);  /* Strip newline. */
-        if (model == NULL) {
-          fclose(fp);
-          return UV_ENOMEM;
-        }
-        ci[model_idx++].model = model;
-        continue;
-      }
-    }
-#else  /* !__arm__ && !__mips__ */
-    if (speed_idx < numcpus) {
-      if (strncmp(buf, speed_marker, sizeof(speed_marker) - 1) == 0) {
-        ci[speed_idx++].speed = atoi(buf + sizeof(speed_marker) - 1);
-        continue;
-      }
-    }
-#endif  /* __arm__ || __mips__ */
-  }
-
-  fclose(fp);
-#endif  /* __arm__ || __i386__ || __mips__ || __PPC__ || __x86_64__ */
 
   /* Now we want to make sure that all the models contain *something* because
    * it's not safe to leave them as null. Copy the last entry unless there
@@ -605,11 +492,6 @@ static int uv__ifaddr_exclude(struct ifaddrs *ent, int exclude_type) {
    * On Linux getifaddrs returns information related to the raw underlying
    * devices. We're not interested in this information yet.
    */
-#ifndef __KOS__
-  /* KOS: TODO: disable due to KOS specifics. */
-  if (ent->ifa_addr->sa_family == PF_PACKET)
-    return exclude_type;
-#endif
   return !exclude_type;
 }
 

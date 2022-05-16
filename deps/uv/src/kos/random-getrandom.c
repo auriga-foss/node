@@ -22,14 +22,6 @@
 #include "uv.h"
 #include "internal.h"
 
-#ifdef __linux__
-
-#include "linux-syscalls.h"
-
-#define uv__random_getrandom_init() 0
-
-#else  /* !__linux__ */
-
 #include <stddef.h>
 #include <dlfcn.h>
 
@@ -50,8 +42,6 @@ static int uv__random_getrandom_init(void) {
 
   return 0;
 }
-
-#endif  /* !__linux__ */
 
 int uv__random_getrandom(void* buf, size_t buflen) {
   ssize_t n;

@@ -37,30 +37,7 @@
 # define inline __inline
 #endif
 
-#if defined(__linux__)
-# include "linux-syscalls.h"
-#endif /* __linux__ */
-
-#if defined(__MVS__)
-# include "os390-syscalls.h"
-#endif /* __MVS__ */
-
-#if defined(__sun)
-# include <sys/port.h>
-# include <port.h>
-#endif /* __sun */
-
-#if defined(_AIX)
-# define reqevents events
-# define rtnevents revents
-# include <sys/poll.h>
-#else
 # include <poll.h>
-#endif /* _AIX */
-
-#if defined(__APPLE__) && !TARGET_OS_IPHONE
-# include <AvailabilityMacros.h>
-#endif
 
 /*
  * Define common detection for active Thread Sanitizer
@@ -77,14 +54,6 @@
 # define UV__PATH_MAX PATH_MAX
 #else
 # define UV__PATH_MAX 8192
-#endif
-
-#if defined(__ANDROID__)
-int uv__pthread_sigmask(int how, const sigset_t* set, sigset_t* oset);
-# ifdef pthread_sigmask
-# undef pthread_sigmask
-# endif
-# define pthread_sigmask(how, set, oldset) uv__pthread_sigmask(how, set, oldset)
 #endif
 
 #define ACCESS_ONCE(type, var)                                                \
@@ -133,14 +102,6 @@ int uv__pthread_sigmask(int how, const sigset_t* set, sigset_t* oset);
 # define UV__POLLPRI 0
 #endif
 
-#if !defined(O_CLOEXEC) && defined(__FreeBSD__)
-/*
- * It may be that we are just missing `__POSIX_VISIBLE >= 200809`.
- * Try using fixed value const and give up, if it doesn't work
- */
-# define O_CLOEXEC 0x00100000
-#endif
-
 typedef struct uv__stream_queued_fds_s uv__stream_queued_fds_t;
 
 /* loop flags */
@@ -165,35 +126,9 @@ struct uv__stream_queued_fds_s {
   int fds[1];
 };
 
-
-#if defined(_AIX) || \
-    defined(__APPLE__) || \
-    defined(__DragonFly__) || \
-    defined(__FreeBSD__) || \
-    defined(__FreeBSD_kernel__) || \
-    defined(__linux__) || \
-    defined(__OpenBSD__) || \
-    defined(__NetBSD__)
-#define uv__cloexec uv__cloexec_ioctl
-#define uv__nonblock uv__nonblock_ioctl
-#define UV__NONBLOCK_IS_IOCTL 1
-#else
 #define uv__cloexec uv__cloexec_fcntl
 #define uv__nonblock uv__nonblock_fcntl
 #define UV__NONBLOCK_IS_IOCTL 0
-#endif
-
-/* On Linux, uv__nonblock_fcntl() and uv__nonblock_ioctl() do not commute
- * when O_NDELAY is not equal to O_NONBLOCK.  Case in point: linux/sparc32
- * and linux/sparc64, where O_NDELAY is O_NONBLOCK + another bit.
- *
- * Libuv uses uv__nonblock_fcntl() directly sometimes so ensure that it
- * commutes with uv__nonblock().
- */
-#if defined(__linux__) && O_NDELAY != O_NONBLOCK
-#undef uv__nonblock
-#define uv__nonblock uv__nonblock_fcntl
-#endif
 
 /* core */
 int uv__cloexec_ioctl(int fd, int set);
@@ -234,9 +169,6 @@ void uv__stream_init(uv_loop_t* loop, uv_stream_t* stream,
     uv_handle_type type);
 int uv__stream_open(uv_stream_t*, int fd, int flags);
 void uv__stream_destroy(uv_stream_t* stream);
-#if defined(__APPLE__)
-int uv__stream_try_select(uv_stream_t* stream, int* fd);
-#endif /* defined(__APPLE__) */
 void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events);
 int uv__accept(int sockfd);
 int uv__dup2_cloexec(int oldfd, int newfd);
@@ -290,22 +222,9 @@ int uv__random_getentropy(void* buf, size_t buflen);
 int uv__random_readpath(const char* path, void* buf, size_t buflen);
 int uv__random_sysctl(void* buf, size_t buflen);
 
-#if defined(__APPLE__)
-int uv___stream_fd(const uv_stream_t* handle);
-#define uv__stream_fd(handle) (uv___stream_fd((const uv_stream_t*) (handle)))
-#else
 #define uv__stream_fd(handle) ((handle)->io_watcher.fd)
-#endif /* defined(__APPLE__) */
 
 int uv__make_pipe(int fds[2], int flags);
-
-#if defined(__APPLE__)
-
-int uv__fsevents_init(uv_fs_event_t* handle);
-int uv__fsevents_close(uv_fs_event_t* handle);
-void uv__fsevents_loop_delete(uv_loop_t* loop);
-
-#endif /* defined(__APPLE__) */
 
 UV_UNUSED(static void uv__update_time(uv_loop_t* loop)) {
   /* Use a fast time source if available.  We only need millisecond precision.
@@ -323,9 +242,7 @@ UV_UNUSED(static char* uv__basename_r(const char* path)) {
   return s + 1;
 }
 
-#if defined(__linux__) || defined(__KOS__)
 int uv__inotify_fork(uv_loop_t* loop, void* old_watchers);
-#endif
 
 typedef int (*uv__peersockfunc)(int, struct sockaddr*, socklen_t*);
 
@@ -334,27 +251,6 @@ int uv__getsockpeername(const uv_handle_t* handle,
                         struct sockaddr* name,
                         int* namelen);
 
-#if defined(__linux__)            ||                                      \
-    defined(__FreeBSD__)          ||                                      \
-    defined(__FreeBSD_kernel__)   ||                                       \
-    defined(__DragonFly__)
-#define HAVE_MMSG 1
-struct uv__mmsghdr {
-  struct msghdr msg_hdr;
-  unsigned int msg_len;
-};
-
-int uv__recvmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen);
-int uv__sendmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen);
-#else
 #define HAVE_MMSG 0
-#endif
-
-#if defined(__sun)
-#if !defined(_POSIX_VERSION) || _POSIX_VERSION < 200809L
-size_t strnlen(const char* s, size_t maxlen);
-#endif
-#endif
-
 
 #endif /* UV_UNIX_INTERNAL_H_ */

@@ -22,178 +22,18 @@
 #include "linux-syscalls.h"
 #include <unistd.h>
 #include <signal.h>
-#ifndef __KOS__
-#include <sys/syscall.h>
-#endif
 #include <sys/types.h>
 #include <errno.h>
-
-#if defined(__arm__)
-# if defined(__thumb__) || defined(__ARM_EABI__)
-#  define UV_SYSCALL_BASE 0
-# else
-#  define UV_SYSCALL_BASE 0x900000
-# endif
-#endif /* __arm__ */
-
-#ifndef __KOS__
-#ifndef __NR_recvmmsg
-# if defined(__x86_64__)
-#  define __NR_recvmmsg 299
-# elif defined(__arm__)
-#  define __NR_recvmmsg (UV_SYSCALL_BASE + 365)
-# endif
-#endif /* __NR_recvmsg */
-
-#ifndef __NR_sendmmsg
-# if defined(__x86_64__)
-#  define __NR_sendmmsg 307
-# elif defined(__arm__)
-#  define __NR_sendmmsg (UV_SYSCALL_BASE + 374)
-# endif
-#endif /* __NR_sendmmsg */
-
-#ifndef __NR_utimensat
-# if defined(__x86_64__)
-#  define __NR_utimensat 280
-# elif defined(__i386__)
-#  define __NR_utimensat 320
-# elif defined(__arm__)
-#  define __NR_utimensat (UV_SYSCALL_BASE + 348)
-# endif
-#endif /* __NR_utimensat */
-
-#ifndef __NR_preadv
-# if defined(__x86_64__)
-#  define __NR_preadv 295
-# elif defined(__i386__)
-#  define __NR_preadv 333
-# elif defined(__arm__)
-#  define __NR_preadv (UV_SYSCALL_BASE + 361)
-# endif
-#endif /* __NR_preadv */
-
-#ifndef __NR_pwritev
-# if defined(__x86_64__)
-#  define __NR_pwritev 296
-# elif defined(__i386__)
-#  define __NR_pwritev 334
-# elif defined(__arm__)
-#  define __NR_pwritev (UV_SYSCALL_BASE + 362)
-# endif
-#endif /* __NR_pwritev */
-
-#ifndef __NR_dup3
-# if defined(__x86_64__)
-#  define __NR_dup3 292
-# elif defined(__i386__)
-#  define __NR_dup3 330
-# elif defined(__arm__)
-#  define __NR_dup3 (UV_SYSCALL_BASE + 358)
-# endif
-#endif /* __NR_pwritev */
-
-#ifndef __NR_copy_file_range
-# if defined(__x86_64__)
-#  define __NR_copy_file_range 326
-# elif defined(__i386__)
-#  define __NR_copy_file_range 377
-# elif defined(__s390__)
-#  define __NR_copy_file_range 375
-# elif defined(__arm__)
-#  define __NR_copy_file_range (UV_SYSCALL_BASE + 391)
-# elif defined(__aarch64__)
-#  define __NR_copy_file_range 285
-# elif defined(__powerpc__)
-#  define __NR_copy_file_range 379
-# elif defined(__arc__)
-#  define __NR_copy_file_range 285
-# endif
-#endif /* __NR_copy_file_range */
-
-#ifndef __NR_statx
-# if defined(__x86_64__)
-#  define __NR_statx 332
-# elif defined(__i386__)
-#  define __NR_statx 383
-# elif defined(__aarch64__)
-#  define __NR_statx 397
-# elif defined(__arm__)
-#  define __NR_statx (UV_SYSCALL_BASE + 397)
-# elif defined(__ppc__)
-#  define __NR_statx 383
-# elif defined(__s390__)
-#  define __NR_statx 379
-# endif
-#endif /* __NR_statx */
-
-#ifndef __NR_getrandom
-# if defined(__x86_64__)
-#  define __NR_getrandom 318
-# elif defined(__i386__)
-#  define __NR_getrandom 355
-# elif defined(__aarch64__)
-#  define __NR_getrandom 384
-# elif defined(__arm__)
-#  define __NR_getrandom (UV_SYSCALL_BASE + 384)
-# elif defined(__ppc__)
-#  define __NR_getrandom 359
-# elif defined(__s390__)
-#  define __NR_getrandom 349
-# endif
-#endif /* __NR_getrandom */
-#endif /* !__KOS__ */
 
 struct uv__mmsghdr;
 
 int uv__sendmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen) {
-#if defined(__i386__)
-  unsigned long args[4];
-  int rc;
-
-  args[0] = (unsigned long) fd;
-  args[1] = (unsigned long) mmsg;
-  args[2] = (unsigned long) vlen;
-  args[3] = /* flags */ 0;
-
-  /* socketcall() raises EINVAL when SYS_SENDMMSG is not supported. */
-  rc = syscall(/* __NR_socketcall */ 102, 20 /* SYS_SENDMMSG */, args);
-  if (rc == -1)
-    if (errno == EINVAL)
-      errno = ENOSYS;
-
-  return rc;
-#elif defined(__NR_sendmmsg)
-  return syscall(__NR_sendmmsg, fd, mmsg, vlen, /* flags */ 0);
-#else
   return errno = ENOSYS, -1;
-#endif
 }
 
 
 int uv__recvmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen) {
-#if defined(__i386__)
-  unsigned long args[5];
-  int rc;
-
-  args[0] = (unsigned long) fd;
-  args[1] = (unsigned long) mmsg;
-  args[2] = (unsigned long) vlen;
-  args[3] = /* flags */ 0;
-  args[4] = /* timeout */ 0;
-
-  /* socketcall() raises EINVAL when SYS_RECVMMSG is not supported. */
-  rc = syscall(/* __NR_socketcall */ 102, 19 /* SYS_RECVMMSG */, args);
-  if (rc == -1)
-    if (errno == EINVAL)
-      errno = ENOSYS;
-
-  return rc;
-#elif defined(__NR_recvmmsg)
-  return syscall(__NR_recvmmsg, fd, mmsg, vlen, /* flags */ 0, /* timeout */ 0);
-#else
   return errno = ENOSYS, -1;
-#endif
 }
 
 

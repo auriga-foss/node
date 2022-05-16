@@ -18,13 +18,11 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef __KOS__
 /* KOS: TODO: put stub due to KOS specifics. */
 static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
                           void (*child)(void)) {
   return 0;
 };
-#endif
 
 #include "uv.h"
 #include "internal.h"
@@ -155,13 +153,9 @@ static void uv__signal_block_and_lock(sigset_t* saved_sigmask) {
   sigemptyset(saved_sigmask);
   if (pthread_sigmask(SIG_SETMASK, &new_mask, saved_sigmask)) {
     /* KOS: TODO: don't abort, but put user log. */
-#ifdef __KOS__
     fprintf(stderr,
             "KOS limitation on 'pthread_sigmask', ignoring @ %s(%s:%d)\n",
             __func__, __FILE__, __LINE__);
-#else
-    abort();
-#endif
   }
 
   if (uv__signal_lock())
@@ -175,13 +169,9 @@ static void uv__signal_unlock_and_unblock(sigset_t* saved_sigmask) {
 
   if (pthread_sigmask(SIG_SETMASK, saved_sigmask, NULL)) {
     /* KOS: TODO: don't abort, but put user log. */
-#ifdef __KOS__
     fprintf(stderr,
             "KOS limitation on 'pthread_sigmask', ignoring @ %s(%s:%d)\n",
             __func__, __FILE__, __LINE__);
-#else
-    abort();
-#endif
   }
 }
 
@@ -255,11 +245,6 @@ static int uv__signal_register_handler(int signum, int oneshot) {
     abort();
   sa.sa_handler = uv__signal_handler;
   sa.sa_flags = SA_RESTART;
-#ifndef __KOS__
-  /* KOS: TODO: disabled due to KOS specifics. */
-  if (oneshot)
-    sa.sa_flags |= SA_RESETHAND;
-#endif
 
   /* XXX save old action so we can restore it later on? */
   if (sigaction(signum, &sa, NULL))
