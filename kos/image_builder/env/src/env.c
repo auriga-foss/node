@@ -117,6 +117,7 @@ int main(int argc, char** argv) {
     _VFS_NETWORK_BACKEND"=client:"_TLS_CONNECTION_ID,
 #endif
 	_VFS_FILESYSTEM_BACKEND"=client:"TST_VFS_CONNECTION_ID,
+    "PATH=/opt/node/"
   };
 
   envRegisterArgs("Node", (int)found_parameters, NodeArgs);
