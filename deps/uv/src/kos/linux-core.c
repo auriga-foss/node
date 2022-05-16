@@ -35,10 +35,40 @@
 #include <errno.h>
 
 #include <net/if.h>
+#ifdef __KOS__
+#define KOS_CPU_INFO_NOT_SUPPORTED "CPU info is not supported by KOS SDK"
+/* KOS: TODO: complete stub (to be used instead of sys/epoll.h), bogus return
+ *            for now.
+*/
+
+struct sysinfo {
+  long uptime;             /* Seconds since boot */
+  unsigned long loads[3];  /* 1, 5, and 15 minute load averages */
+  unsigned long totalram;  /* Total usable main memory size */
+  unsigned long freeram;   /* Available memory size */
+  unsigned long sharedram; /* Amount of shared memory */
+  unsigned long bufferram; /* Memory used by buffers */
+  unsigned long totalswap; /* Total swap space size */
+  unsigned long freeswap;  /* Swap space still available */
+  unsigned short procs;    /* Number of current processes */
+  unsigned long totalhigh; /* Total high memory size */
+  unsigned long freehigh;  /* Available high memory size */
+  unsigned int mem_unit;   /* Memory unit size in bytes */
+  char _f[20-2*sizeof(long)-sizeof(int)]; /* Structure padding for libc5 */
+};
+
+static int sysinfo(struct sysinfo* info) {
+  fprintf(stderr, "!!! KOS - sysinfo !!!\n");
+  return 0;
+};
+
+#include <ifaddrs.h>
+#else /* if not defined(__KOS__) */
 #include <sys/epoll.h>
-#include <sys/param.h>
 #include <sys/prctl.h>
 #include <sys/sysinfo.h>
+#endif /* __KOS__ */
+#include <sys/param.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
@@ -58,8 +88,10 @@
 #  include <ifaddrs.h>
 # endif
 # include <sys/socket.h>
+#ifndef __KOS__
 # include <net/ethernet.h>
 # include <netpacket/packet.h>
+#endif
 #endif /* HAVE_IFADDRS_H */
 
 /* Available from 2.6.32 onwards. */
@@ -82,6 +114,7 @@ static int read_times(FILE* statfile_fp,
 static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci);
 static uint64_t read_cpufreq(unsigned int cpunum);
 
+#if !defined(__KOS__)
 int uv__platform_loop_init(uv_loop_t* loop) {
 
   loop->inotify_fd = -1;
@@ -115,6 +148,8 @@ void uv__platform_loop_delete(uv_loop_t* loop) {
   uv__close(loop->inotify_fd);
   loop->inotify_fd = -1;
 }
+
+#endif
 
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
@@ -298,6 +333,18 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   *cpu_infos = NULL;
   *count = 0;
 
+#ifdef __KOS__
+  numcpus = 1;
+  ci = uv__calloc(numcpus, sizeof(*ci));
+  if (ci == NULL)
+    return UV_ENOMEM;
+  memset(ci, 0, sizeof(*ci));
+  ci[0].model = KOS_CPU_INFO_NOT_SUPPORTED;
+  *cpu_infos = ci;
+  *count = numcpus;
+  return 0;
+#endif /* __KOS__ */
+
   statfile_fp = uv__open_file("/proc/stat");
   if (statfile_fp == NULL)
     return UV__ERR(errno);
@@ -364,30 +411,24 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
   const char* inferred_model;
   unsigned int model_idx;
   unsigned int speed_idx;
-  unsigned int part_idx;
   char buf[1024];
   char* model;
   FILE* fp;
-  int model_id;
 
   /* Most are unused on non-ARM, non-MIPS and non-x86 architectures. */
   (void) &model_marker;
   (void) &speed_marker;
   (void) &speed_idx;
-  (void) &part_idx;
   (void) &model;
   (void) &buf;
   (void) &fp;
-  (void) &model_id;
 
   model_idx = 0;
   speed_idx = 0;
-  part_idx = 0;
 
 #if defined(__arm__) || \
     defined(__i386__) || \
     defined(__mips__) || \
-    defined(__aarch64__) || \
     defined(__PPC__) || \
     defined(__x86_64__)
   fp = uv__open_file("/proc/cpuinfo");
@@ -407,96 +448,11 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
         continue;
       }
     }
-#if defined(__arm__) || defined(__mips__) || defined(__aarch64__)
+#if defined(__arm__) || defined(__mips__)
     if (model_idx < numcpus) {
 #if defined(__arm__)
       /* Fallback for pre-3.8 kernels. */
       static const char model_marker[] = "Processor\t: ";
-#elif defined(__aarch64__)
-      static const char part_marker[] = "CPU part\t: ";
-
-      /* Adapted from: https://github.com/karelzak/util-linux */
-      struct vendor_part {
-        const int id;
-        const char* name;
-      };
-
-      static const struct vendor_part arm_chips[] = {
-        { 0x811, "ARM810" },
-        { 0x920, "ARM920" },
-        { 0x922, "ARM922" },
-        { 0x926, "ARM926" },
-        { 0x940, "ARM940" },
-        { 0x946, "ARM946" },
-        { 0x966, "ARM966" },
-        { 0xa20, "ARM1020" },
-        { 0xa22, "ARM1022" },
-        { 0xa26, "ARM1026" },
-        { 0xb02, "ARM11 MPCore" },
-        { 0xb36, "ARM1136" },
-        { 0xb56, "ARM1156" },
-        { 0xb76, "ARM1176" },
-        { 0xc05, "Cortex-A5" },
-        { 0xc07, "Cortex-A7" },
-        { 0xc08, "Cortex-A8" },
-        { 0xc09, "Cortex-A9" },
-        { 0xc0d, "Cortex-A17" },  /* Originally A12 */
-        { 0xc0f, "Cortex-A15" },
-        { 0xc0e, "Cortex-A17" },
-        { 0xc14, "Cortex-R4" },
-        { 0xc15, "Cortex-R5" },
-        { 0xc17, "Cortex-R7" },
-        { 0xc18, "Cortex-R8" },
-        { 0xc20, "Cortex-M0" },
-        { 0xc21, "Cortex-M1" },
-        { 0xc23, "Cortex-M3" },
-        { 0xc24, "Cortex-M4" },
-        { 0xc27, "Cortex-M7" },
-        { 0xc60, "Cortex-M0+" },
-        { 0xd01, "Cortex-A32" },
-        { 0xd03, "Cortex-A53" },
-        { 0xd04, "Cortex-A35" },
-        { 0xd05, "Cortex-A55" },
-        { 0xd06, "Cortex-A65" },
-        { 0xd07, "Cortex-A57" },
-        { 0xd08, "Cortex-A72" },
-        { 0xd09, "Cortex-A73" },
-        { 0xd0a, "Cortex-A75" },
-        { 0xd0b, "Cortex-A76" },
-        { 0xd0c, "Neoverse-N1" },
-        { 0xd0d, "Cortex-A77" },
-        { 0xd0e, "Cortex-A76AE" },
-        { 0xd13, "Cortex-R52" },
-        { 0xd20, "Cortex-M23" },
-        { 0xd21, "Cortex-M33" },
-        { 0xd41, "Cortex-A78" },
-        { 0xd42, "Cortex-A78AE" },
-        { 0xd4a, "Neoverse-E1" },
-        { 0xd4b, "Cortex-A78C" },
-      };
-
-      if (strncmp(buf, part_marker, sizeof(part_marker) - 1) == 0) {
-        model = buf + sizeof(part_marker) - 1;
-
-        errno = 0;
-        model_id = strtol(model, NULL, 16);
-        if ((errno != 0) || model_id < 0) {
-          fclose(fp);
-          return UV_EINVAL;
-        }
-
-        for (part_idx = 0; part_idx < ARRAY_SIZE(arm_chips); part_idx++) {
-          if (model_id == arm_chips[part_idx].id) {
-            model = uv__strdup(arm_chips[part_idx].name);
-            if (model == NULL) {
-              fclose(fp);
-              return UV_ENOMEM;
-            }
-            ci[model_idx++].model = model;
-            break;
-          }
-        }
-      }
 #else	/* defined(__mips__) */
       static const char model_marker[] = "cpu model\t\t: ";
 #endif
@@ -511,18 +467,18 @@ static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
         continue;
       }
     }
-#else  /* !__arm__ && !__mips__ && !__aarch64__ */
+#else  /* !__arm__ && !__mips__ */
     if (speed_idx < numcpus) {
       if (strncmp(buf, speed_marker, sizeof(speed_marker) - 1) == 0) {
         ci[speed_idx++].speed = atoi(buf + sizeof(speed_marker) - 1);
         continue;
       }
     }
-#endif  /* __arm__ || __mips__ || __aarch64__ */
+#endif  /* __arm__ || __mips__ */
   }
 
   fclose(fp);
-#endif  /* __arm__ || __i386__ || __mips__ || __PPC__ || __x86_64__ || __aarch__ */
+#endif  /* __arm__ || __i386__ || __mips__ || __PPC__ || __x86_64__ */
 
   /* Now we want to make sure that all the models contain *something* because
    * it's not safe to leave them as null. Copy the last entry unless there
@@ -649,8 +605,11 @@ static int uv__ifaddr_exclude(struct ifaddrs *ent, int exclude_type) {
    * On Linux getifaddrs returns information related to the raw underlying
    * devices. We're not interested in this information yet.
    */
+#ifndef __KOS__
+  /* KOS: TODO: disable due to KOS specifics. */
   if (ent->ifa_addr->sa_family == PF_PACKET)
     return exclude_type;
+#endif
   return !exclude_type;
 }
 
@@ -787,7 +746,7 @@ uint64_t uv_get_free_memory(void) {
   struct sysinfo info;
   uint64_t rc;
 
-  rc = uv__read_proc_meminfo("MemAvailable:");
+  rc = uv__read_proc_meminfo("MemFree:");
 
   if (rc != 0)
     return rc;

@@ -323,7 +323,7 @@ UV_UNUSED(static char* uv__basename_r(const char* path)) {
   return s + 1;
 }
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__KOS__)
 int uv__inotify_fork(uv_loop_t* loop, void* old_watchers);
 #endif
 

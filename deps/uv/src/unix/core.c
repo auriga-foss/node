@@ -497,16 +497,11 @@ int uv__accept(int sockfd) {
   (void) &err;
   assert(sockfd >= 0);
 
-  /* Parameters below required for KOS/TLS terminator. */
-  struct sockaddr sa;
-  socklen_t len = sizeof(sa);
-  memset(&sa, 0, sizeof(sa));
-
   do
 #ifdef uv__accept4
     peerfd = uv__accept4(sockfd, NULL, NULL, SOCK_NONBLOCK|SOCK_CLOEXEC);
 #else
-    peerfd = accept(sockfd, &sa, &len);
+    peerfd = accept(sockfd, NULL, NULL);
 #endif
   while (peerfd == -1 && errno == EINTR);
 

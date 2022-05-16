@@ -88,7 +88,8 @@
       defined(__MVS__)    || \
       defined(__NetBSD__) || \
       defined(__HAIKU__)  || \
-      defined(__QNX__)
+      defined(__QNX__)    || \
+      defined(__KOS__)
 # include <sys/statvfs.h>
 #else
 # include <sys/statfs.h>
@@ -289,22 +290,10 @@ static ssize_t uv__fs_mkdtemp(uv_fs_t* req) {
 
 static int (*uv__mkostemp)(char*, int);
 
-
+/* KOS: TODO Can't use #ifdef __KOS__ due to build system limitation. */
 static void uv__mkostemp_initonce(void) {
-  /* z/os doesn't have RTLD_DEFAULT but that's okay
-   * because it doesn't have mkostemp(O_CLOEXEC) either.
-   */
-#ifdef RTLD_DEFAULT
-  uv__mkostemp = (int (*)(char*, int)) dlsym(RTLD_DEFAULT, "mkostemp");
-
-  /* We don't care about errors, but we do want to clean them up.
-   * If there has been no error, then dlerror() will just return
-   * NULL.
-   */
-  dlerror();
-#endif  /* RTLD_DEFAULT */
+    uv__mkostemp = &mkostemp; /* from stdlib.h */
 }
-
 
 static int uv__fs_mkstemp(uv_fs_t* req) {
   static uv_once_t once = UV_ONCE_INIT;
@@ -655,7 +644,8 @@ static int uv__fs_statfs(uv_fs_t* req) {
     defined(__MVS__)    || \
     defined(__NetBSD__) || \
     defined(__HAIKU__)  || \
-    defined(__QNX__)
+    defined(__QNX__)    || \
+    defined(__KOS__)
   struct statvfs buf;
 
   if (0 != statvfs(req->path, &buf))
@@ -677,7 +667,8 @@ static int uv__fs_statfs(uv_fs_t* req) {
     defined(__OpenBSD__)  || \
     defined(__NetBSD__)   || \
     defined(__HAIKU__)    || \
-    defined(__QNX__)
+    defined(__QNX__)      || \
+    defined(__KOS__)
   stat_fs->f_type = 0;  /* f_type is not supported. */
 #else
   stat_fs->f_type = buf.f_type;
@@ -946,71 +937,6 @@ static int uv__is_buggy_cephfs(int fd) {
 
   return uv__kernel_version() < /* 4.20.0 */ 0x041400;
 }
-
-
-static int uv__is_cifs_or_smb(int fd) {
-  struct statfs s;
-
-  if (-1 == fstatfs(fd, &s))
-    return 0;
-
-  switch ((unsigned) s.f_type) {
-  case 0x0000517Bu:  /* SMB */
-  case 0xFE534D42u:  /* SMB2 */
-  case 0xFF534D42u:  /* CIFS */
-    return 1;
-  }
-
-  return 0;
-}
-
-
-static ssize_t uv__fs_try_copy_file_range(int in_fd, off_t* off,
-                                          int out_fd, size_t len) {
-  static int no_copy_file_range_support;
-  ssize_t r;
-
-  if (uv__load_relaxed(&no_copy_file_range_support)) {
-    errno = ENOSYS;
-    return -1;
-  }
-
-  r = uv__fs_copy_file_range(in_fd, off, out_fd, NULL, len, 0);
-
-  if (r != -1)
-    return r;
-
-  switch (errno) {
-  case EACCES:
-    /* Pre-4.20 kernels have a bug where CephFS uses the RADOS
-     * copy-from command when it shouldn't.
-     */
-    if (uv__is_buggy_cephfs(in_fd))
-      errno = ENOSYS;  /* Use fallback. */
-    break;
-  case ENOSYS:
-    uv__store_relaxed(&no_copy_file_range_support, 1);
-    break;
-  case EPERM:
-    /* It's been reported that CIFS spuriously fails.
-     * Consider it a transient error.
-     */
-    if (uv__is_cifs_or_smb(out_fd))
-      errno = ENOSYS;  /* Use fallback. */
-    break;
-  case ENOTSUP:
-  case EXDEV:
-    /* ENOTSUP - it could work on another file system type.
-     * EXDEV - it will not work when in_fd and out_fd are not on the same
-     *         mounted filesystem (pre Linux 5.3)
-     */
-    errno = ENOSYS;  /* Use fallback. */
-    break;
-  }
-
-  return -1;
-}
-
 #endif  /* __linux__ */
 
 
@@ -1025,21 +951,40 @@ static ssize_t uv__fs_sendfile(uv_fs_t* req) {
   {
     off_t off;
     ssize_t r;
-    size_t len;
-    int try_sendfile;
 
     off = req->off;
-    len = req->bufsml[0].len;
-    try_sendfile = 1;
 
 #ifdef __linux__
-    r = uv__fs_try_copy_file_range(in_fd, &off, out_fd, len);
-    try_sendfile = (r == -1 && errno == ENOSYS);
+    {
+      static int no_copy_file_range_support;
+
+      if (uv__load_relaxed(&no_copy_file_range_support) == 0) {
+        r = uv__fs_copy_file_range(in_fd, &off, out_fd, NULL, req->bufsml[0].len, 0);
+
+        if (r == -1 && errno == ENOSYS) {
+          /* ENOSYS - it will never work */
+          errno = 0;
+          uv__store_relaxed(&no_copy_file_range_support, 1);
+        } else if (r == -1 && errno == EACCES && uv__is_buggy_cephfs(in_fd)) {
+          /* EACCES - pre-4.20 kernels have a bug where CephFS uses the RADOS
+                      copy-from command when it shouldn't */
+          errno = 0;
+          uv__store_relaxed(&no_copy_file_range_support, 1);
+        } else if (r == -1 && (errno == ENOTSUP || errno == EXDEV)) {
+          /* ENOTSUP - it could work on another file system type */
+          /* EXDEV - it will not work when in_fd and out_fd are not on the same
+                     mounted filesystem (pre Linux 5.3) */
+          errno = 0;
+        } else {
+          goto ok;
+        }
+      }
+    }
 #endif
 
-    if (try_sendfile)
-      r = sendfile(out_fd, in_fd, &off, len);
+    r = sendfile(out_fd, in_fd, &off, req->bufsml[0].len);
 
+ok:
     /* sendfile() on SunOS returns EINVAL if the target fd is not a socket but
      * it still writes out data. Fortunately, we can detect it by checking if
      * the offset has been updated.
@@ -1323,15 +1268,22 @@ static ssize_t uv__fs_copyfile(uv_fs_t* req) {
   if (fchmod(dstfd, src_statsbuf.st_mode) == -1) {
     err = UV__ERR(errno);
 #ifdef __linux__
-    /* fchmod() on CIFS shares always fails with EPERM unless the share is
-     * mounted with "noperm". As fchmod() is a meaningless operation on such
-     * shares anyway, detect that condition and squelch the error.
-     */
     if (err != UV_EPERM)
       goto out;
 
-    if (!uv__is_cifs_or_smb(dstfd))
-      goto out;
+    {
+      struct statfs s;
+
+      /* fchmod() on CIFS shares always fails with EPERM unless the share is
+       * mounted with "noperm". As fchmod() is a meaningless operation on such
+       * shares anyway, detect that condition and squelch the error.
+       */
+      if (fstatfs(dstfd, &s) == -1)
+        goto out;
+
+      if ((unsigned) s.f_type != /* CIFS */ 0xFF534D42u)
+        goto out;
+    }
 
     err = 0;
 #else  /* !__linux__ */
