@@ -46,58 +46,9 @@
 #include <fcntl.h>
 #include <poll.h>
 
-#if defined(__DragonFly__)        ||                                      \
-    defined(__FreeBSD__)          ||                                      \
-    defined(__FreeBSD_kernel__)   ||                                      \
-    defined(__OpenBSD__)          ||                                      \
-    defined(__NetBSD__)
-# define HAVE_PREADV 1
-#else
 # define HAVE_PREADV 0
-#endif
 
-#if defined(__linux__)
-# include "sys/utsname.h"
-#endif
-
-#if defined(__linux__) || defined(__sun)
-# include <sys/sendfile.h>
-# include <sys/sysmacros.h>
-#endif
-
-#if defined(__APPLE__)
-# include <sys/sysctl.h>
-#elif defined(__linux__) && !defined(FICLONE)
-# include <sys/ioctl.h>
-# define FICLONE _IOW(0x94, 9, int)
-#endif
-
-#if defined(_AIX) && !defined(_AIX71)
-# include <utime.h>
-#endif
-
-#if defined(__APPLE__)            ||                                      \
-    defined(__DragonFly__)        ||                                      \
-    defined(__FreeBSD__)          ||                                      \
-    defined(__FreeBSD_kernel__)   ||                                      \
-    defined(__OpenBSD__)          ||                                      \
-    defined(__NetBSD__)
-# include <sys/param.h>
-# include <sys/mount.h>
-#elif defined(__sun)      || \
-      defined(__MVS__)    || \
-      defined(__NetBSD__) || \
-      defined(__HAIKU__)  || \
-      defined(__QNX__)    || \
-      defined(__KOS__)
 # include <sys/statvfs.h>
-#else
-# include <sys/statfs.h>
-#endif
-
-#if defined(_AIX) && _XOPEN_SOURCE <= 600
-extern char *mkdtemp(char *template); /* See issue #740 on AIX < 7 */
-#endif
 
 #define INIT(subtype)                                                         \
   do {                                                                        \
@@ -180,38 +131,12 @@ static int uv__fs_close(int fd) {
 
 
 static ssize_t uv__fs_fsync(uv_fs_t* req) {
-#if defined(__APPLE__)
-  /* Apple's fdatasync and fsync explicitly do NOT flush the drive write cache
-   * to the drive platters. This is in contrast to Linux's fdatasync and fsync
-   * which do, according to recent man pages. F_FULLFSYNC is Apple's equivalent
-   * for flushing buffered data to permanent storage. If F_FULLFSYNC is not
-   * supported by the file system we fall back to F_BARRIERFSYNC or fsync().
-   * This is the same approach taken by sqlite, except sqlite does not issue
-   * an F_BARRIERFSYNC call.
-   */
-  int r;
-
-  r = fcntl(req->file, F_FULLFSYNC);
-  if (r != 0)
-    r = fcntl(req->file, 85 /* F_BARRIERFSYNC */);  /* fsync + barrier */
-  if (r != 0)
-    r = fsync(req->file);
-  return r;
-#else
   return fsync(req->file);
-#endif
 }
 
 
 static ssize_t uv__fs_fdatasync(uv_fs_t* req) {
-#if defined(__linux__) || defined(__sun) || defined(__NetBSD__)
-  return fdatasync(req->file);
-#elif defined(__APPLE__)
-  /* See the comment in uv__fs_fsync. */
-  return uv__fs_fsync(req);
-#else
   return fsync(req->file);
-#endif
 }
 
 
@@ -246,40 +171,8 @@ UV_UNUSED(static struct timeval uv__fs_to_timeval(double time)) {
 }
 
 static ssize_t uv__fs_futime(uv_fs_t* req) {
-#if defined(__linux__)                                                        \
-    || defined(_AIX71)                                                        \
-    || defined(__HAIKU__)
-  struct timespec ts[2];
-  ts[0] = uv__fs_to_timespec(req->atime);
-  ts[1] = uv__fs_to_timespec(req->mtime);
-  return futimens(req->file, ts);
-#elif defined(__APPLE__)                                                      \
-    || defined(__DragonFly__)                                                 \
-    || defined(__FreeBSD__)                                                   \
-    || defined(__FreeBSD_kernel__)                                            \
-    || defined(__NetBSD__)                                                    \
-    || defined(__OpenBSD__)                                                   \
-    || defined(__sun)
-  struct timeval tv[2];
-  tv[0] = uv__fs_to_timeval(req->atime);
-  tv[1] = uv__fs_to_timeval(req->mtime);
-# if defined(__sun)
-  return futimesat(req->file, NULL, tv);
-# else
-  return futimes(req->file, tv);
-# endif
-#elif defined(__MVS__)
-  attrib_t atr;
-  memset(&atr, 0, sizeof(atr));
-  atr.att_mtimechg = 1;
-  atr.att_atimechg = 1;
-  atr.att_mtime = req->mtime;
-  atr.att_atime = req->atime;
-  return __fchattr(req->file, &atr, sizeof(atr));
-#else
   errno = ENOSYS;
   return -1;
-#endif
 }
 
 
@@ -446,9 +339,6 @@ static ssize_t uv__fs_preadv(uv_file fd,
 
 
 static ssize_t uv__fs_read(uv_fs_t* req) {
-#if defined(__linux__)
-  static int no_preadv;
-#endif
   unsigned int iovmax;
   ssize_t result;
 
@@ -470,24 +360,9 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
 #if HAVE_PREADV
     result = preadv(req->file, (struct iovec*) req->bufs, req->nbufs, req->off);
 #else
-# if defined(__linux__)
-    if (uv__load_relaxed(&no_preadv)) retry:
-# endif
     {
       result = uv__fs_preadv(req->file, req->bufs, req->nbufs, req->off);
     }
-# if defined(__linux__)
-    else {
-      result = uv__preadv(req->file,
-                          (struct iovec*)req->bufs,
-                          req->nbufs,
-                          req->off);
-      if (result == -1 && errno == ENOSYS) {
-        uv__store_relaxed(&no_preadv, 1);
-        goto retry;
-      }
-    }
-# endif
 #endif
   }
 
@@ -499,27 +374,11 @@ done:
   req->bufs = NULL;
   req->nbufs = 0;
 
-#ifdef __PASE__
-  /* PASE returns EOPNOTSUPP when reading a directory, convert to EISDIR */
-  if (result == -1 && errno == EOPNOTSUPP) {
-    struct stat buf;
-    ssize_t rc;
-    rc = fstat(req->file, &buf);
-    if (rc == 0 && S_ISDIR(buf.st_mode)) {
-      errno = EISDIR;
-    }
-  }
-#endif
-
   return result;
 }
 
 
-#if defined(__APPLE__) && !defined(MAC_OS_X_VERSION_10_8)
-#define UV_CONST_DIRENT uv__dirent_t
-#else
 #define UV_CONST_DIRENT const uv__dirent_t
-#endif
 
 
 static int uv__fs_scandir_filter(UV_CONST_DIRENT* dent) {
@@ -640,20 +499,9 @@ static int uv__fs_closedir(uv_fs_t* req) {
 
 static int uv__fs_statfs(uv_fs_t* req) {
   uv_statfs_t* stat_fs;
-#if defined(__sun)      || \
-    defined(__MVS__)    || \
-    defined(__NetBSD__) || \
-    defined(__HAIKU__)  || \
-    defined(__QNX__)    || \
-    defined(__KOS__)
   struct statvfs buf;
 
   if (0 != statvfs(req->path, &buf))
-#else
-  struct statfs buf;
-
-  if (0 != statfs(req->path, &buf))
-#endif /* defined(__sun) */
     return -1;
 
   stat_fs = uv__malloc(sizeof(*stat_fs));
@@ -662,17 +510,7 @@ static int uv__fs_statfs(uv_fs_t* req) {
     return -1;
   }
 
-#if defined(__sun)        || \
-    defined(__MVS__)      || \
-    defined(__OpenBSD__)  || \
-    defined(__NetBSD__)   || \
-    defined(__HAIKU__)    || \
-    defined(__QNX__)      || \
-    defined(__KOS__)
   stat_fs->f_type = 0;  /* f_type is not supported. */
-#else
-  stat_fs->f_type = buf.f_type;
-#endif
   stat_fs->f_bsize = buf.f_bsize;
   stat_fs->f_blocks = buf.f_blocks;
   stat_fs->f_bfree = buf.f_bfree;
@@ -699,27 +537,7 @@ static ssize_t uv__fs_readlink(uv_fs_t* req) {
   ssize_t len;
   char* buf;
 
-#if defined(_POSIX_PATH_MAX) || defined(PATH_MAX)
   maxlen = uv__fs_pathmax_size(req->path);
-#else
-  /* We may not have a real PATH_MAX.  Read size of link.  */
-  struct stat st;
-  int ret;
-  ret = lstat(req->path, &st);
-  if (ret != 0)
-    return -1;
-  if (!S_ISLNK(st.st_mode)) {
-    errno = EINVAL;
-    return -1;
-  }
-
-  maxlen = st.st_size;
-
-  /* According to readlink(2) lstat can report st_size == 0
-     for some symlinks, such as those in /proc or /sys.  */
-  if (maxlen == 0)
-    maxlen = uv__fs_pathmax_size(req->path);
-#endif
 
   buf = uv__malloc(maxlen);
 
@@ -728,11 +546,7 @@ static ssize_t uv__fs_readlink(uv_fs_t* req) {
     return -1;
   }
 
-#if defined(__MVS__)
-  len = os390_readlink(req->path, buf, maxlen);
-#else
   len = readlink(req->path, buf, maxlen);
-#endif
 
   if (len == -1) {
     uv__free(buf);
@@ -756,11 +570,6 @@ static ssize_t uv__fs_readlink(uv_fs_t* req) {
 static ssize_t uv__fs_realpath(uv_fs_t* req) {
   char* buf;
 
-#if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L
-  buf = realpath(req->path, NULL);
-  if (buf == NULL)
-    return -1;
-#else
   ssize_t len;
 
   len = uv__fs_pathmax_size(req->path);
@@ -775,7 +584,6 @@ static ssize_t uv__fs_realpath(uv_fs_t* req) {
     uv__free(buf);
     return -1;
   }
-#endif
 
   req->ptr = buf;
 
@@ -896,50 +704,6 @@ out:
 }
 
 
-#ifdef __linux__
-static unsigned uv__kernel_version(void) {
-  static unsigned cached_version;
-  struct utsname u;
-  unsigned version;
-  unsigned major;
-  unsigned minor;
-  unsigned patch;
-
-  version = uv__load_relaxed(&cached_version);
-  if (version != 0)
-    return version;
-
-  if (-1 == uname(&u))
-    return 0;
-
-  if (3 != sscanf(u.release, "%u.%u.%u", &major, &minor, &patch))
-    return 0;
-
-  version = major * 65536 + minor * 256 + patch;
-  uv__store_relaxed(&cached_version, version);
-
-  return version;
-}
-
-
-/* Pre-4.20 kernels have a bug where CephFS uses the RADOS copy-from command
- * in copy_file_range() when it shouldn't. There is no workaround except to
- * fall back to a regular copy.
- */
-static int uv__is_buggy_cephfs(int fd) {
-  struct statfs s;
-
-  if (-1 == fstatfs(fd, &s))
-    return 0;
-
-  if (s.f_type != /* CephFS */ 0xC36400)
-    return 0;
-
-  return uv__kernel_version() < /* 4.20.0 */ 0x041400;
-}
-#endif  /* __linux__ */
-
-
 static ssize_t uv__fs_sendfile(uv_fs_t* req) {
   int in_fd;
   int out_fd;
@@ -947,209 +711,32 @@ static ssize_t uv__fs_sendfile(uv_fs_t* req) {
   in_fd = req->flags;
   out_fd = req->file;
 
-#if defined(__linux__) || defined(__sun)
-  {
-    off_t off;
-    ssize_t r;
-
-    off = req->off;
-
-#ifdef __linux__
-    {
-      static int no_copy_file_range_support;
-
-      if (uv__load_relaxed(&no_copy_file_range_support) == 0) {
-        r = uv__fs_copy_file_range(in_fd, &off, out_fd, NULL, req->bufsml[0].len, 0);
-
-        if (r == -1 && errno == ENOSYS) {
-          /* ENOSYS - it will never work */
-          errno = 0;
-          uv__store_relaxed(&no_copy_file_range_support, 1);
-        } else if (r == -1 && errno == EACCES && uv__is_buggy_cephfs(in_fd)) {
-          /* EACCES - pre-4.20 kernels have a bug where CephFS uses the RADOS
-                      copy-from command when it shouldn't */
-          errno = 0;
-          uv__store_relaxed(&no_copy_file_range_support, 1);
-        } else if (r == -1 && (errno == ENOTSUP || errno == EXDEV)) {
-          /* ENOTSUP - it could work on another file system type */
-          /* EXDEV - it will not work when in_fd and out_fd are not on the same
-                     mounted filesystem (pre Linux 5.3) */
-          errno = 0;
-        } else {
-          goto ok;
-        }
-      }
-    }
-#endif
-
-    r = sendfile(out_fd, in_fd, &off, req->bufsml[0].len);
-
-ok:
-    /* sendfile() on SunOS returns EINVAL if the target fd is not a socket but
-     * it still writes out data. Fortunately, we can detect it by checking if
-     * the offset has been updated.
-     */
-    if (r != -1 || off > req->off) {
-      r = off - req->off;
-      req->off = off;
-      return r;
-    }
-
-    if (errno == EINVAL ||
-        errno == EIO ||
-        errno == ENOTSOCK ||
-        errno == EXDEV) {
-      errno = 0;
-      return uv__fs_sendfile_emul(req);
-    }
-
-    return -1;
-  }
-#elif defined(__APPLE__)           || \
-      defined(__DragonFly__)       || \
-      defined(__FreeBSD__)         || \
-      defined(__FreeBSD_kernel__)
-  {
-    off_t len;
-    ssize_t r;
-
-    /* sendfile() on FreeBSD and Darwin returns EAGAIN if the target fd is in
-     * non-blocking mode and not all data could be written. If a non-zero
-     * number of bytes have been sent, we don't consider it an error.
-     */
-
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-    len = 0;
-    r = sendfile(in_fd, out_fd, req->off, req->bufsml[0].len, NULL, &len, 0);
-#elif defined(__FreeBSD_kernel__)
-    len = 0;
-    r = bsd_sendfile(in_fd,
-                     out_fd,
-                     req->off,
-                     req->bufsml[0].len,
-                     NULL,
-                     &len,
-                     0);
-#else
-    /* The darwin sendfile takes len as an input for the length to send,
-     * so make sure to initialize it with the caller's value. */
-    len = req->bufsml[0].len;
-    r = sendfile(in_fd, out_fd, req->off, &len, NULL, 0);
-#endif
-
-     /*
-     * The man page for sendfile(2) on DragonFly states that `len` contains
-     * a meaningful value ONLY in case of EAGAIN and EINTR.
-     * Nothing is said about it's value in case of other errors, so better
-     * not depend on the potential wrong assumption that is was not modified
-     * by the syscall.
-     */
-    if (r == 0 || ((errno == EAGAIN || errno == EINTR) && len != 0)) {
-      req->off += len;
-      return (ssize_t) len;
-    }
-
-    if (errno == EINVAL ||
-        errno == EIO ||
-        errno == ENOTSOCK ||
-        errno == EXDEV) {
-      errno = 0;
-      return uv__fs_sendfile_emul(req);
-    }
-
-    return -1;
-  }
-#else
   /* Squelch compiler warnings. */
   (void) &in_fd;
   (void) &out_fd;
-
   return uv__fs_sendfile_emul(req);
-#endif
 }
 
 
 static ssize_t uv__fs_utime(uv_fs_t* req) {
-#if defined(__linux__)                                                         \
-    || defined(_AIX71)                                                         \
-    || defined(__sun)                                                          \
-    || defined(__HAIKU__)
-  struct timespec ts[2];
-  ts[0] = uv__fs_to_timespec(req->atime);
-  ts[1] = uv__fs_to_timespec(req->mtime);
-  return utimensat(AT_FDCWD, req->path, ts, 0);
-#elif defined(__APPLE__)                                                      \
-    || defined(__DragonFly__)                                                 \
-    || defined(__FreeBSD__)                                                   \
-    || defined(__FreeBSD_kernel__)                                            \
-    || defined(__NetBSD__)                                                    \
-    || defined(__OpenBSD__)
-  struct timeval tv[2];
-  tv[0] = uv__fs_to_timeval(req->atime);
-  tv[1] = uv__fs_to_timeval(req->mtime);
-  return utimes(req->path, tv);
-#elif defined(_AIX)                                                           \
-    && !defined(_AIX71)
-  struct utimbuf buf;
-  buf.actime = req->atime;
-  buf.modtime = req->mtime;
-  return utime(req->path, &buf);
-#elif defined(__MVS__)
-  attrib_t atr;
-  memset(&atr, 0, sizeof(atr));
-  atr.att_mtimechg = 1;
-  atr.att_atimechg = 1;
-  atr.att_mtime = req->mtime;
-  atr.att_atime = req->atime;
-  return __lchattr((char*) req->path, &atr, sizeof(atr));
-#else
   errno = ENOSYS;
   return -1;
-#endif
 }
 
 
 static ssize_t uv__fs_lutime(uv_fs_t* req) {
-#if defined(__linux__)            ||                                           \
-    defined(_AIX71)               ||                                           \
-    defined(__sun)                ||                                           \
-    defined(__HAIKU__)
-  struct timespec ts[2];
-  ts[0] = uv__fs_to_timespec(req->atime);
-  ts[1] = uv__fs_to_timespec(req->mtime);
-  return utimensat(AT_FDCWD, req->path, ts, AT_SYMLINK_NOFOLLOW);
-#elif defined(__APPLE__)          ||                                          \
-      defined(__DragonFly__)      ||                                          \
-      defined(__FreeBSD__)        ||                                          \
-      defined(__FreeBSD_kernel__) ||                                          \
-      defined(__NetBSD__)
-  struct timeval tv[2];
-  tv[0] = uv__fs_to_timeval(req->atime);
-  tv[1] = uv__fs_to_timeval(req->mtime);
-  return lutimes(req->path, tv);
-#else
   errno = ENOSYS;
   return -1;
-#endif
 }
 
 
 static ssize_t uv__fs_write(uv_fs_t* req) {
-#if defined(__linux__)
-  static int no_pwritev;
-#endif
   ssize_t r;
 
   /* Serialize writes on OS X, concurrent write() and pwrite() calls result in
    * data loss. We can't use a per-file descriptor lock, the descriptor may be
    * a dup().
    */
-#if defined(__APPLE__)
-  static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-  if (pthread_mutex_lock(&lock))
-    abort();
-#endif
 
   if (req->off < 0) {
     if (req->nbufs == 1)
@@ -1164,33 +751,10 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
 #if HAVE_PREADV
     r = pwritev(req->file, (struct iovec*) req->bufs, req->nbufs, req->off);
 #else
-# if defined(__linux__)
-    if (no_pwritev) retry:
-# endif
-    {
-      r = pwrite(req->file, req->bufs[0].base, req->bufs[0].len, req->off);
-    }
-# if defined(__linux__)
-    else {
-      r = uv__pwritev(req->file,
-                      (struct iovec*) req->bufs,
-                      req->nbufs,
-                      req->off);
-      if (r == -1 && errno == ENOSYS) {
-        no_pwritev = 1;
-        goto retry;
-      }
-    }
-# endif
+    r = pwrite(req->file, req->bufs[0].base, req->bufs[0].len, req->off);
 #endif
   }
-
 done:
-#if defined(__APPLE__)
-  if (pthread_mutex_unlock(&lock))
-    abort();
-#endif
-
   return r;
 }
 
@@ -1267,50 +831,13 @@ static ssize_t uv__fs_copyfile(uv_fs_t* req) {
 
   if (fchmod(dstfd, src_statsbuf.st_mode) == -1) {
     err = UV__ERR(errno);
-#ifdef __linux__
-    if (err != UV_EPERM)
-      goto out;
-
-    {
-      struct statfs s;
-
-      /* fchmod() on CIFS shares always fails with EPERM unless the share is
-       * mounted with "noperm". As fchmod() is a meaningless operation on such
-       * shares anyway, detect that condition and squelch the error.
-       */
-      if (fstatfs(dstfd, &s) == -1)
-        goto out;
-
-      if ((unsigned) s.f_type != /* CIFS */ 0xFF534D42u)
-        goto out;
-    }
-
-    err = 0;
-#else  /* !__linux__ */
     goto out;
-#endif  /* !__linux__ */
   }
 
-#ifdef FICLONE
-  if (req->flags & UV_FS_COPYFILE_FICLONE ||
-      req->flags & UV_FS_COPYFILE_FICLONE_FORCE) {
-    if (ioctl(dstfd, FICLONE, srcfd) == 0) {
-      /* ioctl() with FICLONE succeeded. */
-      goto out;
-    }
-    /* If an error occurred and force was set, return the error to the caller;
-     * fall back to sendfile() when force was not set. */
-    if (req->flags & UV_FS_COPYFILE_FICLONE_FORCE) {
-      err = UV__ERR(errno);
-      goto out;
-    }
-  }
-#else
   if (req->flags & UV_FS_COPYFILE_FICLONE_FORCE) {
     err = UV_ENOSYS;
     goto out;
   }
-#endif
 
   bytes_to_send = src_statsbuf.st_size;
   in_offset = 0;
@@ -1378,70 +905,16 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_size = src->st_size;
   dst->st_blksize = src->st_blksize;
   dst->st_blocks = src->st_blocks;
-
-#if defined(__APPLE__)
-  dst->st_atim.tv_sec = src->st_atimespec.tv_sec;
-  dst->st_atim.tv_nsec = src->st_atimespec.tv_nsec;
-  dst->st_mtim.tv_sec = src->st_mtimespec.tv_sec;
-  dst->st_mtim.tv_nsec = src->st_mtimespec.tv_nsec;
-  dst->st_ctim.tv_sec = src->st_ctimespec.tv_sec;
-  dst->st_ctim.tv_nsec = src->st_ctimespec.tv_nsec;
-  dst->st_birthtim.tv_sec = src->st_birthtimespec.tv_sec;
-  dst->st_birthtim.tv_nsec = src->st_birthtimespec.tv_nsec;
-  dst->st_flags = src->st_flags;
-  dst->st_gen = src->st_gen;
-#elif defined(__ANDROID__)
-  dst->st_atim.tv_sec = src->st_atime;
-  dst->st_atim.tv_nsec = src->st_atimensec;
-  dst->st_mtim.tv_sec = src->st_mtime;
-  dst->st_mtim.tv_nsec = src->st_mtimensec;
-  dst->st_ctim.tv_sec = src->st_ctime;
-  dst->st_ctim.tv_nsec = src->st_ctimensec;
-  dst->st_birthtim.tv_sec = src->st_ctime;
-  dst->st_birthtim.tv_nsec = src->st_ctimensec;
-  dst->st_flags = 0;
-  dst->st_gen = 0;
-#elif !defined(_AIX) &&         \
-    !defined(__MVS__) && (      \
-    defined(__DragonFly__)   || \
-    defined(__FreeBSD__)     || \
-    defined(__OpenBSD__)     || \
-    defined(__NetBSD__)      || \
-    defined(_GNU_SOURCE)     || \
-    defined(_BSD_SOURCE)     || \
-    defined(_SVID_SOURCE)    || \
-    defined(_XOPEN_SOURCE)   || \
-    defined(_DEFAULT_SOURCE))
   dst->st_atim.tv_sec = src->st_atim.tv_sec;
   dst->st_atim.tv_nsec = src->st_atim.tv_nsec;
   dst->st_mtim.tv_sec = src->st_mtim.tv_sec;
   dst->st_mtim.tv_nsec = src->st_mtim.tv_nsec;
   dst->st_ctim.tv_sec = src->st_ctim.tv_sec;
   dst->st_ctim.tv_nsec = src->st_ctim.tv_nsec;
-# if defined(__FreeBSD__)    || \
-     defined(__NetBSD__)
-  dst->st_birthtim.tv_sec = src->st_birthtim.tv_sec;
-  dst->st_birthtim.tv_nsec = src->st_birthtim.tv_nsec;
-  dst->st_flags = src->st_flags;
-  dst->st_gen = src->st_gen;
-# else
   dst->st_birthtim.tv_sec = src->st_ctim.tv_sec;
   dst->st_birthtim.tv_nsec = src->st_ctim.tv_nsec;
   dst->st_flags = 0;
   dst->st_gen = 0;
-# endif
-#else
-  dst->st_atim.tv_sec = src->st_atime;
-  dst->st_atim.tv_nsec = 0;
-  dst->st_mtim.tv_sec = src->st_mtime;
-  dst->st_mtim.tv_nsec = 0;
-  dst->st_ctim.tv_sec = src->st_ctime;
-  dst->st_ctim.tv_nsec = 0;
-  dst->st_birthtim.tv_sec = src->st_ctime;
-  dst->st_birthtim.tv_nsec = 0;
-  dst->st_flags = 0;
-  dst->st_gen = 0;
-#endif
 }
 
 
@@ -1451,77 +924,7 @@ static int uv__fs_statx(int fd,
                         int is_lstat,
                         uv_stat_t* buf) {
   STATIC_ASSERT(UV_ENOSYS != -1);
-#ifdef __linux__
-  static int no_statx;
-  struct uv__statx statxbuf;
-  int dirfd;
-  int flags;
-  int mode;
-  int rc;
-
-  if (uv__load_relaxed(&no_statx))
-    return UV_ENOSYS;
-
-  dirfd = AT_FDCWD;
-  flags = 0; /* AT_STATX_SYNC_AS_STAT */
-  mode = 0xFFF; /* STATX_BASIC_STATS + STATX_BTIME */
-
-  if (is_fstat) {
-    dirfd = fd;
-    flags |= 0x1000; /* AT_EMPTY_PATH */
-  }
-
-  if (is_lstat)
-    flags |= AT_SYMLINK_NOFOLLOW;
-
-  rc = uv__statx(dirfd, path, flags, mode, &statxbuf);
-
-  switch (rc) {
-  case 0:
-    break;
-  case -1:
-    /* EPERM happens when a seccomp filter rejects the system call.
-     * Has been observed with libseccomp < 2.3.3 and docker < 18.04.
-     * EOPNOTSUPP is used on DVS exported filesystems
-     */
-    if (errno != EINVAL && errno != EPERM && errno != ENOSYS && errno != EOPNOTSUPP)
-      return -1;
-    /* Fall through. */
-  default:
-    /* Normally on success, zero is returned and On error, -1 is returned.
-     * Observed on S390 RHEL running in a docker container with statx not
-     * implemented, rc might return 1 with 0 set as the error code in which
-     * case we return ENOSYS.
-     */
-    uv__store_relaxed(&no_statx, 1);
-    return UV_ENOSYS;
-  }
-
-  buf->st_dev = makedev(statxbuf.stx_dev_major, statxbuf.stx_dev_minor);
-  buf->st_mode = statxbuf.stx_mode;
-  buf->st_nlink = statxbuf.stx_nlink;
-  buf->st_uid = statxbuf.stx_uid;
-  buf->st_gid = statxbuf.stx_gid;
-  buf->st_rdev = makedev(statxbuf.stx_rdev_major, statxbuf.stx_rdev_minor);
-  buf->st_ino = statxbuf.stx_ino;
-  buf->st_size = statxbuf.stx_size;
-  buf->st_blksize = statxbuf.stx_blksize;
-  buf->st_blocks = statxbuf.stx_blocks;
-  buf->st_atim.tv_sec = statxbuf.stx_atime.tv_sec;
-  buf->st_atim.tv_nsec = statxbuf.stx_atime.tv_nsec;
-  buf->st_mtim.tv_sec = statxbuf.stx_mtime.tv_sec;
-  buf->st_mtim.tv_nsec = statxbuf.stx_mtime.tv_nsec;
-  buf->st_ctim.tv_sec = statxbuf.stx_ctime.tv_sec;
-  buf->st_ctim.tv_nsec = statxbuf.stx_ctime.tv_nsec;
-  buf->st_birthtim.tv_sec = statxbuf.stx_btime.tv_sec;
-  buf->st_birthtim.tv_nsec = statxbuf.stx_btime.tv_nsec;
-  buf->st_flags = 0;
-  buf->st_gen = 0;
-
-  return 0;
-#else
   return UV_ENOSYS;
-#endif /* __linux__ */
 }
 
 
