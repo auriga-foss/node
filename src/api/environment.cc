@@ -775,6 +775,7 @@ void DefaultProcessExitHandlerInternal(Environment* env, ExitCode exit_code) {
   env->isolate()->DumpAndResetStats();
   DisposePlatform();
   uv_library_shutdown();
+  fprintf(stderr, "Node exit_code = %d\n", exit_code);
   Exit(exit_code);
 }
 

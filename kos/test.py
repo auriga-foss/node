@@ -785,7 +785,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
           KillTimedOutProcess(context, process.pid)
           exit_code = 1
           print("\nNODE FAILED by test skipping")
-        elif line.find(b'Node exit_code = 0') != -1:
+        elif line.find(b'Node exit_code = 0') != -1 and skipped == '-':
           KillTimedOutProcess(context, process.pid)
           exit_code = 0
           print("\nNODE SUCCESSED")
