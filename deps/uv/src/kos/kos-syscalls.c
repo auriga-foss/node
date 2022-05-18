@@ -19,7 +19,7 @@
  * IN THE SOFTWARE.
  */
 
-#include "linux-syscalls.h"
+#include "kos-syscalls.h"
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -38,29 +38,17 @@ int uv__recvmmsg(int fd, struct uv__mmsghdr* mmsg, unsigned int vlen) {
 
 
 ssize_t uv__preadv(int fd, const struct iovec *iov, int iovcnt, int64_t offset) {
-#if !defined(__NR_preadv) || defined(__ANDROID_API__) && __ANDROID_API__ < 24
   return errno = ENOSYS, -1;
-#else
-  return syscall(__NR_preadv, fd, iov, iovcnt, (long)offset, (long)(offset >> 32));
-#endif
 }
 
 
 ssize_t uv__pwritev(int fd, const struct iovec *iov, int iovcnt, int64_t offset) {
-#if !defined(__NR_pwritev) || defined(__ANDROID_API__) && __ANDROID_API__ < 24
   return errno = ENOSYS, -1;
-#else
-  return syscall(__NR_pwritev, fd, iov, iovcnt, (long)offset, (long)(offset >> 32));
-#endif
 }
 
 
 int uv__dup3(int oldfd, int newfd, int flags) {
-#if !defined(__NR_dup3) || defined(__ANDROID_API__) && __ANDROID_API__ < 21
   return errno = ENOSYS, -1;
-#else
-  return syscall(__NR_dup3, oldfd, newfd, flags);
-#endif
 }
 
 
@@ -91,18 +79,10 @@ int uv__statx(int dirfd,
               int flags,
               unsigned int mask,
               struct uv__statx* statxbuf) {
-#if !defined(__NR_statx) || defined(__ANDROID_API__) && __ANDROID_API__ < 30
   return errno = ENOSYS, -1;
-#else
-  return syscall(__NR_statx, dirfd, path, flags, mask, statxbuf);
-#endif
 }
 
 
 ssize_t uv__getrandom(void* buf, size_t buflen, unsigned flags) {
-#if !defined(__NR_getrandom) || defined(__ANDROID_API__) && __ANDROID_API__ < 28
   return errno = ENOSYS, -1;
-#else
-  return syscall(__NR_getrandom, buf, buflen, flags);
-#endif
 }

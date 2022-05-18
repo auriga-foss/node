@@ -462,17 +462,6 @@ static void uv__udp_sendmsg(uv_udp_t* handle) {
   }
 }
 
-/* On the BSDs, SO_REUSEPORT implies SO_REUSEADDR but with some additional
- * refinements for programs that use multicast.
- *
- * Linux as of 3.9 has a SO_REUSEPORT socket option but with semantics that
- * are different from the BSDs: it _shares_ the port rather than steal it
- * from the current listener.  While useful, it's not something we can emulate
- * on other platforms so we don't enable it.
- *
- * zOS does not support getsockname with SO_REUSEPORT option when using
- * AF_UNIX.
- */
 static int uv__set_reuse(int fd) {
   int yes;
   yes = 1;
@@ -488,12 +477,6 @@ static int uv__set_reuse(int fd) {
   return 0;
 }
 
-/*
- * The Linux kernel suppresses some ICMP error messages by default for UDP
- * sockets. Setting IP_RECVERR/IPV6_RECVERR on the socket enables full ICMP
- * error reporting, hopefully resulting in faster failover to working name
- * servers.
- */
 static int uv__set_recverr(int fd, sa_family_t ss_family) {
   return 0;
 }
@@ -979,63 +962,32 @@ int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
 int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
   if (ttl < 1 || ttl > 255)
     return UV_EINVAL;
-
-/*
- * On Solaris and derivatives such as SmartOS, the length of socket options
- * is sizeof(int) for IP_TTL and IPV6_UNICAST_HOPS,
- * so hardcode the size of these options on this platform,
- * and use the general uv__setsockopt_maybe_char call on other platforms.
- */
-/*  return uv__setsockopt(handle,
+  return uv__setsockopt(handle,
                         IP_TTL,
                         IPV6_UNICAST_HOPS,
                         &ttl,
                         sizeof(ttl));
-*/
+
 }
 
 
 int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl) {
-/*
- * On Solaris and derivatives such as SmartOS, the length of socket options
- * is sizeof(int) for IPV6_MULTICAST_HOPS and sizeof(char) for
- * IP_MULTICAST_TTL, so hardcode the size of the option in the IPv6 case,
- * and use the general uv__setsockopt_maybe_char call otherwise.
- */
   if (handle->flags & UV_HANDLE_IPV6)
     return uv__setsockopt(handle,
                           IP_MULTICAST_TTL,
                           IPV6_MULTICAST_HOPS,
                           &ttl,
                           sizeof(ttl));
-/*
-  return uv__setsockopt_maybe_char(handle,
-                                   IP_MULTICAST_TTL,
-                                   IPV6_MULTICAST_HOPS,
-                                   ttl);
-*/
 }
 
 
 int uv_udp_set_multicast_loop(uv_udp_t* handle, int on) {
-/*
- * On Solaris and derivatives such as SmartOS, the length of socket options
- * is sizeof(int) for IPV6_MULTICAST_LOOP and sizeof(char) for
- * IP_MULTICAST_LOOP, so hardcode the size of the option in the IPv6 case,
- * and use the general uv__setsockopt_maybe_char call otherwise.
- */
   if (handle->flags & UV_HANDLE_IPV6)
     return uv__setsockopt(handle,
                           IP_MULTICAST_LOOP,
                           IPV6_MULTICAST_LOOP,
                           &on,
                           sizeof(on));
-/*
-  return uv__setsockopt_maybe_char(handle,
-                                   IP_MULTICAST_LOOP,
-                                   IPV6_MULTICAST_LOOP,
-                                   on);
-*/
 }
 
 int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr) {

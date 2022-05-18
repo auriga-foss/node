@@ -183,7 +183,6 @@ static ssize_t uv__fs_mkdtemp(uv_fs_t* req) {
 
 static int (*uv__mkostemp)(char*, int);
 
-/* KOS: TODO Can't use #ifdef __KOS__ due to build system limitation. */
 static void uv__mkostemp_initonce(void) {
     uv__mkostemp = &mkostemp; /* from stdlib.h */
 }

@@ -29,6 +29,7 @@
 #include <termios.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include "kos-trace.h"
 
 static int orig_termios_fd = -1;
 static struct termios orig_termios;
@@ -77,10 +78,8 @@ int uv_tty_init(uv_loop_t* loop, uv_tty_t* tty, int fd, int unused) {
 #if defined (TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
 #error "test and remove w/a"
 #else
-#if defined(__KOS__)
 #warning "WA for stderr wrong O_RDONLY flag coming from KOS libc"
     if (fd==stderr->_file) saved_flags = (O_NOCTTY | O_RDWR);
-#endif /* defined(__KOS__) */
 #endif /* defined (TEST_KOS_SDK) && (TEST_KOS_SDK == 1) */
   }
   while (saved_flags == -1 && errno == EINTR);
@@ -237,12 +236,10 @@ int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
   struct winsize ws;
   int err;
 
-  fprintf(stderr, "!!! KOS DEBUG !!! %s(%s:%d)\n",
-          __func__, __FILE__, __LINE__);
+  KOS_TRACE_INF("!!! KOS DEBUG !!!");
   *width = 80;
   *height = 25;
-  fprintf(stderr, "!!! KOS DEBUG !!! (fake) %s(%s:%d)\n",
-          __func__, __FILE__, __LINE__);
+  KOS_TRACE_INF("!!! KOS DEBUG !!! (fake)");
   return 0;
 
   do
@@ -256,8 +253,7 @@ int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
   *height = ws.ws_row;
 
   /* KOS: TODO: check & remove if not needed for non-debug build. */
-  fprintf(stderr, "!!! KOS DEBUG !!! %s(%s:%d) [%dx%d]\n",
-          __func__, __FILE__, __LINE__, ws.ws_col, ws.ws_row);
+  KOS_TRACE_INF("!!! KOS DEBUG !!! [%dx%d]", ws.ws_col, ws.ws_row);
 
   return 0;
 }

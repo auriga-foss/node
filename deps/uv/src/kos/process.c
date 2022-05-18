@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include "kos-trace.h"
 
 extern char **environ;
 
@@ -195,8 +196,7 @@ static void uv__write_errno(int error_fd) {
 int uv_spawn(uv_loop_t* loop,
              uv_process_t* process,
              const uv_process_options_t* options) {
-  fprintf(stderr, "!!! KOS DEBUG !!! [attempt to SPAWN (fork)] %s(%s:%d)\n",
-          __func__, __FILE__, __LINE__);
+  KOS_TRACE_INF("!!! KOS DEBUG !!! [attempt to SPAWN (fork)]");
   /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
   return UV_ENOSYS;
 }

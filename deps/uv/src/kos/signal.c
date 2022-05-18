@@ -33,6 +33,7 @@ static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "kos-trace.h"
 
 #ifndef SA_RESTART
 # define SA_RESTART 0
@@ -153,9 +154,7 @@ static void uv__signal_block_and_lock(sigset_t* saved_sigmask) {
   sigemptyset(saved_sigmask);
   if (pthread_sigmask(SIG_SETMASK, &new_mask, saved_sigmask)) {
     /* KOS: TODO: don't abort, but put user log. */
-    fprintf(stderr,
-            "KOS limitation on 'pthread_sigmask', ignoring @ %s(%s:%d)\n",
-            __func__, __FILE__, __LINE__);
+    KOS_TRACE_INF("KOS limitation on 'pthread_sigmask', ignoring");
   }
 
   if (uv__signal_lock())
@@ -169,12 +168,9 @@ static void uv__signal_unlock_and_unblock(sigset_t* saved_sigmask) {
 
   if (pthread_sigmask(SIG_SETMASK, saved_sigmask, NULL)) {
     /* KOS: TODO: don't abort, but put user log. */
-    fprintf(stderr,
-            "KOS limitation on 'pthread_sigmask', ignoring @ %s(%s:%d)\n",
-            __func__, __FILE__, __LINE__);
+    KOS_TRACE_INF("KOS limitation on 'pthread_sigmask', ignoring");
   }
 }
-
 
 static uv_signal_t* uv__signal_first_handle(int signum) {
   /* This function must be called with the signal lock held. */

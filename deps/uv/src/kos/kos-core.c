@@ -33,6 +33,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include "kos-trace.h"
 
 #include <net/if.h>
 #define KOS_CPU_INFO_NOT_SUPPORTED "CPU info is not supported by KOS SDK"
@@ -57,7 +58,7 @@ struct sysinfo {
 };
 
 static int sysinfo(struct sysinfo* info) {
-  fprintf(stderr, "!!! KOS - sysinfo !!!\n");
+  KOS_TRACE_INF("!!! KOS - sysinfo !!!");
   return 0;
 };
 
