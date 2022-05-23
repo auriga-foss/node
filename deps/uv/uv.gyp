@@ -278,7 +278,7 @@
             'src/kos/kos-syscalls.h',
             'src/kos/procfs-exepath.c',
             'src/kos/random-getrandom.c',
-            'src/kos/random-sysctl-linux.c',
+            'src/kos/random-sysctl-kos.c',
           ],
           # KOS: TODO: disable linker options due to KOS specifics
           #'link_settings': {

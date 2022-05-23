@@ -37,7 +37,7 @@ static uv_spinlock_t termios_spinlock = UV_SPINLOCK_INITIALIZER;
 
 static int uv__tty_is_slave(const int fd) {
   int result;
-  /* KOS: TODO: consider implementing ioctl() TIOCGPTN, or ptsname(). */
+  /* KOS: TODO: update when KOS has proper support of pseudo terminals. */
   result = 0;
   return result;
 }
