@@ -11,35 +11,25 @@ include (platform/install)
 # Toolchain for work with NK-parser.
 include (platform/nk)
 
-# Attach a package with the virtual file system implementation.
-find_package (vfs REQUIRED)
-include_directories (${vfs_INCLUDE})
+# Attach a package with the dhcpcd entity implementation.
+find_package (rump REQUIRED COMPONENTS DHCPCD_ENTITY)
+include_directories (${rump_INCLUDE})
 
-# Attach a package with the ramdisk implementation.
-find_package (ramdisk REQUIRED)
-include_directories (${ramdisk_INCLUDE})
-
-# Connect a package that imports components
-# to work with the ext2/ext3/ext4 file systems.
-find_package (LWEXT4 REQUIRED)
-include_directories (${LWEXT4_INCLUDE})
-
-# Attach a package with the DNET file system implementation.
-find_package (dnet REQUIRED COMPONENTS IMPLEMENTATION_LIB)
-
-if (NOT EXISTS "env/src/cmdline.txt")
-    find_package (uart REQUIRED)
-    include_directories (${uart_INCLUDE})
-endif ()
+# Attach a package with VFS entities implementation
+find_package (precompiled_vfs REQUIRED)
+include_directories (${precompiled_vfs_INCLUDE})
 
 # Attach a package with TLS entity and client lib implementations
 find_package (tls REQUIRED)
 include_directories (${tls_INCLUDE})
 
+find_package (uart REQUIRED)
+include_directories (${uart_INCLUDE})
+
+
 # Payload
 add_subdirectory (node)
 add_subdirectory (env)
-add_subdirectory (vfs)
 
 # Binary image of KasperskyOS.
 add_subdirectory (einit)

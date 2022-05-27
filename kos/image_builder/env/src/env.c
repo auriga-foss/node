@@ -10,10 +10,7 @@
 #include <vfs/vfs.h>
 #include <coresrv/syscalls.h>
 
-#ifdef TST_VFS_CONNECTION_ID
-#undef TST_VFS_CONNECTION_ID
-#endif
-#define TST_VFS_CONNECTION_ID "vfs.NetVfs"
+#include <kos_net.h>
 
 #define VARGS_MAX_PARAMETERS_COUNT 10
 #define VARGS_MAX_PARAMETER_LEN 512
@@ -78,7 +75,7 @@ static int read_argv_from_uart(const char** pp_argv,
         break;
       }
 
-      if(temp[ch_cnt-1] == '\r') {
+      if (temp[ch_cnt-1] == '\r') {
         *p_found_parameters = par_cnt;
         return_value = EXIT_SUCCESS;
         break;
@@ -107,16 +104,16 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   int i;
-  for(i = 0; i < found_parameters; i++)
+  for (i = 0; i < found_parameters; i++)
     printk("NodeArgs[%d]: %s\n", i, NodeArgs[i]);
 
   const char* NodeEnvs[] = {
 #if (USE_TLS != 1)
-    _VFS_NETWORK_BACKEND"=client:"TST_VFS_CONNECTION_ID,
+    _VFS_NETWORK_BACKEND"=client:"NET_VFS_CONNECTION,
 #else
     _VFS_NETWORK_BACKEND"=client:"_TLS_CONNECTION_ID,
 #endif
-	_VFS_FILESYSTEM_BACKEND"=client:"TST_VFS_CONNECTION_ID,
+    _VFS_FILESYSTEM_BACKEND"=client:"RAM_FS_VFS_CONNECTION,
     "PATH=/opt/node/"
   };
 
@@ -127,7 +124,7 @@ int main(int argc, char** argv) {
   envServerRun();
 
 #ifdef ARGV_THRU_SERIAL
-  for(i = 0; i < found_parameters; i++)
+  for (i = 0; i < found_parameters; i++)
     free(NodeArgs + i);
 #endif
   return EXIT_SUCCESS;

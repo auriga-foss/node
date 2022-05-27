@@ -1,13 +1,15 @@
 use trusted._
 
 use EDL node.Node
-use EDL vfs.NetVfs
 use EDL kl.VfsNet
+use EDL kl.VfsRamFs
+use EDL kl.VfsSdCardFs
 use EDL env.Env
 use EDL kl.drivers.RAMDisk
 use EDL kl.drivers.BSP
 use EDL kl.drivers.GPIO
 use EDL kl.drivers.UART
+use EDL kl.rump.Dhcpcd
 
 /* Return of errors is allowed */
 error
@@ -78,6 +80,7 @@ execute src=Einit
 /**
  * This instruction enables to start up and initialize entities.
  */
+
 execute src=Einit, dst=kl.drivers.RAMDisk
 {
     grant()
@@ -88,7 +91,12 @@ execute src=Einit, dst=node.Node
     grant()
 }
 
-execute src=Einit, dst=vfs.NetVfs
+execute src=Einit, dst=kl.VfsNet
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.VfsRamFs
 {
     grant()
 }
@@ -98,16 +106,67 @@ execute src=Einit, dst=env.Env
     grant()
 }
 
+
 /**
  * This code enables to send requests from entities to KOS kernel and get
  * responses. It makes able to use system calls by entities.
  */
-request src=vfs.NetVfs, dst=kl.core.Core
+request src = kl.rump.Dhcpcd, dst = kl.core.Core
 {
     grant()
 }
 
-response src=kl.core.Core, dst=vfs.NetVfs
+response src = kl.core.Core, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+request src = kl.rump.Dhcpcd, dst = kl.VfsNet
+{
+    grant()
+}
+
+request src = kl.rump.Dhcpcd, dst = kl.VfsRamFs
+{
+    grant()
+}
+
+request src = kl.rump.Dhcpcd, dst = kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src = kl.VfsNet, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+response src = kl.VfsRamFs, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+response src = kl.VfsSdCardFs, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+request src=kl.VfsNet, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.VfsNet
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.VfsRamFs
 {
     grant()
 }
@@ -132,7 +191,12 @@ response src=kl.core.Core, dst=node.Node
     grant()
 }
 
-request src=node.Node, dst=vfs.NetVfs
+request src=node.Node, dst=kl.VfsNet
+{
+    grant()
+}
+
+request src=node.Node, dst=kl.VfsRamFs
 {
     grant()
 }
@@ -147,7 +211,12 @@ request src=node.Node, dst=kl.TlsEntity
     grant()
 }
 
-response src=vfs.NetVfs, dst=node.Node
+response src=kl.VfsNet, dst=node.Node
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=node.Node
 {
     grant()
 }
@@ -172,16 +241,6 @@ response src=env.Env, dst=node.Node
     grant()
 }
 
-request src=vfs.NetVfs, dst=env.Env
-{
-    grant()
-}
-
-response src=env.Env, dst=vfs.NetVfs
-{
-    grant()
-}
-
 /**
  * This code enables to send requests from RAMDisk entity to KOS kernel
  * and get responses.
@@ -196,7 +255,6 @@ response src=kl.core.Core, dst=kl.drivers.RAMDisk
     grant()
 }
 
-
 security src=kl.drivers.RAMDisk, method=Register
 {
     grant()
@@ -206,16 +264,25 @@ security src=kl.drivers.RAMDisk, method=Register
  * This code enables to send requests from VfsRamFs entity to RAMDisk entity
  * and get responses.
  */
-request src=vfs.NetVfs, dst=kl.drivers.RAMDisk
+request src=kl.VfsNet, dst=kl.drivers.RAMDisk
 {
     grant()
 }
 
-response src=kl.drivers.RAMDisk, dst=vfs.NetVfs
+response src=kl.drivers.RAMDisk, dst=kl.VfsNet
 {
     grant()
 }
 
+request src=kl.VfsRamFs, dst=kl.drivers.RAMDisk
+{
+    grant()
+}
+
+response src=kl.drivers.RAMDisk, dst=kl.VfsRamFs
+{
+    grant()
+}
 
 request src=kl.drivers.BSP, dst=kl.core.Core
 {
@@ -227,33 +294,22 @@ response src=kl.core.Core, dst=kl.drivers.BSP
     grant()
 }
 
-
-request src=kl.TlsEntity, dst=vfs.NetVfs
+request src=kl.TlsEntity, dst=kl.VfsNet
 {
     grant()
 }
 
-request src=vfs.NetVfs, dst=kl.TlsEntity
+request src=kl.VfsNet, dst=kl.TlsEntity
 {
     grant()
 }
 
-response src=vfs.NetVfs, dst=kl.TlsEntity
+response src=kl.VfsNet, dst=kl.TlsEntity
 {
     grant()
 }
 
-response src=kl.TlsEntity, dst=vfs.NetVfs
-{
-    grant()
-}
-
-request src=kl.TlsEntity, dst=env.Env
-{
-    grant()
-}
-
-response src=env.Env, dst=kl.TlsEntity
+response src=kl.TlsEntity, dst=kl.VfsNet
 {
     grant()
 }

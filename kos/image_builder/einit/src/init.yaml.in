@@ -3,31 +3,19 @@ entities:
 - name: env.Env
 @INIT_Env_ENTITY_CONNECTIONS@
 
-- name: vfs.NetVfs
-  args:
-    - -l
-    - nodev /tmp ramfs 0
-    - -l
-    - romfs /romfs romfs 0
-    - -l
-    - devfs /dev devfs 0
-  env:
-    ROOTFS: ramdisk0,0 / ext4 0
-    VFS_NETWORK_BACKEND: server:vfs.NetVfs
-    VFS_FILESYSTEM_BACKEND: server:vfs.NetVfs
-  @INIT_NetVfs_ENTITY_CONNECTIONS@
-
 - name: node.Node
   env:
-    VFS_NETWORK_BACKEND: client:vfs.NetVfs
-    VFS_FILESYSTEM_BACKEND: client:vfs.NetVfs
+    VFS_NETWORK_BACKEND: client:kl.VfsNet
+    VFS_FILESYSTEM_BACKEND: client:@ROOTFS_ENTITY@
     PATH: /opt/node/
   @NODE_ARGS@
   connections:
     - target: env.Env
       id: {var: ENV_SERVICE_NAME, include: env/env.h}
-    - target: vfs.NetVfs
-      id: vfs.NetVfs
+    - target: kl.VfsNet
+      id: kl.VfsNet
+    - target: @ROOTFS_ENTITY@
+      id: @ROOTFS_ENTITY@
     - target: kl.TlsEntity
       id: kl.TlsEntity
   @INIT_Node_ENTITY_CONNECTIONS@
