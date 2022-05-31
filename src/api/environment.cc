@@ -775,7 +775,9 @@ void DefaultProcessExitHandlerInternal(Environment* env, ExitCode exit_code) {
   env->isolate()->DumpAndResetStats();
   DisposePlatform();
   uv_library_shutdown();
+#if defined(KOS_NODE_TEST) && (KOS_NODE_TEST != 0)
   fprintf(stderr, "Node exit_code = %d\n", exit_code);
+#endif
   Exit(exit_code);
 }
 

@@ -236,10 +236,10 @@ int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
   struct winsize ws;
   int err;
 
-  KOS_TRACE_INF("!!! KOS DEBUG !!!");
+  KOS_DEBUG_INF("!!! KOS DEBUG !!!");
   *width = 80;
   *height = 25;
-  KOS_TRACE_INF("!!! KOS DEBUG !!! (fake)");
+  KOS_DEBUG_INF("!!! KOS DEBUG !!! (fake)");
   return 0;
 
   do
@@ -253,7 +253,7 @@ int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
   *height = ws.ws_row;
 
   /* KOS: TODO: check & remove if not needed for non-debug build. */
-  KOS_TRACE_INF("!!! KOS DEBUG !!! [%dx%d]", ws.ws_col, ws.ws_row);
+  KOS_DEBUG_INF("!!! KOS DEBUG !!! [%dx%d]", ws.ws_col, ws.ws_row);
 
   return 0;
 }

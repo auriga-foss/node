@@ -196,7 +196,7 @@ static void uv__write_errno(int error_fd) {
 int uv_spawn(uv_loop_t* loop,
              uv_process_t* process,
              const uv_process_options_t* options) {
-  KOS_TRACE_INF("!!! KOS DEBUG !!! [attempt to SPAWN (fork)]");
+  KOS_TEST_INF("!!! KOS DEBUG !!! [attempt to SPAWN (fork)]");
   /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
   return UV_ENOSYS;
 }

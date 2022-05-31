@@ -599,10 +599,12 @@ class TestCase(object):
 
   def IgnoreLine(self, line, output):
     if output.reach_test_body:
-      #Ignore KOS debug messages
-      return line.startswith('!!!') or line.startswith('KOS')
+      #Ignore KOS debug messages and dhcp message
+      return line.startswith('!!!') or line.startswith('KOS') \
+             or line.startswith('en0:') \
+             or line.startswith('no interfaces have a carrier')
     else:
-      if line.startswith('!!! KOS - sysinfo !!!'):
+      if line.startswith('Node started'):
         output.reach_test_body = True;
       #Ignore all input before !!! KOS - sysinfo !!!
       return True

@@ -154,7 +154,7 @@ static void uv__signal_block_and_lock(sigset_t* saved_sigmask) {
   sigemptyset(saved_sigmask);
   if (pthread_sigmask(SIG_SETMASK, &new_mask, saved_sigmask)) {
     /* KOS: TODO: don't abort, but put user log. */
-    KOS_TRACE_INF("KOS limitation on 'pthread_sigmask', ignoring");
+    KOS_DEBUG_INF("KOS limitation on 'pthread_sigmask', ignoring");
   }
 
   if (uv__signal_lock())
@@ -168,7 +168,7 @@ static void uv__signal_unlock_and_unblock(sigset_t* saved_sigmask) {
 
   if (pthread_sigmask(SIG_SETMASK, saved_sigmask, NULL)) {
     /* KOS: TODO: don't abort, but put user log. */
-    KOS_TRACE_INF("KOS limitation on 'pthread_sigmask', ignoring");
+    KOS_DEBUG_INF("KOS limitation on 'pthread_sigmask', ignoring");
   }
 }
 

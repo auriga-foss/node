@@ -58,7 +58,7 @@ struct sysinfo {
 };
 
 static int sysinfo(struct sysinfo* info) {
-  KOS_TRACE_INF("!!! KOS - sysinfo !!!");
+  KOS_DEBUG_INF("!!! KOS - sysinfo !!!");
   return 0;
 };
 

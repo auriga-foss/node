@@ -93,8 +93,37 @@ int wmain(int argc, wchar_t* wargv[]) {
 #else
 // UNIX
 
+#if defined(__KOS__)
+#if defined(TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
+#error "test and remove w/a"
+#else
+// KOS will start dhcp client and node in parallel and when node has already
+// started - network is not ready.
+// So there is code to wait until network is started.
+#warning "WA Code to wait network ready"
+#endif
+#include <kos_net.h>
+#endif
+
 int main(int argc, char* argv[]) {
-#if defined (__KOS__)
+#if defined(__KOS__)
+
+#if defined (TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
+#error "test and remove w/a"
+#else
+// KOS will start dhcp client and node in parallel and when node has already
+// started - network is not ready.
+// So there is code to wait until network is started.
+#warning "WA Code to wait network ready"
+#endif
+  if (!wait_for_network()) {
+    fprintf(stderr, "Error: Wait for network failed!\n");
+  }
+
+#if defined(KOS_NODE_TEST) && (KOS_NODE_TEST != 0)
+  fprintf(stderr, "Node started\n");
+#endif
+
   // Disable stdio buffering, it interacts poorly with printf()
   // calls elsewhere in the program (e.g., any logging from V8.)
   setvbuf(stdout, nullptr, _IONBF, 0);
@@ -102,7 +131,9 @@ int main(int argc, char* argv[]) {
   // we need retur code for testing script
   // to understand the result of the test
   int exit_code = node::Start(argc, argv);
+#if defined(KOS_NODE_TEST) && (KOS_NODE_TEST != 0)
   fprintf(stderr, "Node exit_code = %d\n", exit_code);
+#endif
   return exit_code;
 #else
   return node::Start(argc, argv);
