@@ -233,27 +233,10 @@ int uv_tty_set_mode(uv_tty_t* tty, uv_tty_mode_t mode) {
 
 
 int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
-  struct winsize ws;
-  int err;
-
-  KOS_DEBUG_INF("!!! KOS DEBUG !!!");
+  KOS_DEBUG_INF("");
   *width = 80;
   *height = 25;
-  KOS_DEBUG_INF("!!! KOS DEBUG !!! (fake)");
-  return 0;
-
-  do
-    err = ioctl(uv__stream_fd(tty), TIOCGWINSZ, &ws);
-  while (err == -1 && errno == EINTR);
-
-  if (err == -1)
-    return UV__ERR(errno);
-
-  *width = ws.ws_col;
-  *height = ws.ws_row;
-
-  /* KOS: TODO: check & remove if not needed for non-debug build. */
-  KOS_DEBUG_INF("!!! KOS DEBUG !!! [%dx%d]", ws.ws_col, ws.ws_row);
+  KOS_DEBUG_INF("(fake)");
 
   return 0;
 }
