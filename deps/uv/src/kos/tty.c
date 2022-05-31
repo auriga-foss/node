@@ -233,9 +233,9 @@ int uv_tty_set_mode(uv_tty_t* tty, uv_tty_mode_t mode) {
 
 
 int uv_tty_get_winsize(uv_tty_t* tty, int* width, int* height) {
-  KOS_DEBUG_INF("");
   *width = 80;
   *height = 25;
+
   KOS_DEBUG_INF("(fake)");
 
   return 0;
