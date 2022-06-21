@@ -169,7 +169,6 @@
             'include/uv/aix.h',
             'src/unix/async.c',
             'src/unix/atomic-ops.h',
-            'src/unix/core.c',
             'src/unix/dl.c',
             'src/unix/getaddrinfo.c',
             'src/unix/getnameinfo.c',
@@ -195,6 +194,11 @@
               }],
               ['OS != "solaris" and OS != "android" and OS != "zos"', {
                 'ldflags': [ '-pthread' ],
+              }],
+              ['OS != "win" and OS != "kos"', {
+                'sources': [ # Unix specific sources list, except KOS
+                  'src/unix/core.c',
+                ],
               }],
             ],
           },
@@ -266,6 +270,7 @@
         [ 'OS=="kos"', {
           'defines': [ '_GNU_SOURCE' ],
           'sources': [
+            'src/kos/core.c',
             'src/kos/fs.c',
             'src/kos/process.c',
             'src/kos/signal.c',
