@@ -42,6 +42,7 @@
 #include <pwd.h>
 #include <sys/utsname.h>
 #include <sys/time.h>
+#include <coresrv/thread/thread_api.h>
 
 extern char** environ;
 static int uv__run_pending(uv_loop_t* loop);
@@ -1290,28 +1291,53 @@ uv_pid_t uv_os_getppid(void) {
 
 
 int uv_os_getpriority(uv_pid_t pid, int* priority) {
-  int r;
+  Retcode r;
+  ThreadPriority kos_thread_priority;
 
   if (priority == NULL)
     return UV_EINVAL;
 
-  errno = 0;
-  r = getpriority(PRIO_PROCESS, (int) pid);
+  /* A pid of 0 corresponds to the current thread (at js side) */
+  if (pid == 0)
+    pid = SELF_TID;
 
-  if (r == -1 && errno != 0)
-    return UV__ERR(errno);
+  r = KnThreadGetPriority((Tid)pid, &kos_thread_priority);
+  if (r != rcOk)
+    return UV__ERR(r);
 
-  *priority = r;
+  /* Map KOS ThreadPriority to Unix nice values */
+  if (kos_thread_priority < ThreadPriorityNormal)
+    *priority = UV_PRIORITY_LOW;
+  else if (kos_thread_priority > ThreadPriorityNormal)
+    *priority = UV_PRIORITY_HIGHEST;
+  else
+    *priority = UV_PRIORITY_NORMAL;
+
   return 0;
 }
 
 
 int uv_os_setpriority(uv_pid_t pid, int priority) {
+  Retcode r;
+  ThreadPriority kos_thread_priority;
+
+  /* Map Unix nice values to KOS ThreadPriority */
   if (priority < UV_PRIORITY_HIGHEST || priority > UV_PRIORITY_LOW)
     return UV_EINVAL;
+  else if (priority < UV_PRIORITY_NORMAL)
+    kos_thread_priority = ThreadPriorityHighest;
+  else if (priority > UV_PRIORITY_NORMAL)
+    kos_thread_priority = ThreadPriorityLowest;
+  else
+    kos_thread_priority = ThreadPriorityNormal;
 
-  if (setpriority(PRIO_PROCESS, (int) pid, priority) != 0)
-    return UV__ERR(errno);
+  /* A pid of 0 corresponds to the current thread (at js side) */
+  if (pid == 0)
+    pid = SELF_TID;
+
+  r = KnThreadSetPriority((Tid)pid, kos_thread_priority);
+  if (r != rcOk)
+    return UV__ERR(r);
 
   return 0;
 }
