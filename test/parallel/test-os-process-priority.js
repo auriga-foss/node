@@ -105,8 +105,14 @@ for (let i = PRIORITY_HIGHEST; i <= PRIORITY_LOW; i++) {
   checkPriority(undefined, i);
 
   // Specifying the actual pid works.
-  os.setPriority(process.pid, i);
-  checkPriority(process.pid, i);
+  if (common.isKOS) {
+    // We can't get/set priority for process (entity) in KOS,
+    // it works only for thread id.
+    console.log("[KOS limitation] Skip 'Specifying the actual pid works' step");
+  } else {
+    os.setPriority(process.pid, i);
+    checkPriority(process.pid, i);
+  }
 }
 
 {
@@ -122,9 +128,19 @@ function checkPriority(pid, expected) {
   const priority = os.getPriority(pid);
 
   // Verify that the priority values match on Unix, and are range mapped on
-  // Windows.
-  if (!common.isWindows) {
+  // Windows or KOS.
+  if (!common.isWindows && !common.isKOS) {
     assert.strictEqual(priority, expected);
+    return;
+  }
+
+  if (common.isKOS) {
+    if (expected < PRIORITY_NORMAL)
+      assert.strictEqual(priority, PRIORITY_HIGHEST);
+    else if (expected > PRIORITY_NORMAL)
+      assert.strictEqual(priority, PRIORITY_LOW);
+    else
+      assert.strictEqual(priority, PRIORITY_NORMAL);
     return;
   }
 

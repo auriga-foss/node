@@ -118,6 +118,7 @@ const isAIX = process.platform === 'aix';
 const isSunOS = process.platform === 'sunos';
 const isFreeBSD = process.platform === 'freebsd';
 const isOpenBSD = process.platform === 'openbsd';
+const isKOS = process.platform === 'kos';
 const isLinux = process.platform === 'linux';
 const isOSX = process.platform === 'darwin';
 const isPi = (() => {
@@ -902,6 +903,7 @@ const common = {
   isAlive,
   isDumbTerminal,
   isFreeBSD,
+  isKOS,
   isLinux,
   isMainThread,
   isOpenBSD,
