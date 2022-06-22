@@ -43,55 +43,7 @@
 #include <sys/utsname.h>
 #include <sys/time.h>
 
-#ifdef __sun
-# include <sys/filio.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-#endif
-
-#if defined(__APPLE__)
-# include <sys/filio.h>
-# endif /* defined(__APPLE__) */
-
-
-#if defined(__APPLE__) && !TARGET_OS_IPHONE
-# include <crt_externs.h>
-# include <mach-o/dyld.h> /* _NSGetExecutablePath */
-# define environ (*_NSGetEnviron())
-#else /* defined(__APPLE__) && !TARGET_OS_IPHONE */
 extern char** environ;
-#endif /* !(defined(__APPLE__) && !TARGET_OS_IPHONE) */
-
-
-#if defined(__DragonFly__)      || \
-    defined(__FreeBSD__)        || \
-    defined(__FreeBSD_kernel__) || \
-    defined(__NetBSD__)         || \
-    defined(__OpenBSD__)
-# include <sys/sysctl.h>
-# include <sys/filio.h>
-# include <sys/wait.h>
-# if defined(__FreeBSD__)
-#  define uv__accept4 accept4
-# endif
-# if defined(__NetBSD__)
-#  define uv__accept4(a, b, c, d) paccept((a), (b), (c), NULL, (d))
-# endif
-#endif
-
-#if defined(__MVS__)
-#include <sys/ioctl.h>
-#endif
-
-#if defined(__linux__)
-# include <sys/syscall.h>
-# define uv__accept4 accept4
-#endif
-
-#if defined(__linux__) && defined(__SANITIZE_THREAD__) && defined(__clang__)
-# include <sanitizer/linux_syscall_hooks.h>
-#endif
-
 static int uv__run_pending(uv_loop_t* loop);
 
 /* Verify that uv_buf_t is ABI-compatible with struct iovec. */
@@ -532,28 +484,7 @@ int uv__accept(int sockfd) {
  * by making the system call directly. Musl libc is unaffected.
  */
 int uv__close_nocancel(int fd) {
-#if defined(__APPLE__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdollar-in-identifier-extension"
-#if defined(__LP64__) || TARGET_OS_IPHONE
-  extern int close$NOCANCEL(int);
-  return close$NOCANCEL(fd);
-#else
-  extern int close$NOCANCEL$UNIX2003(int);
-  return close$NOCANCEL$UNIX2003(fd);
-#endif
-#pragma GCC diagnostic pop
-#elif defined(__linux__) && defined(__SANITIZE_THREAD__) && defined(__clang__)
-  long rc;
-  __sanitizer_syscall_pre_close(fd);
-  rc = syscall(SYS_close, fd);
-  __sanitizer_syscall_post_close(rc, fd);
-  return rc;
-#elif defined(__linux__) && !defined(__SANITIZE_THREAD__)
-  return syscall(SYS_close, fd);
-#else
   return close(fd);
-#endif
 }
 
 
@@ -578,9 +509,6 @@ int uv__close_nocheckstdio(int fd) {
 
 int uv__close(int fd) {
   assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
-#if defined(__MVS__)
-  SAVE_ERRNO(epoll_file_close(fd));
-#endif
   return uv__close_nocheckstdio(fd);
 }
 
@@ -681,24 +609,7 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
   ssize_t rc;
   int* pfd;
   int* end;
-#if defined(__linux__)
-  static int no_msg_cmsg_cloexec;
-  if (0 == uv__load_relaxed(&no_msg_cmsg_cloexec)) {
-    rc = recvmsg(fd, msg, flags | 0x40000000);  /* MSG_CMSG_CLOEXEC */
-    if (rc != -1)
-      return rc;
-    if (errno != EINVAL)
-      return UV__ERR(errno);
-    rc = recvmsg(fd, msg, flags);
-    if (rc == -1)
-      return UV__ERR(errno);
-    uv__store_relaxed(&no_msg_cmsg_cloexec, 1);
-  } else {
-    rc = recvmsg(fd, msg, flags);
-  }
-#else
   rc = recvmsg(fd, msg, flags);
-#endif
   if (rc == -1)
     return UV__ERR(errno);
   if (msg->msg_controllen == 0)
@@ -897,15 +808,6 @@ void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   w->pevents |= events;
   maybe_resize(loop, w->fd + 1);
 
-#if !defined(__sun)
-  /* The event ports backend needs to rearm all file descriptors on each and
-   * every tick of the event loop but the other backends allow us to
-   * short-circuit here if the event mask is unchanged.
-   */
-  if (w->events == w->pevents)
-    return;
-#endif
-
   if (QUEUE_EMPTY(&w->watcher_queue))
     QUEUE_INSERT_TAIL(&loop->watcher_queue, &w->watcher_queue);
 
@@ -987,23 +889,6 @@ int uv_getrusage(uv_rusage_t* rusage) {
   rusage->ru_stime.tv_sec = usage.ru_stime.tv_sec;
   rusage->ru_stime.tv_usec = usage.ru_stime.tv_usec;
 
-#if !defined(__MVS__) && !defined(__HAIKU__)
-  rusage->ru_maxrss = usage.ru_maxrss;
-  rusage->ru_ixrss = usage.ru_ixrss;
-  rusage->ru_idrss = usage.ru_idrss;
-  rusage->ru_isrss = usage.ru_isrss;
-  rusage->ru_minflt = usage.ru_minflt;
-  rusage->ru_majflt = usage.ru_majflt;
-  rusage->ru_nswap = usage.ru_nswap;
-  rusage->ru_inblock = usage.ru_inblock;
-  rusage->ru_oublock = usage.ru_oublock;
-  rusage->ru_msgsnd = usage.ru_msgsnd;
-  rusage->ru_msgrcv = usage.ru_msgrcv;
-  rusage->ru_nsignals = usage.ru_nsignals;
-  rusage->ru_nvcsw = usage.ru_nvcsw;
-  rusage->ru_nivcsw = usage.ru_nivcsw;
-#endif
-
   return 0;
 }
 
@@ -1037,15 +922,6 @@ int uv__open_cloexec(const char* path, int flags) {
 
 
 int uv__dup2_cloexec(int oldfd, int newfd) {
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__linux__)
-  int r;
-
-  r = dup3(oldfd, newfd, O_CLOEXEC);
-  if (r == -1)
-    return UV__ERR(errno);
-
-  return r;
-#else
   int err;
   int r;
 
@@ -1060,7 +936,6 @@ int uv__dup2_cloexec(int oldfd, int newfd) {
   }
 
   return r;
-#endif
 }
 
 
