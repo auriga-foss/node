@@ -195,11 +195,6 @@
               ['OS != "solaris" and OS != "android" and OS != "zos"', {
                 'ldflags': [ '-pthread' ],
               }],
-              ['OS != "win" and OS != "kos"', {
-                'sources': [ # Unix specific sources list, except KOS
-                  'src/unix/core.c',
-                ],
-              }],
             ],
           },
           'conditions': [
@@ -218,6 +213,11 @@
               # in include/uv/version.h
               'product_extension': 'so.1',
             }],
+          ],
+        }],
+        ['OS != "win" and OS != "kos"', {
+          'sources': [ # Unix specific sources list, except KOS
+            'src/unix/core.c',
           ],
         }],
         [ 'OS in "linux kos mac ios android zos"', {
