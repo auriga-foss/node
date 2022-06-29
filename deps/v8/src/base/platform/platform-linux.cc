@@ -82,9 +82,8 @@ void* OS::RemapShared(void* old_address, void* new_address, size_t size) {
 #ifndef __KOS__
       mremap(old_address, 0, size, MREMAP_FIXED | MREMAP_MAYMOVE, new_address);
 #else
+      // Due to KOS-specific we can't have mremap() call.
       MAP_FAILED;
-      // KOS: TODO: will need to revisit and check behaviour of
-      //            mremap(old_address, 0, new_address, size, 0);
 #endif
 
   if (result == MAP_FAILED) {
