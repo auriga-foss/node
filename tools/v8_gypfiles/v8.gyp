@@ -585,7 +585,7 @@
               }],
               ['v8_enable_webassembly==1', {
                 'conditions': [
-                  ['OS=="linux" or OS=="kos" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
+                  ['OS in "linux kos mac ios freebsd"', {
                     'sources': [
                       '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_header_set.\\"v8_internal_headers\\".*?v8_current_cpu == \\"x64\\".*?v8_enable_webassembly.*?is_linux.*?sources \\+= ")',
                     ],
@@ -824,7 +824,7 @@
             }],
             ['v8_enable_webassembly==1', {
               'conditions': [
-                ['OS=="linux" or OS=="kos" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
+                ['OS in "linux kos mac ios freebsd"', {
                   'sources': [
                     '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "\\"v8_base_without_compiler.*?v8_current_cpu == \\"x64\\".*?v8_enable_webassembly.*?is_linux.*?sources \\+= ")',
                   ],
@@ -981,12 +981,11 @@
         }],
         # Platforms that don't have Compare-And-Swap (CAS) support need to link atomic library
         # to implement atomic memory access
-        # KOS: TODO: revisit this later, once claified with SDK(updated) toolchain/sysroot
-        #['v8_current_cpu in ["mips64", "mips64el", "ppc", "arm", "riscv64", "loong64"]', {
-        #  'link_settings': {
-        #    'libraries': ['-latomic', ],
-        #  },
-        #}],
+        ['v8_current_cpu in ["mips64", "mips64el", "ppc", "arm", "riscv64", "loong64"]', {
+          'link_settings': {
+            'libraries': ['-latomic', ],
+          },
+        }],
       ],
     },  # v8_base_without_compiler
     {

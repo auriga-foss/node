@@ -215,15 +215,20 @@
             }],
           ],
         }],
-        ['OS != "win" and OS != "kos"', {
+        ['OS not in "win kos"', {
           'sources': [ # Unix specific sources list, except KOS
             'src/unix/core.c',
+            'src/unix/fs.c',
+            'src/unix/process.c',
+            'src/unix/signal.c',
+            'src/unix/tty.c',
+            'src/unix/udp.c',
           ],
         }],
         [ 'OS in "linux kos mac ios android zos"', {
           'sources': [ 'src/unix/proctitle.c' ],
         }],
-        [ 'OS != "zos"', {
+        [ 'OS not in "zos kos"', {
           'cflags': [
             '-fvisibility=hidden',
             '-g',
@@ -232,6 +237,7 @@
             '-Wextra',
             '-Wno-unused-parameter',
             '-Wstrict-prototypes',
+            '-fno-strict-aliasing',
           ],
         }],
         [ 'OS in "mac ios"', {
@@ -249,11 +255,6 @@
         [ 'OS=="linux"', {
           'defines': [ '_GNU_SOURCE' ],
           'sources': [
-            'src/unix/fs.c',
-            'src/unix/process.c',
-            'src/unix/signal.c',
-            'src/unix/tty.c',
-            'src/unix/udp.c',
             'src/unix/epoll.c',
             'src/unix/linux-core.c',
             'src/unix/linux-inotify.c',
@@ -264,7 +265,7 @@
             'src/unix/random-sysctl-linux.c',
           ],
           'link_settings': {
-            'libraries':  [ '-ldl', '-lrt' ],
+            'libraries': [ '-ldl', '-lrt' ],
           },
         }],
         [ 'OS=="kos"', {
@@ -285,10 +286,6 @@
             'src/kos/random-getrandom.c',
             'src/kos/random-sysctl-kos.c',
           ],
-          # KOS: TODO: disable linker options due to KOS specifics
-          #'link_settings': {
-          #  'libraries':  [ '-ldl', '-lrt' ],
-          #},
         }],
         [ 'OS=="android"', {
           'sources': [

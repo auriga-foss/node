@@ -430,11 +430,13 @@
         'cflags': [ '-pthread' ],
         'ldflags': [ '-pthread' ],
       }],
+      [ 'OS in "linux freebsd openbsd solaris android aix cloudabi"', {
+        'ldflags': [ '-rdynamic' ],
+      }],
       [ 'OS in "linux kos freebsd openbsd solaris android aix cloudabi"', {
         'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', ],
         'cflags_cc': [ '-fno-rtti', '-fno-exceptions', '-std=gnu++17' ],
         'defines': [ '__STDC_FORMAT_MACROS' ],
-        #'ldflags': [ '-rdynamic' ],
         'target_conditions': [
           # The 1990s toolchain on SmartOS can't handle thin archives.
           ['_type=="static_library" and OS=="solaris"', {
@@ -596,12 +598,12 @@
         ],
       }],
       # KOS: TODO: need to put KOS-specific option and do not change existing one
-      #['node_shared_openssl!="true"', {
-      #  # `OPENSSL_THREADS` is defined via GYP for openSSL for all architectures.
-      #  'defines': [
-      #    'OPENSSL_THREADS',
-      #  ],
-      #}],
+      ['node_shared_openssl!="true" and OS!="kos"', {
+        # `OPENSSL_THREADS` is defined via GYP for openSSL for all architectures.
+        'defines': [
+          'OPENSSL_THREADS',
+        ],
+      }],
       ['node_shared_openssl!="true" and openssl_no_asm==1', {
         'defines': [
           'OPENSSL_NO_ASM',
