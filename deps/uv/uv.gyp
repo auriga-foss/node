@@ -228,7 +228,7 @@
         [ 'OS in "linux kos mac ios android zos"', {
           'sources': [ 'src/unix/proctitle.c' ],
         }],
-        [ 'OS not in "zos kos"', {
+        [ 'OS != "zos"', {
           'cflags': [
             '-fvisibility=hidden',
             '-g',
@@ -237,6 +237,10 @@
             '-Wextra',
             '-Wno-unused-parameter',
             '-Wstrict-prototypes',
+          ],
+        }],
+        [ 'OS != "kos"', {
+          'cflags': [
             '-fno-strict-aliasing',
           ],
         }],
