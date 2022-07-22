@@ -19,6 +19,7 @@ dump-vars:
 	@echo "	[VAR]	TARGET=$(TARGET)"
 	@echo "	[VAR]   NODE_ADDONS_LIB_ENABLED=$(NODE_ADDONS_LIB_ENABLED)"
 	@echo "	[VAR]   NODE_ADDONS_BUILD_PATH=$(NODE_ADDONS_BUILD_PATH)"
+	@echo "	[VAR]   QEMU_OPTS=$(QEMU_OPTS)"
 
 # Help info with respect to build/make targets
 .PHONY: help
