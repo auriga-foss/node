@@ -24,7 +24,7 @@ SDK_VERSION  ?= 1.1.0.91
 DEST_CPU      = arm64
 ARCH_CFG_ARGS =
 QEMU          = qemu-system-aarch64
-QEMU_OPTS     = -machine vexpress-a15,secure=on
+QEMU_OPTS     = -machine vexpress-a15,secure=on -cpu cortex-a72
 QEMU_OPTS    += -m 2048
 QEMU_OPTS    += -serial stdio
 QEMU_OPTS    += -nographic
