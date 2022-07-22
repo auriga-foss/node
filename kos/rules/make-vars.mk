@@ -1,5 +1,5 @@
 
-TARGET_ARCH ?= arm64
+TARGET_ARCH  = arm64
 NODE_PORT   ?= 0
 QEMU_NET    ?= 0
 
@@ -18,8 +18,6 @@ Q=@
 MAKEFLAGS += -s --no-print-directory
 endif
 
-# SET aarch64 build by default
-ifeq ($(strip $(TARGET_ARCH)),arm64)
 TARGET       := aarch64-kos
 HOST          = x86_64-linux-gnu
 SDK_VERSION  ?= 1.1.0.91
@@ -28,23 +26,8 @@ ARCH_CFG_ARGS =
 QEMU          = qemu-system-aarch64
 # TODO: need to figure out proper args for aarch64 and arm32
 #       qemu since at the KOS-SDK it is used as '-machine virt'
-QEMU_OPTS     = -machine vexpress-a15,secure=on -cpu cortex-a72
-endif
-
-ifeq ($(strip $(TARGET_ARCH)),arm32)
-TARGET       := arm-kos
-HOST          = i686-linux-gnu
-SDK_VERSION  ?= 0.1.0.158
-DEST_CPU      = arm
-ARCH_CFG_ARGS = --with-arm-float-abi=soft
-QEMU          = qemu-system-arm
-QEMU_OPTS     = -machine vexpress-a15,secure=on
-endif
-
-QEMU_OPTS += -m 2048
-QEMU_OPTS += -serial stdio
-QEMU_OPTS += -nographic
-QEMU_OPTS += -monitor none
+QEMU_OPTS     = -machine vexpress-a15,secure=on -cpu cortex-a72 \
+		-m 2048 -serial stdio -nographic -monitor none
 
 ifeq ($(strip $(QEMU_NET)),1)
 QEMU_OPTS += -nic user,hostfwd=tcp:127.0.0.1:${NODE_PORT}-10.0.2.10:8080
