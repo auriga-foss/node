@@ -7,7 +7,6 @@ const events = require('events');
 const { stripVTControlCharacters } = require('internal/util/inspect');
 const repl = require('repl');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Flags: --expose-internals

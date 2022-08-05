@@ -1,6 +1,5 @@
 'use strict';
 const common = require('../common');
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Test inspector open()/close()/url() API. It uses ephemeral ports so can be

@@ -5,7 +5,6 @@ const ArrayStream = require('../common/arraystream');
 const assert = require('assert');
 const repl = require('repl');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // This test verifies that the V8 inspector API is usable in the REPL.

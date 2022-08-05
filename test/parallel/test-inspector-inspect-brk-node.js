@@ -3,7 +3,6 @@ const common = require('../common');
 
 // Regression test for https://github.com/nodejs/node/issues/32648
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 const { NodeInstance } = require('../common/inspector-helper.js');

@@ -1,7 +1,6 @@
 'use strict';
 const common = require('../common');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // Test that example code in doc/api/inspector.md continues to work with the V8

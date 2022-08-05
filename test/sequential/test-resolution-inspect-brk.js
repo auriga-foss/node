@@ -1,6 +1,5 @@
 'use strict';
 const common = require('../common');
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 // A test to ensure that preload modules are given a chance to execute before

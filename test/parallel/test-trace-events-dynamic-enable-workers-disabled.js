@@ -3,7 +3,6 @@
 const common = require('../common');
 const { Worker } = require('worker_threads');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 if (!process.env.HAS_STARTED_WORKER) {

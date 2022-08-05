@@ -3,7 +3,6 @@ const common = require('../common');
 const cluster = require('cluster');
 const assert = require('assert');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 checkForInspectSupport('--inspect');

@@ -1,7 +1,6 @@
 'use strict';
 const common = require('../common');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 const { Worker, isMainThread, parentPort, workerData } =

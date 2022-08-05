@@ -6,7 +6,6 @@
 
 const common = require('../common');
 const fixtures = require('../common/fixtures');
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 const assert = require('assert');

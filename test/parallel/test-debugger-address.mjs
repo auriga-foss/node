@@ -1,6 +1,5 @@
 import { skipIfInspectorDisabled } from '../common/index.mjs';
 
-// Flags: --inspect --expose-internals
 skipIfInspectorDisabled();
 
 import * as fixtures from '../common/fixtures.mjs';

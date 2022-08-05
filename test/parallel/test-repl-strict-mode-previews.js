@@ -4,7 +4,6 @@
 
 const common = require('../common');
 
-// Flags: --inspect --expose-internals
 common.skipIfInspectorDisabled();
 
 if (process.argv[2] === 'child') {
