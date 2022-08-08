@@ -580,6 +580,9 @@ class TestCase(object):
       output.failed = self.IsFailureOutput(output)
     return output.failed
 
+  def IgnoreLine(self, str, output):
+    return False
+
   def IsFailureOutput(self, output):
     return output.exit_code != 0
 
