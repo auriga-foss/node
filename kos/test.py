@@ -602,7 +602,8 @@ class TestCase(object):
       #Ignore KOS debug messages and dhcp message
       return line.startswith('!!!') or line.startswith('KOS') \
              or line.startswith('en0:') \
-             or line.startswith('no interfaces have a carrier')
+             or line.startswith('no interfaces have a carrier') \
+             or line.startswith('Node exit_code')
     else:
       if line.startswith('Node started'):
         output.reach_test_body = True;
