@@ -55,7 +55,6 @@ ROOTFS_DIR     = $(ROOTFS_SOURCE)/root
 RAMDISK0       = $(BUILD)/ramdisk0.img
 SD_CARD0       = $(BUILD)/sdcard0.img
 INSTALL_PREFIX = $(BUILD)/../install
-PKG_CONFIG     = ""
 
 ifeq ($(strip $(ROOTFS_SDCARD)),1)
 QEMU_OPTS += -drive file=$(SD_CARD0),if=sd,format=raw
@@ -124,7 +123,6 @@ export RAMDISK0
 export SD_CARD0
 export ROOTFS_IMAGE
 export INSTALL_PREFIX
-export PKG_CONFIG
 export NODE_ADDONS_BUILD_PATH
 export NODE_ADDONS_LIB_ENABLED
 export USE_TLS
