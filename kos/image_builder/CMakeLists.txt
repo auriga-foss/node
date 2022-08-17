@@ -26,6 +26,23 @@ endif()
 find_package (rump REQUIRED COMPONENTS DHCPCD_ENTITY)
 include_directories (${rump_INCLUDE})
 
+# Import package with romfs_storage entity.
+find_package (romfs_storage REQUIRED)
+initialize_storage_generator ()
+
+# Attach a entity_launcher_client for blob_container
+find_package (entity_launcher_client REQUIRED)
+
+# Attach a blob_container for Execution Manager
+find_package (blob_container REQUIRED)
+
+# Attach a Execution Manager package
+find_package (execution_manager REQUIRED)
+include_directories (${execution_manager_INCLUDE})
+
+# Execution Manager entity
+add_subdirectory (execution_manager)
+
 # Attach a package with VFS entities implementation
 find_package (precompiled_vfs REQUIRED)
 include_directories (${precompiled_vfs_INCLUDE})
