@@ -11,6 +11,9 @@ include (platform/install)
 # Toolchain for work with NK-parser.
 include (platform/nk)
 
+# Include functions for file storages.
+include (platform/storage)
+
 if (USE_KLOG)
     # Add package importing components for building audit entity and connecting
     # to it.

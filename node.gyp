@@ -196,6 +196,7 @@
           'ldflags': [
             '-Wl,--whole-archive',
             '-lvfs_remote',
+            '-lromfs_storage_lib',
             '-Wl,--no-whole-archive'
           ],
         }],

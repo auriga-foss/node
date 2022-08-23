@@ -275,6 +275,7 @@
           },
         }],
         [ 'OS=="kos"', {
+          'cflags_cc': [ '-fexceptions' ],
           'defines': [ '_GNU_SOURCE' ],
           'sources': [
             'src/unix/core.c',
@@ -291,7 +292,19 @@
             'src/unix/procfs-exepath.c',
             'src/unix/random-getrandom.c',
             'src/kos/random-sysctl-kos.c',
+            'src/kos/kos-execmgr.cc',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lvfs_remote',
+              '-lromfs_storage_lib',
+              '-lexecution_manager_proxy',
+              '-lfmt',
+              '-lspdlog',
+              '-llogger',
+              '-lfdn',
+            ],
+          },
         }],
         [ 'OS=="android"', {
           'sources': [
