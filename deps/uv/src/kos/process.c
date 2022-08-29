@@ -33,21 +33,18 @@
 #include <fcntl.h>
 #include <poll.h>
 #include "kos-trace.h"
+#include "kos-execmgr.h"
 
 extern char **environ;
 
-static void uv__chld(uv_signal_t* handle, int signum) {
+static void uv__chld(uv_timer_t* handle) {
   uv_process_t* process;
   uv_loop_t* loop;
   int exit_status;
   int term_signal;
-  int status;
-  pid_t pid;
   QUEUE pending;
   QUEUE* q;
   QUEUE* h;
-
-  assert(signum == SIGCHLD);
 
   QUEUE_INIT(&pending);
   loop = handle->loop;
@@ -58,20 +55,16 @@ static void uv__chld(uv_signal_t* handle, int signum) {
     process = QUEUE_DATA(q, uv_process_t, queue);
     q = QUEUE_NEXT(q);
 
-    do
-      pid = waitpid(process->pid, &status, WNOHANG);
-    while (pid == -1 && errno == EINTR);
+    int res = kos_execmgr_exist(process->pid);
 
-    if (pid == 0)
+    if (res == KOS_EXECMGR_OK)
       continue;
 
-    if (pid == -1) {
-      if (errno != ECHILD)
-        abort();
-      continue;
-    }
+    if (res != KOS_EXECMGR_NONEXIST_ENTITY)
+      abort();
 
-    process->status = status;
+    // Always 0 due KOS limitation
+    process->status = 0;
     QUEUE_REMOVE(&process->queue);
     QUEUE_INSERT_TAIL(&pending, &process->queue);
   }
@@ -89,13 +82,10 @@ static void uv__chld(uv_signal_t* handle, int signum) {
     if (process->exit_cb == NULL)
       continue;
 
+    // KOS Limitation: can't pass exit status from process
+    // or signal to process
     exit_status = 0;
-    if (WIFEXITED(process->status))
-      exit_status = WEXITSTATUS(process->status);
-
     term_signal = 0;
-    if (WIFSIGNALED(process->status))
-      term_signal = WTERMSIG(process->status);
 
     process->exit_cb(process, exit_status, term_signal);
   }
@@ -197,8 +187,41 @@ int uv_spawn(uv_loop_t* loop,
              uv_process_t* process,
              const uv_process_options_t* options) {
   KOS_TEST_INF("[attempt to SPAWN (fork)]");
-  /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
-  return UV_ENOSYS;
+
+  assert(options->file != NULL);
+  assert(!(options->flags & ~(UV_PROCESS_DETACHED |
+                              UV_PROCESS_SETGID |
+                              UV_PROCESS_SETUID |
+                              UV_PROCESS_WINDOWS_HIDE |
+                              UV_PROCESS_WINDOWS_HIDE_CONSOLE |
+                              UV_PROCESS_WINDOWS_HIDE_GUI |
+                              UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS)));
+
+  uv__handle_init(loop, (uv_handle_t*)process, UV_PROCESS);
+  QUEUE_INIT(&process->queue);
+
+  uv_timer_start(&loop->child_watcher, uv__chld, 500, 500);
+
+  /* Acquire write lock to prevent opening new fds in worker threads */
+  uv_rwlock_wrlock(&loop->cloexec_lock);
+
+  kos_entity_id_t pid;
+  int err = kos_execmgr_spawn(options->file, options->args, options->env, &pid);
+
+  /* Release lock in parent process */
+  uv_rwlock_wrunlock(&loop->cloexec_lock);
+
+  /* Only activate this handle if exec() happened successfully */
+  if (!err) {
+    QUEUE_INSERT_TAIL(&loop->process_handles, &process->queue);
+    uv__handle_start(process);
+  }
+
+  process->status = 0;
+  process->pid = pid; // FIXME: KOS PID is wider than pid_t, can be silently truncated
+  process->exit_cb = options->exit_cb;
+
+  return !err ? 0 : UV_ENOSYS;
 }
 
 
@@ -208,10 +231,9 @@ int uv_process_kill(uv_process_t* process, int signum) {
 
 
 int uv_kill(int pid, int signum) {
-  if (kill(pid, signum))
-    return UV__ERR(errno);
-  else
-    return 0;
+  int err = kos_execmgr_kill(pid);
+
+  return !err ? 0 : UV_ENOSYS;
 }
 
 
@@ -219,5 +241,5 @@ void uv__process_close(uv_process_t* handle) {
   QUEUE_REMOVE(&handle->queue);
   uv__handle_stop(handle);
   if (QUEUE_EMPTY(&handle->loop->process_handles))
-    uv_signal_stop(&handle->loop->child_watcher);
+    uv_timer_stop(&handle->loop->child_watcher);
 }
