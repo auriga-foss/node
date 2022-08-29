@@ -79,7 +79,11 @@ int uv_loop_init(uv_loop_t* loop) {
     goto fail_platform_init;
 
   uv__signal_global_once_init();
+#ifdef __KOS__
+  err = uv_timer_init(loop, &loop->child_watcher);
+#else
   err = uv_signal_init(loop, &loop->child_watcher);
+#endif
   if (err)
     goto fail_signal_init;
 

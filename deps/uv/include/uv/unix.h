@@ -221,6 +221,12 @@ typedef struct {
   char* errmsg;
 } uv_lib_t;
 
+#ifdef __KOS__
+#define CHILD_WATCHER uv_timer_t
+#else
+#define CHILD_WATCHER uv_signal_t
+#endif
+
 #define UV_LOOP_PRIVATE_FIELDS                                                \
   unsigned long flags;                                                        \
   int backend_fd;                                                             \
@@ -250,7 +256,7 @@ typedef struct {
   uint64_t time;                                                              \
   int signal_pipefd[2];                                                       \
   uv__io_t signal_io_watcher;                                                 \
-  uv_signal_t child_watcher;                                                  \
+  CHILD_WATCHER child_watcher;                                                  \
   int emfile_fd;                                                              \
   UV_PLATFORM_LOOP_FIELDS                                                     \
 
