@@ -1412,6 +1412,7 @@ LINT_CPP_FILES = $(filter-out $(LINT_CPP_EXCLUDE), $(wildcard \
 	benchmark/napi/*/*.cc \
 	kos/addons/*/*.cc \
 	kos/addons/*/*.h \
+	kos/image_builder/*/*/*.c \
 	src/*.c \
 	src/*.cc \
 	src/*.h \
