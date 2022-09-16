@@ -10,12 +10,47 @@ use EDL kl.drivers.BSP
 use EDL kl.drivers.GPIO
 use EDL kl.drivers.UART
 use EDL kl.rump.Dhcpcd
+use EDL klog.KlogEntity
+use EDL klog_storage.KlogStorageEntity
+
+/*
+  Simplest audit rule for debugging
+
+  Usage: include profile to rule body
+
+  request src=EntityName {
+    audit trace
+    grant()
+  }
+
+  makes Klog print any request from EntityName
+  Can be used in any rules, not only `request`
+*/
+audit profile trace = {
+    0: {
+        base: { kss: [ "denied", "granted" ] },
+    },
+}
+
 
 /* Return of errors is allowed */
 error
 {
     grant()
 }
+
+request src=klog.KlogEntity, dst=kl.core.Core { grant() }
+
+response src=kl.core.Core, dst=klog.KlogEntity { grant () }
+
+request src=klog_storage.KlogStorageEntity, dst=kl.core.Core { grant() }
+
+response src=kl.core.Core, dst=klog_storage.KlogStorageEntity { grant () }
+
+
+request src=klog.KlogEntity, dst=klog_storage.KlogStorageEntity { grant() }
+
+response src=klog_storage.KlogStorageEntity, dst=klog.KlogEntity { grant () }
 
 /* UART */
 execute src=Einit, dst=kl.drivers.UART
@@ -80,6 +115,7 @@ execute src=Einit
 /**
  * This instruction enables to start up and initialize entities.
  */
+
 
 execute src=Einit, dst=kl.drivers.RAMDisk
 {
