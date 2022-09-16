@@ -20,4 +20,12 @@ entities:
       id: kl.TlsEntity
   @INIT_Node_ENTITY_CONNECTIONS@
 
+- name: klog.KlogEntity
+  path: @INIT_KlogEntity_PATH@
+  connections:
+    - target: klog_storage.KlogStorageEntity
+      id: {var: KLOG_STORAGE_SERVER_CONNECTION_ID, include: klog_storage/client.h}
+
+- name: klog_storage.KlogStorageEntity
+
 @INIT_EXTERNAL_ENTITIES@
