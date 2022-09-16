@@ -32,25 +32,24 @@ audit profile trace = {
     },
 }
 
-
 /* Return of errors is allowed */
 error
 {
     grant()
 }
 
-request src=klog.KlogEntity, dst=kl.core.Core { grant() }
+/**
+ * Rules for Klog to Klog storage
+ */
+request src=klog.KlogEntity, dst=klog_storage.KlogStorageEntity
+{
+    grant()
+}
 
-response src=kl.core.Core, dst=klog.KlogEntity { grant () }
-
-request src=klog_storage.KlogStorageEntity, dst=kl.core.Core { grant() }
-
-response src=kl.core.Core, dst=klog_storage.KlogStorageEntity { grant () }
-
-
-request src=klog.KlogEntity, dst=klog_storage.KlogStorageEntity { grant() }
-
-response src=klog_storage.KlogStorageEntity, dst=klog.KlogEntity { grant () }
+response src=klog_storage.KlogStorageEntity, dst=klog.KlogEntity
+{
+    grant ()
+}
 
 /* UART */
 execute src=Einit, dst=kl.drivers.UART
@@ -116,7 +115,6 @@ execute src=Einit
  * This instruction enables to start up and initialize entities.
  */
 
-
 execute src=Einit, dst=kl.drivers.RAMDisk
 {
     grant()
@@ -147,6 +145,26 @@ execute src=Einit, dst=env.Env
  * This code enables to send requests from entities to KOS kernel and get
  * responses. It makes able to use system calls by entities.
  */
+request src=klog.KlogEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=klog.KlogEntity
+{
+    grant ()
+}
+
+request src=klog_storage.KlogStorageEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=klog_storage.KlogStorageEntity
+{
+    grant ()
+}
+
 request src = kl.rump.Dhcpcd, dst = kl.core.Core
 {
     grant()
