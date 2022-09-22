@@ -34,33 +34,15 @@
 #include <assert.h>
 #include <errno.h>
 #include "kos-trace.h"
+/* The following include is needed to use perfomance counters. */
+#include <coresrv/profiler/profiler_api.h>
 
 #include <net/if.h>
+#define BUFFER_SIZE UINT32_C(100)
 #define KOS_CPU_INFO_NOT_SUPPORTED "CPU info is not supported by KOS SDK"
 /* KOS: TODO: complete stub (to be used instead of sys/epoll.h), bogus return
  *            for now.
 */
-
-struct sysinfo {
-  long uptime;             /* Seconds since boot */
-  unsigned long loads[3];  /* 1, 5, and 15 minute load averages */
-  unsigned long totalram;  /* Total usable main memory size */
-  unsigned long freeram;   /* Available memory size */
-  unsigned long sharedram; /* Amount of shared memory */
-  unsigned long bufferram; /* Memory used by buffers */
-  unsigned long totalswap; /* Total swap space size */
-  unsigned long freeswap;  /* Swap space still available */
-  unsigned short procs;    /* Number of current processes */
-  unsigned long totalhigh; /* Total high memory size */
-  unsigned long freehigh;  /* Available high memory size */
-  unsigned int mem_unit;   /* Memory unit size in bytes */
-  char _f[20-2*sizeof(long)-sizeof(int)]; /* Structure padding for libc5 */
-};
-
-static int sysinfo(struct sysinfo* info) {
-  KOS_DEBUG_INF("no sysinfo() is implemented!");
-  return 0;
-};
 
 #include <ifaddrs.h>
 #include <sys/param.h>
@@ -94,181 +76,44 @@ static int sysinfo(struct sysinfo* info) {
 # define CLOCK_BOOTTIME 7
 #endif
 
-static int read_models(unsigned int numcpus, uv_cpu_info_t* ci);
-static int read_times(FILE* statfile_fp,
-                      unsigned int numcpus,
-                      uv_cpu_info_t* ci);
-static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci);
-static uint64_t read_cpufreq(unsigned int cpunum);
+#undef NANOSEC
+#define NANOSEC ((uint64_t) 1e9)
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
-  static clock_t fast_clock_id = -1;
-  struct timespec t;
-  clock_t clock_id;
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (((uint64_t)ts.tv_sec) * NANOSEC + ts.tv_nsec);
+}
 
-  /* Prefer CLOCK_MONOTONIC_COARSE if available but only when it has
-   * millisecond granularity or better.  CLOCK_MONOTONIC_COARSE is
-   * serviced entirely from the vDSO, whereas CLOCK_MONOTONIC may
-   * decide to make a costly system call.
-   */
-  /* TODO(bnoordhuis) Use CLOCK_MONOTONIC_COARSE for UV_CLOCK_PRECISE
-   * when it has microsecond granularity or better (unlikely).
-   */
-  clock_id = CLOCK_MONOTONIC;
-  if (type != UV_CLOCK_FAST)
-    goto done;
 
-  clock_id = uv__load_relaxed(&fast_clock_id);
-  if (clock_id != -1)
-    goto done;
+static int uv__get_memory_metric(const char* metric_name) {
+  char buf[BUFFER_SIZE];
 
-  clock_id = CLOCK_MONOTONIC;
-  if (0 == clock_getres(CLOCK_MONOTONIC_COARSE, &t))
-    if (t.tv_nsec <= 1 * 1000 * 1000)
-      clock_id = CLOCK_MONOTONIC_COARSE;
+  if (metric_name == NULL)
+    return UV_EINVAL;
 
-  uv__store_relaxed(&fast_clock_id, clock_id);
+  memset(buf, 0, BUFFER_SIZE);
+  Retcode retCode = KnProfilerGetCounter(metric_name, BUFFER_SIZE, buf);
+  if (retCode != rcOk)
+    return UV_EINVAL;
 
-done:
-
-  if (clock_gettime(clock_id, &t))
-    return 0;  /* Not really possible. */
-
-  return t.tv_sec * (uint64_t) 1e9 + t.tv_nsec;
+  return atoi(buf) * getpagesize();
 }
 
 
 int uv_resident_set_memory(size_t* rss) {
-  char buf[1024];
-  const char* s;
-  ssize_t n;
-  long val;
-  int fd;
-  int i;
-
-  do
-    fd = open("/proc/self/stat", O_RDONLY);
-  while (fd == -1 && errno == EINTR);
-
-  if (fd == -1)
-    return UV__ERR(errno);
-
-  do
-    n = read(fd, buf, sizeof(buf) - 1);
-  while (n == -1 && errno == EINTR);
-
-  uv__close(fd);
-  if (n == -1)
-    return UV__ERR(errno);
-  buf[n] = '\0';
-
-  s = strchr(buf, ' ');
-  if (s == NULL)
-    goto err;
-
-  s += 1;
-  if (*s != '(')
-    goto err;
-
-  s = strchr(s, ')');
-  if (s == NULL)
-    goto err;
-
-  for (i = 1; i <= 22; i++) {
-    s = strchr(s + 1, ' ');
-    if (s == NULL)
-      goto err;
-  }
-
-  errno = 0;
-  val = strtol(s, NULL, 10);
-  if (errno != 0)
-    goto err;
-  if (val < 0)
-    goto err;
-
-  *rss = val * getpagesize();
-  return 0;
-
-err:
-  return UV_EINVAL;
-}
-
-static int uv__slurp(const char* filename, char* buf, size_t len) {
-  ssize_t n;
-  int fd;
-
-  assert(len > 0);
-
-  fd = uv__open_cloexec(filename, O_RDONLY);
-  if (fd < 0)
-    return fd;
-
-  do
-    n = read(fd, buf, len - 1);
-  while (n == -1 && errno == EINTR);
-
-  if (uv__close_nocheckstdio(fd))
-    abort();
-
-  if (n < 0)
-    return UV__ERR(errno);
-
-  buf[n] = '\0';
-
+  *rss = uv__get_memory_metric("node.Node.allocated");
   return 0;
 }
+
 
 int uv_uptime(double* uptime) {
-  static volatile int no_clock_boottime;
-  char buf[128];
-  struct timespec now;
-  int r;
-
-  /* Try /proc/uptime first, then fallback to clock_gettime(). */
-
-  if (0 == uv__slurp("/proc/uptime", buf, sizeof(buf)))
-    if (1 == sscanf(buf, "%lf", uptime))
-      return 0;
-
-  /* Try CLOCK_BOOTTIME first, fall back to CLOCK_MONOTONIC if not available
-   * (pre-2.6.39 kernels). CLOCK_MONOTONIC doesn't increase when the system
-   * is suspended.
-   */
-  if (no_clock_boottime) {
-    retry_clock_gettime: r = clock_gettime(CLOCK_MONOTONIC, &now);
-  }
-  else if ((r = clock_gettime(CLOCK_BOOTTIME, &now)) && errno == EINVAL) {
-    no_clock_boottime = 1;
-    goto retry_clock_gettime;
-  }
-
-  if (r)
+  struct timespec sp;
+  int ret = clock_gettime(CLOCK_MONOTONIC, &sp);
+  if (ret)
     return UV__ERR(errno);
 
-  *uptime = now.tv_sec;
-  return 0;
-}
-
-
-static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
-  unsigned int num;
-  char buf[1024];
-
-  if (!fgets(buf, sizeof(buf), statfile_fp))
-    return UV_EIO;
-
-  num = 0;
-  while (fgets(buf, sizeof(buf), statfile_fp)) {
-    if (strncmp(buf, "cpu", 3))
-      break;
-    num++;
-  }
-
-  if (num == 0)
-    return UV_EIO;
-
-  *numcpus = num;
+  *uptime = sp.tv_sec;
   return 0;
 }
 
@@ -276,8 +121,6 @@ static int uv__cpu_num(FILE* statfile_fp, unsigned int* numcpus) {
 int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   unsigned int numcpus;
   uv_cpu_info_t* ci;
-  int err;
-  FILE* statfile_fp;
 
   *cpu_infos = NULL;
   *count = 0;
@@ -291,200 +134,9 @@ int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
   *cpu_infos = ci;
   *count = numcpus;
   return 0;
-
-  statfile_fp = uv__open_file("/proc/stat");
-  if (statfile_fp == NULL)
-    return UV__ERR(errno);
-
-  err = uv__cpu_num(statfile_fp, &numcpus);
-  if (err < 0)
-    goto out;
-
-  err = UV_ENOMEM;
-  ci = uv__calloc(numcpus, sizeof(*ci));
-  if (ci == NULL)
-    goto out;
-
-  err = read_models(numcpus, ci);
-  if (err == 0)
-    err = read_times(statfile_fp, numcpus, ci);
-
-  if (err) {
-    uv_free_cpu_info(ci, numcpus);
-    goto out;
-  }
-
-  /* read_models() on x86 also reads the CPU speed from /proc/cpuinfo.
-   * We don't check for errors here. Worst case, the field is left zero.
-   */
-  if (ci[0].speed == 0)
-    read_speeds(numcpus, ci);
-
-  *cpu_infos = ci;
-  *count = numcpus;
-  err = 0;
-
-out:
-
-  if (fclose(statfile_fp))
-    if (errno != EINTR && errno != EINPROGRESS)
-      abort();
-
-  return err;
 }
 
-
-static void read_speeds(unsigned int numcpus, uv_cpu_info_t* ci) {
-  unsigned int num;
-
-  for (num = 0; num < numcpus; num++)
-    ci[num].speed = read_cpufreq(num) / 1000;
-}
-
-
-/* Also reads the CPU frequency on ppc and x86. The other architectures only
- * have a BogoMIPS field, which may not be very accurate.
- *
- * Note: Simply returns on error, uv_cpu_info() takes care of the cleanup.
- */
-static int read_models(unsigned int numcpus, uv_cpu_info_t* ci) {
-  static const char model_marker[] = "model name\t: ";
-  static const char speed_marker[] = "cpu MHz\t\t: ";
-  const char* inferred_model;
-  unsigned int model_idx;
-  unsigned int speed_idx;
-  char buf[1024];
-  char* model;
-  FILE* fp;
-
-  /* Most are unused on non-ARM, non-MIPS and non-x86 architectures. */
-  (void) &model_marker;
-  (void) &speed_marker;
-  (void) &speed_idx;
-  (void) &model;
-  (void) &buf;
-  (void) &fp;
-
-  model_idx = 0;
-  speed_idx = 0;
-
-  /* Now we want to make sure that all the models contain *something* because
-   * it's not safe to leave them as null. Copy the last entry unless there
-   * isn't one, in that case we simply put "unknown" into everything.
-   */
-  inferred_model = "unknown";
-  if (model_idx > 0)
-    inferred_model = ci[model_idx - 1].model;
-
-  while (model_idx < numcpus) {
-    model = uv__strndup(inferred_model, strlen(inferred_model));
-    if (model == NULL)
-      return UV_ENOMEM;
-    ci[model_idx++].model = model;
-  }
-
-  return 0;
-}
-
-
-static int read_times(FILE* statfile_fp,
-                      unsigned int numcpus,
-                      uv_cpu_info_t* ci) {
-  struct uv_cpu_times_s ts;
-  unsigned int ticks;
-  unsigned int multiplier;
-  uint64_t user;
-  uint64_t nice;
-  uint64_t sys;
-  uint64_t idle;
-  uint64_t dummy;
-  uint64_t irq;
-  uint64_t num;
-  uint64_t len;
-  char buf[1024];
-
-  ticks = (unsigned int)sysconf(_SC_CLK_TCK);
-  assert(ticks != (unsigned int) -1);
-  assert(ticks != 0);
-  multiplier = ((uint64_t)1000L / ticks);
-
-  rewind(statfile_fp);
-
-  if (!fgets(buf, sizeof(buf), statfile_fp))
-    abort();
-
-  num = 0;
-
-  while (fgets(buf, sizeof(buf), statfile_fp)) {
-    if (num >= numcpus)
-      break;
-
-    if (strncmp(buf, "cpu", 3))
-      break;
-
-    /* skip "cpu<num> " marker */
-    {
-      unsigned int n;
-      int r = sscanf(buf, "cpu%u ", &n);
-      assert(r == 1);
-      (void) r;  /* silence build warning */
-      for (len = sizeof("cpu0"); n /= 10; len++);
-    }
-
-    /* Line contains user, nice, system, idle, iowait, irq, softirq, steal,
-     * guest, guest_nice but we're only interested in the first four + irq.
-     *
-     * Don't use %*s to skip fields or %ll to read straight into the uint64_t
-     * fields, they're not allowed in C89 mode.
-     */
-    if (6 != sscanf(buf + len,
-                    "%" PRIu64 " %" PRIu64 " %" PRIu64
-                    "%" PRIu64 " %" PRIu64 " %" PRIu64,
-                    &user,
-                    &nice,
-                    &sys,
-                    &idle,
-                    &dummy,
-                    &irq))
-      abort();
-
-    ts.user = user * multiplier;
-    ts.nice = nice * multiplier;
-    ts.sys  = sys * multiplier;
-    ts.idle = idle * multiplier;
-    ts.irq  = irq * multiplier;
-    ci[num++].cpu_times = ts;
-  }
-  assert(num == numcpus);
-
-  return 0;
-}
-
-
-static uint64_t read_cpufreq(unsigned int cpunum) {
-  uint64_t val;
-  char buf[1024];
-  FILE* fp;
-
-  snprintf(buf,
-           sizeof(buf),
-           "/sys/devices/system/cpu/cpu%u/cpufreq/scaling_cur_freq",
-           cpunum);
-
-  fp = uv__open_file(buf);
-  if (fp == NULL)
-    return 0;
-
-  if (fscanf(fp, "%" PRIu64, &val) != 1)
-    val = 0;
-
-  fclose(fp);
-
-  return val;
-}
-
-
-static int uv__ifaddr_exclude(struct ifaddrs *ent, int exclude_type) {
+static int uv__ifaddr_exclude(struct ifaddrs* ent, int exclude_type) {
   if (!((ent->ifa_flags & IFF_UP) && (ent->ifa_flags & IFF_RUNNING)))
     return 1;
   if (ent->ifa_addr == NULL)
@@ -495,6 +147,7 @@ static int uv__ifaddr_exclude(struct ifaddrs *ent, int exclude_type) {
    */
   return !exclude_type;
 }
+
 
 int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
 #ifndef HAVE_IFADDRS_H
@@ -585,7 +238,7 @@ int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
 
 
 void uv_free_interface_addresses(uv_interface_address_t* addresses,
-  int count) {
+                                 int count) {
   int i;
 
   for (i = 0; i < count; i++) {
@@ -603,71 +256,13 @@ void uv__set_process_title(const char* title) {
 }
 
 
-static uint64_t uv__read_proc_meminfo(const char* what) {
-  uint64_t rc;
-  char* p;
-  char buf[4096];  /* Large enough to hold all of /proc/meminfo. */
-
-  if (uv__slurp("/proc/meminfo", buf, sizeof(buf)))
-    return 0;
-
-  p = strstr(buf, what);
-
-  if (p == NULL)
-    return 0;
-
-  p += strlen(what);
-
-  rc = 0;
-  sscanf(p, "%" PRIu64 " kB", &rc);
-
-  return rc * 1024;
-}
-
-
 uint64_t uv_get_free_memory(void) {
-  struct sysinfo info;
-  uint64_t rc;
-
-  rc = uv__read_proc_meminfo("MemFree:");
-
-  if (rc != 0)
-    return rc;
-
-  if (0 == sysinfo(&info))
-    return (uint64_t) info.freeram * info.mem_unit;
-
-  return 0;
+  return uv__get_memory_metric("mem.free");
 }
 
 
 uint64_t uv_get_total_memory(void) {
-  struct sysinfo info;
-  uint64_t rc;
-
-  rc = uv__read_proc_meminfo("MemTotal:");
-
-  if (rc != 0)
-    return rc;
-
-  if (0 == sysinfo(&info))
-    return (uint64_t) info.totalram * info.mem_unit;
-
-  return 0;
-}
-
-
-static uint64_t uv__read_cgroups_uint64(const char* cgroup, const char* param) {
-  char filename[256];
-  char buf[32];  /* Large enough to hold an encoded uint64_t. */
-  uint64_t rc;
-
-  rc = 0;
-  snprintf(filename, sizeof(filename), "/sys/fs/cgroup/%s/%s", cgroup, param);
-  if (0 == uv__slurp(filename, buf, sizeof(buf)))
-    sscanf(buf, "%" PRIu64, &rc);
-
-  return rc;
+  return uv__get_memory_metric("mem.total");
 }
 
 
@@ -677,22 +272,12 @@ uint64_t uv_get_constrained_memory(void) {
    * cgroups. This is OK because a return value of 0 signifies that the memory
    * limit is unknown.
    */
-  return uv__read_cgroups_uint64("memory", "memory.limit_in_bytes");
+  return 0;
 }
 
 
 void uv_loadavg(double avg[3]) {
-  struct sysinfo info;
-  char buf[128];  /* Large enough to hold all of /proc/loadavg. */
-
-  if (0 == uv__slurp("/proc/loadavg", buf, sizeof(buf)))
-    if (3 == sscanf(buf, "%lf %lf %lf", &avg[0], &avg[1], &avg[2]))
-      return;
-
-  if (sysinfo(&info) < 0)
-    return;
-
-  avg[0] = (double) info.loads[0] / 65536.0;
-  avg[1] = (double) info.loads[1] / 65536.0;
-  avg[2] = (double) info.loads[2] / 65536.0;
+  avg[0] = 0.0;
+  avg[1] = 0.0;
+  avg[2] = 0.0;
 }
