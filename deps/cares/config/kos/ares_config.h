@@ -59,10 +59,12 @@
 #define HAVE_ARPA_INET_H 1
 
 /* Define to 1 if you have the <arpa/nameser_compat.h> header file. */
-#define HAVE_ARPA_NAMESER_COMPAT_H 1
+/* KOS: disable option due to KOS specifics. */
+/* #undef HAVE_ARPA_NAMESER_COMPAT_H 1 */
 
 /* Define to 1 if you have the <arpa/nameser.h> header file. */
-#define HAVE_ARPA_NAMESER_H 1
+/* KOS: disable option due to KOS specifics. */
+/* #undef HAVE_ARPA_NAMESER_H 1 */
 
 /* Define to 1 if you have the <assert.h> header file. */
 #define HAVE_ASSERT_H 1
@@ -128,7 +130,8 @@
 #define HAVE_GETNAMEINFO 1
 
 /* Define to 1 if you have the getservbyport_r function. */
-#define HAVE_GETSERVBYPORT_R 1
+/* KOS: disable option due to KOS specifics. */
+/* #undef HAVE_GETSERVBYPORT_R 1 */
 
 /* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
