@@ -77,6 +77,16 @@ response src=kl.drivers.UART, dst=env.Env
     grant()
 }
 
+request src=kl.drivers.UART, dst=kl.drivers.BSP
+{
+    grant()
+}
+
+response src=kl.drivers.BSP, dst=kl.drivers.UART
+{
+    grant()
+}
+
 /* GPIO */
 execute src=Einit, dst=kl.drivers.GPIO
 {

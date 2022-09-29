@@ -53,14 +53,16 @@ $(RAMDISK0): $(PART_0)
 # target to build image to be used on real hardware
 .PHONY: realhw
 realhw:
-	@echo " Preparing test HW image ..."
+	@echo "Preparing test HW image with node arg='$(NODE_ARG)' ..."
+	@echo "UART_OPTION: $(UART_OPTION)"
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
 		cmake -G "Unix Makefiles" \
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
+		$(UART_OPTION) \
 		../ && make kos-image
-	@echo " Image ($(BUILD)/einit/kos-image) ready."
+	@echo "Image ($(BUILD)/einit/kos-image) with node arg='$(NODE_ARG)' ready."
 
 
 # the target 'image' is used for debug purposes to check disk image generation
