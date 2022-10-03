@@ -902,9 +902,7 @@ void WasmCodeAllocator::InsertIntoWritableRegions(base::AddressRegion region,
                    split_range.begin(), split_range.end());
         CHECK(SetPermissions(page_allocator, split_range.begin(),
                              split_range.size(),
-                             FLAG_write_code_using_rwx
-                                 ? PageAllocator::kReadWriteExecute
-                                 : PageAllocator::kReadWrite));
+                             PageAllocator::kReadWriteExecute));
       }
     }
 
@@ -1947,9 +1945,7 @@ void WasmCodeManager::Commit(base::AddressRegion region) {
   // forces all compilation threads to add the missing {CodeSpaceWriteScope}s
   // before modification; and/or adding DCHECKs that {CodeSpaceWriteScope} is
   // open when calling this method.
-  PageAllocator::Permission permission = FLAG_write_code_using_rwx
-      ? PageAllocator::kReadWriteExecute
-      : PageAllocator::kReadWrite;
+  PageAllocator::Permission permission = PageAllocator::kReadWriteExecute;
 
   bool success = false;
   if (MemoryProtectionKeysEnabled()) {
@@ -2021,9 +2017,7 @@ VirtualMemory WasmCodeManager::TryAllocate(size_t size, void* hint) {
   // TODO(v8:8462): Remove eager commit once perf supports remapping.
   if (v8_flags.perf_prof) {
     SetPermissions(GetPlatformPageAllocator(), mem.address(), mem.size(),
-                   FLAG_write_code_using_rwx
-                       ? PageAllocator::kReadWriteExecute
-                       : PageAllocator::kReadWrite);
+                   PageAllocator::kReadWriteExecute);
   }
   return mem;
 }
