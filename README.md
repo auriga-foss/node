@@ -1,18 +1,20 @@
-# Node.js for KOS
+# Node.JS v18.7 for KasperskyOS
 
-Version of the Node.js adapted for use on Kaspersky OS.
-For information on using Node.js, see the [Node.js website][https://nodejs.org/en/].
-Please refer to the original Node.js (parent) [README.md](https://github.com/nodejs/node/blob/main/README.md) for more details.
+A version of the Node.js adapted for use on Kaspersky OS
 
-For a default build and use, you need to install the Kaspersky OS SDK on your system. The latest version of the SDK can be downloaded from this [link](https://os.kaspersky.com/development/).
+For general information on using Node.js, its features and so on, please see the [Node.js website](https://nodejs.org/en/).
 
-All files required to build a web interpreter with Kaspersky OS and an examples of connecting it to your solution are located in the folder:
+Please refer to the original Node.js (parent) [README.md](https://github.com/nodejs/node/blob/main/README.md) for more details not related to this fork.
+
+In order to build the code succesfully, you'll need to install Kaspersky OS SDK on your system. The latest version of the SDK can be downloaded from this [link](https://os.kaspersky.com/development/).
+
+All of the files required to build a web interpreter with Kaspersky OS, and some examples of how you can bridge it with your solution, are located in the folder:
 
 ```bash
 ./kos
 ````
 
-## How-to build (on Linux host)
+## How to build (on Linux host)
 
 Once you have cloned git repository with project sources and satisfied all the
 requirements listed in [Building Node.js](https://github.com/nodejs/node/blob/main/BUILDING.md#building-nodejs-on-supported-platforms),
@@ -25,7 +27,7 @@ KOS-specific build is performed as follows:
 4. Invoke `make compile -j XX` (select number of threads XX according to your
    system's HW performance).
 5. Invoke `SDK_VERSION=<KOS SDK version> make helloworld` in order to run
-   a very simple test to make sure just built binary works (this command will
+   a very simple test to make sure that binary you've just built actually works (this command will
    also build KOS romfs image). \
    Note: specifying `SDK_VERSION` is only necessary when `<KOS SDK root>`
    contains SDK which number differs from what is assigned in `make-vars.mk`
@@ -56,7 +58,7 @@ KOS-specific build is performed as follows:
 
 ## Known issues and limitations
 
-1. No `IPv6` support in KOS.
+1. `IPv6` is not supported, as it's not available in KOS.
 2. Subprocess creation isn't available in KOS.
 3. No `OpenSSL` CLI (since it needs to start a separate process(es) in runtime).
 4. `process.getuid()` isn't supported (corresponding KOS API calls
@@ -79,12 +81,11 @@ KOS-specific build is performed as follows:
 14. Unix domain sockets (i.e. `AF_UNIX`/`AF_LOCAL`) are not bindable.
 15. Host name isn't picked up from `/etc/hostname` file (default host name is
     an empty string).
-16. TCP socket buffer size seems to be fixed.
-17. `getaddrinfo` failures (returns `EAI_AGAIN` or `ENOTFOUND`) on Raspberry Pi 4B target (for instance `test-async-exec-resource-http.js`);
+16. `getaddrinfo` failures (returns `EAI_AGAIN` or `ENOTFOUND`) on Raspberry Pi 4B target (for instance `test-async-exec-resource-http.js`);
 18. KOS image transfer failures over TFTP (for instance `test-async-local-storage-promises.js`);
-19. Timeouts (for instance `test-esm-loader-thenable.mjs`). 2 minutes per test isn't enough for real HW every now and again, even though typical test takes roughly 1 minute?).
+19. Timeouts (for instance `test-esm-loader-thenable.mjs`): 2 minutes per test isn't enough for real HW every now and then, even though typical test takes roughly 1 minute).
 
-## How-to run tests
+## How to run tests
 
 In order to be able to run Node.js tests for KOS, its configuration and build
 have to be done using the following commands (from
