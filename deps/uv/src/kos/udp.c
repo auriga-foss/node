@@ -972,22 +972,20 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
 
 
 int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl) {
-  if (handle->flags & UV_HANDLE_IPV6)
-    return uv__setsockopt(handle,
-                          IP_MULTICAST_TTL,
-                          IPV6_MULTICAST_HOPS,
-                          &ttl,
-                          sizeof(ttl));
+  return uv__setsockopt(handle,
+                        IP_MULTICAST_TTL,
+                        IPV6_MULTICAST_HOPS,
+                        &ttl,
+                        sizeof(ttl));
 }
 
 
 int uv_udp_set_multicast_loop(uv_udp_t* handle, int on) {
-  if (handle->flags & UV_HANDLE_IPV6)
-    return uv__setsockopt(handle,
-                          IP_MULTICAST_LOOP,
-                          IPV6_MULTICAST_LOOP,
-                          &on,
-                          sizeof(on));
+  return uv__setsockopt(handle,
+                        IP_MULTICAST_LOOP,
+                        IPV6_MULTICAST_LOOP,
+                        &on,
+                        sizeof(on));
 }
 
 int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr) {
