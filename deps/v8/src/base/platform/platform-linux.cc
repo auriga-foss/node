@@ -12,7 +12,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef __KOS__
+#ifndef V8_OS_KOS
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 #endif
@@ -28,7 +28,9 @@
 #include <strings.h>   // index
 #include <sys/mman.h>  // mmap & munmap & mremap
 #include <sys/stat.h>  // open
+#if !defined(V8_OS_KOS)
 #include <sys/sysmacros.h>
+#endif
 #include <sys/types.h>  // mmap & munmap
 #include <unistd.h>     // sysconf
 
@@ -79,7 +81,7 @@ void OS::AdjustSchedulingParams() {}
 
 void* OS::RemapShared(void* old_address, void* new_address, size_t size) {
   void* result =
-#ifndef __KOS__
+#ifndef V8_OS_KOS
       mremap(old_address, 0, size, MREMAP_FIXED | MREMAP_MAYMOVE, new_address);
 #else
       // Due to KOS-specific we can't have mremap() call.

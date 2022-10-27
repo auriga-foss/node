@@ -54,7 +54,9 @@
 #include <mach/mach.h>
 #include <malloc/malloc.h>
 #else
+#if !defined(V8_OS_KOS)
 #include <malloc.h>
+#endif
 #endif
 
 #if V8_OS_LINUX
@@ -200,7 +202,7 @@ int GetProtectionFromMemoryPermission(OS::MemoryPermission access) {
 }
 
 // KOS: TODO: enforce code for KOS platform.
-#if V8_OS_LINUX || V8_OS_FREEBSD || defined(__KOS__)
+#if V8_OS_LINUX || V8_OS_FREEBSD || defined(V8_OS_KOS)
 #ifdef __arm__
 
 bool OS::ArmUsingHardFloat() {
@@ -287,7 +289,7 @@ size_t OS::AllocatePageSize() {
 // static
 size_t OS::CommitPageSize() {
   // Commit and allocate page size are the same on posix.
-#if defined(__KOS__)
+#if defined(V8_OS_KOS)
   return static_cast<size_t>(sysconf(_SC_PAGESIZE));
 #else
   return OS::AllocatePageSize();
