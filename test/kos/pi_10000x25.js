@@ -1,5 +1,7 @@
 'use strict';
 require('../common');
+console.time("pi-calcs");
+
 
 // Interpreter/JIT load. '_rawDebug\ can be removed in case of stdout/stderr bugs.
 
@@ -24,6 +26,8 @@ function calculatePI(iterations = 10000) {
   return pi;
 }
 
-for (let i = 25; i > 0; i--) {
+for (let i = 1000; i > 0; i--) {
   process._rawDebug(calculatePI());
 }
+
+console.timeEnd("pi-calcs");
