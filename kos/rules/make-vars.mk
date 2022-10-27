@@ -58,7 +58,7 @@ NODE_ADDONS_LIB_ENABLED ?= 0
 
 # NodeJS configure arguments list
 CONFIG_ARGS = --dest-cpu=$(DEST_CPU) --cross-compiling --dest-os=kos \
-              --fully-static --without-ssl -C --without-dtrace $(ARCH_CFG_ARGS)
+              --fully-static --without-ssl -C $(ARCH_CFG_ARGS)
 
 # default qemu gdb port
 GDB_SERVER_PORT = 1234
