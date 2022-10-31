@@ -758,7 +758,7 @@ Then finish cherry-picking and push the commit upstream:
 $ git add src/node_version.h doc
 $ git diff --staged src doc # read output to validate that changes shows up as expected
 $ git cherry-pick --continue
-$ make lint
+$ make lint-md && make lint-cpp
 $ git push upstream main
 ```
 
@@ -1033,6 +1033,25 @@ existing labels for that release line, such as `vN.x`.
 
 If the release is transitioning from Active LTS to Maintenance, the
 `backport-requested-vN.x` label must be deleted.
+
+### Add new codename to nodejs-latest-linker
+
+In order to make sure a download URL
+(e.g: <https://nodejs.org/download/release/latest-codename/>) will be available
+for the new LTS release line you need to submit a PR to
+<https://github.com/nodejs/nodejs-latest-linker> and add a new entry for the
+new LTS codename in its `ltsNames` map located in the `./latest-linker.js`
+file.
+
+Make sure to reach out to the Build WG in order to validate that the new URL is
+available as part of the LTS release promotion.
+
+### Update Release repo info
+
+Add the new LTS codename to the release schedule table located in the
+`./README.md` file located at the <https://github.com/nodejs/Release>
+repository along with the addition of the new codename to the `./schedule.json`
+file in that same repo.
 
 ## Major releases
 
