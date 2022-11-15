@@ -29,7 +29,7 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@cp -r $(BUILD_ROOT)/../config.gypi $@
 	mkdir -p $@/opt/node/doc/api
 	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/opt/node/doc/api
-	@cp -r $(BUILD_ROOT)/resources/ramfs/* $@
+	@cp -r $(BUILD_ROOT)/image_builder/resources/ramfs/* $@
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
 

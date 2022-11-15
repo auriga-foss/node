@@ -49,9 +49,9 @@ endif()
 
 set (FILES
         $ENV{RAMDISK0}
-        $ENV{BUILD_ROOT}/image_builder/certs/server.crt
-        $ENV{BUILD_ROOT}/image_builder/certs/server.key
-        $ENV{BUILD_ROOT}/image_builder/certs/rootCA.crt)
+        $ENV{BUILD_ROOT}/image_builder/resources/certs/server.crt
+        $ENV{BUILD_ROOT}/image_builder/resources/certs/server.key
+        $ENV{BUILD_ROOT}/image_builder/resources/certs/rootCA.crt)
 
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")
     set (PROG_ARGS "args:")
