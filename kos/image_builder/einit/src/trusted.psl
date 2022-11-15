@@ -4,6 +4,7 @@ use nk.base._
 use EDL kl.core.Core
 use EDL Einit
 use EDL kl.TlsEntity
+use EDL kl.core.NameServer
 
 /**
  * This instruction enables to start up system entities by KOS kernel.
@@ -58,6 +59,31 @@ request src=Einit, dst=kl.TlsEntity
 }
 
 response src=kl.TlsEntity, dst=Einit
+{
+    grant()
+}
+
+security src=kl.core.NameServer
+{
+    grant()
+}
+
+request src=kl.core.NameServer, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.core.NameServer
+{
+    grant()
+}
+
+request dst=kl.core.NameServer
+{
+    grant()
+}
+
+response src=kl.core.NameServer
 {
     grant()
 }

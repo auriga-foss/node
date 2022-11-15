@@ -35,6 +35,8 @@ include_directories (${tls_INCLUDE})
 find_package (uart REQUIRED)
 include_directories (${uart_INCLUDE})
 
+# Attach a Name server
+find_package (ns REQUIRED)
 
 # Payload
 add_subdirectory (node)

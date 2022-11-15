@@ -32,7 +32,8 @@ set (ENTITIES
         ${precompiled_vfsVfsNet}
         Env
         ${tls_ENTITY}
-        ${rump_DHCPCD_ENTITY})
+        ${rump_DHCPCD_ENTITY}
+        ${ns_ENTITY})
 
 set (SECURITY_PSL_FILE "src/security.psl")
 
