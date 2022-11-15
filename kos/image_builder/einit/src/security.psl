@@ -377,3 +377,23 @@ response src=kl.TlsEntity, dst=kl.VfsNet
 {
     grant()
 }
+
+request src=kl.TlsEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+response src=kl.TlsEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=kl.TlsEntity
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=kl.TlsEntity
+{
+    grant()
+}

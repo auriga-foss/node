@@ -68,22 +68,33 @@ set (EXTRA_CONNECTIONS "\
     - target: ${ROOTFS_ENTITY}
       id: ${ROOTFS_ENTITY}")
 
-set_target_properties (${tls_ENTITY} PROPERTIES ${vfs_ENTITY}_REPLACEMENT "")
 set_target_properties (${tls_ENTITY} PROPERTIES
-                       EXTRA_CONNECTIONS ${EXTRA_CONNECTIONS}
-                       EXTRA_ENV "\
-    VFS_FILESYSTEM_BACKEND: client{fs->net}:${ROOTFS_ENTITY}
-    VFS_NETWORK_BACKEND: client:kl.VfsNet")
+    ${vfs_ENTITY}_REPLACEMENT ""
+    EXTRA_CONNECTIONS ${EXTRA_CONNECTIONS}
+    EXTRA_ENV "\
+    VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}
+    VFS_NETWORK_BACKEND: client:kl.VfsNet"
+    EXTRA_ARGS "\
+    - --cacert
+    - /romfs/rootCA.crt
+    - --cert
+    - /romfs/server.crt
+    - --key
+    - /romfs/server.key")
 
-set_target_properties (${rump_DHCPCD_ENTITY} PROPERTIES DEPENDS_ON_ENTITY "")
 set_target_properties (${rump_DHCPCD_ENTITY} PROPERTIES
-                       EXTRA_CONNECTIONS ${EXTRA_CONNECTIONS}
-                       EXTRA_ENV "\
+    DEPENDS_ON_ENTITY ""
+    EXTRA_CONNECTIONS ${EXTRA_CONNECTIONS}
+    EXTRA_ENV "\
     VFS_FILESYSTEM_BACKEND: client{fs->net}:${ROOTFS_ENTITY}
-    VFS_NETWORK_BACKEND: client:kl.VfsNet")
+    VFS_NETWORK_BACKEND: client:kl.VfsNet"
+    EXTRA_ARGS "\
+    - '-4'
+    - -f
+    - /etc/dhcpcd.conf")
 
 set_target_properties (${FS_BACKEND} PROPERTIES
-                       EXTRA_ARGS "\
+    EXTRA_ARGS "\
     - -l
     - nodev /tmp ramfs 0
     - -l
