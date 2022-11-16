@@ -5,6 +5,7 @@ use EDL kl.core.Core
 use EDL Einit
 use EDL kl.TlsEntity
 use EDL kl.core.NameServer
+use EDL kl.CertificateStorageEntity
 
 /**
  * This instruction enables to start up system entities by KOS kernel.
@@ -84,6 +85,61 @@ request dst=kl.core.NameServer
 }
 
 response src=kl.core.NameServer
+{
+    grant()
+}
+
+
+/*--------------------------*/
+/* Certificate Storage rules*/
+/*--------------------------*/
+
+request src=kl.CertificateStorageEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+request src=Einit, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+request src=Einit, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.CertificateStorageEntity, dst=Einit
+{
+    grant()
+}
+
+request src=kl.TlsEntity, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.CertificateStorageEntity, dst=kl.TlsEntity
+{
+    grant()
+}
+
+request src=kl.TlsEntity, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.CertificateStorageEntity, dst=kl.TlsEntity
 {
     grant()
 }

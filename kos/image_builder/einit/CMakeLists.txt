@@ -33,7 +33,8 @@ set (ENTITIES
         Env
         ${tls_ENTITY}
         ${rump_DHCPCD_ENTITY}
-        ${ns_ENTITY})
+        ${ns_ENTITY}
+        ${certificate_storage_ENTITY})
 
 set (SECURITY_PSL_FILE "src/security.psl")
 
@@ -70,7 +71,13 @@ set (EXTRA_CONNECTIONS "\
 
 set_target_properties (${tls_ENTITY} PROPERTIES
     ${vfs_ENTITY}_REPLACEMENT ""
-    EXTRA_CONNECTIONS ${EXTRA_CONNECTIONS}
+    EXTRA_CONNECTIONS "\
+  - target: kl.VfsNet
+    id: kl.VfsNet
+  - target: ${ROOTFS_ENTITY}
+    id: ${ROOTFS_ENTITY}
+  - target: kl.CertificateStorageEntity
+    id: {var: CERTIFICATE_STORAGE_CONNECTION_ID, include: certificate_storage/common.h}"
     EXTRA_ENV "\
     VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}
     VFS_NETWORK_BACKEND: client:kl.VfsNet"
@@ -92,6 +99,16 @@ set_target_properties (${rump_DHCPCD_ENTITY} PROPERTIES
     - '-4'
     - -f
     - /etc/dhcpcd.conf")
+
+set_target_properties (${certificate_storage_ENTITY} PROPERTIES
+    ${vfs_ENTITY}_REPLACEMENT ""
+    EXTRA_CONNECTIONS "\
+  - target: kl.TlsEntity
+    id: kl.TlsEntity
+  - target: ${ROOTFS_ENTITY}
+    id: ${ROOTFS_ENTITY}"
+    EXTRA_ENV "\
+    VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
 
 set_target_properties (${FS_BACKEND} PROPERTIES
     EXTRA_ARGS "\

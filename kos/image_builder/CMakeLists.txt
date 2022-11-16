@@ -32,11 +32,20 @@ include_directories (${precompiled_vfs_INCLUDE})
 find_package (tls REQUIRED)
 include_directories (${tls_INCLUDE})
 
+# Attach a package with UART entity for QEMU and hw + lib implementations
 find_package (uart REQUIRED)
 include_directories (${uart_INCLUDE})
 
-# Attach a Name server
+# Attach a Name server lib implementations
 find_package (ns REQUIRED)
+
+# Attach a package with certificate manager libs implementations
+find_package (cert_mgr REQUIRED)
+include_directories (${cert_mgr_INCLUDE})
+
+# Attach a package with certificate storage entity and libs implementations
+find_package (certificate_storage REQUIRED)
+include_directories (${certificate_storage_INCLUDE})
 
 # Payload
 add_subdirectory (node)
