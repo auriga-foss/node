@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <errno.h>
 #include "kos-trace.h"
+#include <coresrv/thread/thread_api.h>
 /* The following include is needed to use perfomance counters. */
 #include <coresrv/profiler/profiler_api.h>
 
@@ -280,4 +281,56 @@ void uv_loadavg(double avg[3]) {
   avg[0] = 0.0;
   avg[1] = 0.0;
   avg[2] = 0.0;
+}
+
+int uv_os_getpriority(uv_pid_t pid, int* priority) {
+  Retcode r;
+  ThreadPriority kos_thread_priority;
+
+  if (priority == NULL)
+    return UV_EINVAL;
+
+  /* A pid of 0 corresponds to the current thread (at js side) */
+  if (pid == 0)
+    pid = SELF_TID;
+
+  r = KnThreadGetPriority((Tid)pid, &kos_thread_priority);
+  if (r != rcOk)
+    return UV__ERR(r);
+
+  /* Map KOS ThreadPriority to Unix nice values */
+  if (kos_thread_priority < ThreadPriorityNormal)
+    *priority = UV_PRIORITY_LOW;
+  else if (kos_thread_priority > ThreadPriorityNormal)
+    *priority = UV_PRIORITY_HIGHEST;
+  else
+    *priority = UV_PRIORITY_NORMAL;
+
+  return 0;
+}
+
+
+int uv_os_setpriority(uv_pid_t pid, int priority) {
+  Retcode r;
+  ThreadPriority kos_thread_priority;
+
+  /* Map Unix nice values to KOS ThreadPriority */
+  if (priority < UV_PRIORITY_HIGHEST || priority > UV_PRIORITY_LOW)
+    return UV_EINVAL;
+  else if (priority < UV_PRIORITY_NORMAL)
+    kos_thread_priority = ThreadPriorityHighest;
+  else if (priority > UV_PRIORITY_NORMAL)
+    kos_thread_priority = ThreadPriorityLowest;
+  else
+    kos_thread_priority = ThreadPriorityNormal;
+
+  /* A pid of 0 corresponds to the current thread (at js side) */
+  if (pid == 0)
+    pid = SELF_TID;
+
+  r = KnThreadSetPriority((Tid)pid, kos_thread_priority);
+  if (r != rcOk)
+    return UV__ERR(r);
+
+  return 0;
 }

@@ -87,6 +87,7 @@
 #elif defined(__sun)      || \
       defined(__MVS__)    || \
       defined(__NetBSD__) || \
+      defined(__KOS__)    || \
       defined(__HAIKU__)  || \
       defined(__QNX__)
 # include <sys/statvfs.h>
@@ -290,6 +291,11 @@ static ssize_t uv__fs_mkdtemp(uv_fs_t* req) {
 static int (*uv__mkostemp)(char*, int);
 
 
+#ifdef __KOS__
+static void uv__mkostemp_initonce(void) {
+    uv__mkostemp = &mkostemp; /* from stdlib.h */
+}
+#else
 static void uv__mkostemp_initonce(void) {
   /* z/os doesn't have RTLD_DEFAULT but that's okay
    * because it doesn't have mkostemp(O_CLOEXEC) either.
@@ -304,6 +310,7 @@ static void uv__mkostemp_initonce(void) {
   dlerror();
 #endif  /* RTLD_DEFAULT */
 }
+#endif  /* __KOS__ */
 
 
 static int uv__fs_mkstemp(uv_fs_t* req) {
@@ -654,6 +661,7 @@ static int uv__fs_statfs(uv_fs_t* req) {
 #if defined(__sun)      || \
     defined(__MVS__)    || \
     defined(__NetBSD__) || \
+    defined(__KOS__)    || \
     defined(__HAIKU__)  || \
     defined(__QNX__)
   struct statvfs buf;
@@ -676,6 +684,7 @@ static int uv__fs_statfs(uv_fs_t* req) {
     defined(__MVS__)      || \
     defined(__OpenBSD__)  || \
     defined(__NetBSD__)   || \
+    defined(__KOS__)      || \
     defined(__HAIKU__)    || \
     defined(__QNX__)
   stat_fs->f_type = 0;  /* f_type is not supported. */
@@ -1455,6 +1464,7 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
     defined(__FreeBSD__)     || \
     defined(__OpenBSD__)     || \
     defined(__NetBSD__)      || \
+    defined(__KOS__)         || \
     defined(_GNU_SOURCE)     || \
     defined(_BSD_SOURCE)     || \
     defined(_SVID_SOURCE)    || \

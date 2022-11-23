@@ -275,8 +275,8 @@
         [ 'OS=="kos"', {
           'defines': [ '_GNU_SOURCE' ],
           'sources': [
-            'src/kos/core.c',
-            'src/kos/fs.c',
+            'src/unix/core.c',
+            'src/unix/fs.c',
             'src/kos/process.c',
             'src/kos/signal.c',
             'src/kos/tty.c',

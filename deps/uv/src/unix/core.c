@@ -897,7 +897,7 @@ void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   w->pevents |= events;
   maybe_resize(loop, w->fd + 1);
 
-#if !defined(__sun)
+#if !defined(__sun) && !defined(__KOS__)
   /* The event ports backend needs to rearm all file descriptors on each and
    * every tick of the event loop but the other backends allow us to
    * short-circuit here if the event mask is unchanged.
@@ -987,7 +987,7 @@ int uv_getrusage(uv_rusage_t* rusage) {
   rusage->ru_stime.tv_sec = usage.ru_stime.tv_sec;
   rusage->ru_stime.tv_usec = usage.ru_stime.tv_usec;
 
-#if !defined(__MVS__) && !defined(__HAIKU__)
+#if !defined(__MVS__) && !defined(__HAIKU__) && !defined(__KOS__)
   rusage->ru_maxrss = usage.ru_maxrss;
   rusage->ru_ixrss = usage.ru_ixrss;
   rusage->ru_idrss = usage.ru_idrss;
@@ -1414,6 +1414,7 @@ uv_pid_t uv_os_getppid(void) {
 }
 
 
+#if !defined(__KOS__) /* KOS implementation in ../kos/kos-core.c */
 int uv_os_getpriority(uv_pid_t pid, int* priority) {
   int r;
 
@@ -1429,8 +1430,10 @@ int uv_os_getpriority(uv_pid_t pid, int* priority) {
   *priority = r;
   return 0;
 }
+#endif
 
 
+#if !defined(__KOS__) /* KOS implementation in ../kos/kos-core.c */
 int uv_os_setpriority(uv_pid_t pid, int priority) {
   if (priority < UV_PRIORITY_HIGHEST || priority > UV_PRIORITY_LOW)
     return UV_EINVAL;
@@ -1440,6 +1443,7 @@ int uv_os_setpriority(uv_pid_t pid, int priority) {
 
   return 0;
 }
+#endif
 
 
 int uv_os_uname(uv_utsname_t* buffer) {
