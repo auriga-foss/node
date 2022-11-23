@@ -24,7 +24,7 @@
  */
 
 #include "uv.h"
-#include "internal.h"
+#include "../unix/internal.h"
 
 #include <inttypes.h>
 #include <stdint.h>

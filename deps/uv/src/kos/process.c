@@ -20,7 +20,7 @@
  */
 
 #include "uv.h"
-#include "internal.h"
+#include "../unix/internal.h"
 
 #include <stdio.h>
 #include <stdlib.h>

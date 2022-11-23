@@ -19,7 +19,7 @@
  */
 
 #include "uv.h"
-#include "internal.h"
+#include "../unix/internal.h"
 
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* printf */

@@ -25,7 +25,7 @@ static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
 };
 
 #include "uv.h"
-#include "internal.h"
+#include "../unix/internal.h"
 
 #include <assert.h>
 #include <errno.h>

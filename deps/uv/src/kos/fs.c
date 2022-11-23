@@ -27,7 +27,7 @@
  */
 
 #include "uv.h"
-#include "internal.h"
+#include "../unix/internal.h"
 
 #include <errno.h>
 #include <dlfcn.h>

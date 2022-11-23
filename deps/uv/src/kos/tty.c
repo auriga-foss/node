@@ -20,8 +20,8 @@
  */
 
 #include "uv.h"
-#include "internal.h"
-#include "spinlock.h"
+#include "../unix/internal.h"
+#include "../unix/spinlock.h"
 
 #include <stdlib.h>
 #include <assert.h>
