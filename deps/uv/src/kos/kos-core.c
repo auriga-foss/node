@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <errno.h>
 #include "kos-trace.h"
-#include <coresrv/thread/thread_api.h>
+#include <kos/thread.h>
 /* The following include is needed to use perfomance counters. */
 #include <coresrv/profiler/profiler_api.h>
 
