@@ -22,6 +22,7 @@
     'node_use_openssl%': 'true',
     'node_shared_openssl%': 'false',
     'node_v8_options%': '',
+    'node_enable_v8_vtunejit%': 'false',
     'node_core_target_name%': 'node',
     'node_lib_target_name%': 'libnode',
     'node_intermediate_lib_type%': 'static_library',
@@ -453,7 +454,7 @@
                'inputs': [ '<(opensslconfig)', ],
                'outputs': [ '<(opensslconfig_internal)', ],
                'action': [
-                 'python', 'tools/copyfile.py',
+                 '<(python)', 'tools/copyfile.py',
                  '<(opensslconfig)',
                  '<(opensslconfig_internal)',
                ],
@@ -883,6 +884,9 @@
               ],
             },
           ],
+        }],
+        [ 'debug_nghttp2==1', {
+          'defines': [ 'NODE_DEBUG_NGHTTP2=1' ]
         }],
       ],
       'actions': [

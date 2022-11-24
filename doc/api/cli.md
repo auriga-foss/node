@@ -858,6 +858,7 @@ against FIPS-enabled OpenSSL.
 added:
   - v18.5.0
   - v16.17.0
+  - v14.21.0
 -->
 
 Enable OpenSSL default configuration section, `openssl_conf` to be read from
@@ -1208,11 +1209,16 @@ status code 1.
 added:
   - v18.1.0
   - v16.17.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/45214
+    description: Test runner now supports running in watch mode.
 -->
 
 Starts the Node.js command line test runner. This flag cannot be combined with
-`--check`, `--eval`, `--interactive`, or the inspector. See the documentation
-on [running tests from the command line][] for more details.
+`--watch-path`, `--check`, `--eval`, `--interactive`, or the inspector.
+See the documentation on [running tests from the command line][]
+for more details.
 
 ### `--test-name-pattern`
 
@@ -1564,16 +1570,21 @@ added: v5.10.0
 
 Set V8's thread pool size which will be used to allocate background jobs.
 
-If set to `0` then V8 will choose an appropriate size of the thread pool based
-on the number of online processors.
+If set to `0` then Node.js will choose an appropriate size of the thread pool
+based on an estimate of the amount of parallelism.
 
-If the value provided is larger than V8's maximum, then the largest value
-will be chosen.
+The amount of parallelism refers to the number of computations that can be
+carried out simultaneously in a given machine. In general, it's the same as the
+amount of CPUs, but it may diverge in environments such as VMs or containers.
 
 ### `--watch`
 
 <!-- YAML
 added: v18.11.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/45214
+    description: Test runner now supports running in watch mode.
 -->
 
 > Stability: 1 - Experimental
@@ -1607,7 +1618,7 @@ This will turn off watching of required or imported modules, even when used in
 combination with `--watch`.
 
 This flag cannot be combined with
-`--check`, `--eval`, `--interactive`, or the REPL.
+`--check`, `--eval`, `--interactive`, `--test`, or the REPL.
 
 ```console
 $ node --watch-path=./src --watch-path=./tests index.js
@@ -1936,6 +1947,7 @@ V8 options that are allowed are:
 * `--interpreted-frames-native-stack`
 * `--jitless`
 * `--max-old-space-size`
+* `--max-semi-space-size`
 * `--perf-basic-prof-only-functions`
 * `--perf-basic-prof`
 * `--perf-prof-unwinding-info`

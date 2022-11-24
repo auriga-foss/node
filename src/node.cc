@@ -65,6 +65,10 @@
 #include "inspector/worker_inspector.h"  // ParentInspectorHandle
 #endif
 
+#ifdef NODE_ENABLE_VTUNE_PROFILING
+#include "../deps/v8/src/third_party/vtune/v8-vtune.h"
+#endif
+
 #include "large_pages/node_large_page.h"
 
 #if defined(__APPLE__) || defined(__linux__) || defined(_WIN32)
@@ -435,7 +439,7 @@ void ResetSignalHandlers() {
 #endif  // __POSIX__
 }
 
-static std::atomic<uint64_t> init_process_flags = 0;
+static std::atomic<uint32_t> init_process_flags = 0;
 
 static void PlatformInit(ProcessInitializationFlags::Flags flags) {
   // init_process_flags is accessed in ResetStdio(),

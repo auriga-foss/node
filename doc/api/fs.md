@@ -1734,6 +1734,12 @@ system requests but rather the internal buffering `fs.writeFile` performs.
 
 ### `fsPromises.constants`
 
+<!-- YAML
+added:
+  - v18.4.0
+  - v16.17.0
+-->
+
 * {Object}
 
 Returns an object containing commonly used constants for file system
@@ -4320,6 +4326,9 @@ The `atime` and `mtime` arguments follow these rules:
 <!-- YAML
 added: v0.5.10
 changes:
+  - version: v19.1.0
+    pr-url: https://github.com/nodejs/node/pull/45098
+    description: Added recursive support for Linux, AIX and IBMi.
   - version:
       - v15.9.0
       - v14.17.0
@@ -4376,10 +4385,6 @@ the returned {fs.FSWatcher}.
 
 The `fs.watch` API is not 100% consistent across platforms, and is
 unavailable in some situations.
-
-The recursive option is only supported on macOS and Windows.
-An `ERR_FEATURE_UNAVAILABLE_ON_PLATFORM` exception will be thrown
-when the option is used on a platform that does not support it.
 
 On Windows, no events will be emitted if the watched directory is moved or
 renamed. An `EPERM` error is reported when the watched directory is deleted.
@@ -7040,7 +7045,7 @@ import { open, constants } from 'node:fs';
 const {
   O_RDWR,
   O_CREAT,
-  O_EXCL
+  O_EXCL,
 } = constants;
 
 open('/path/to/my/file', O_RDWR | O_CREAT | O_EXCL, (err, fd) => {

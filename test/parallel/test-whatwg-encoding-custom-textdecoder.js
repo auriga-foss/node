@@ -113,7 +113,7 @@ if (common.hasIntl) {
       '  fatal: false,\n' +
       '  ignoreBOM: true,\n' +
       '  [Symbol(flags)]: 4,\n' +
-      '  [Symbol(handle)]: Converter {}\n' +
+      '  [Symbol(handle)]: undefined\n' +
       '}'
     );
   } else {
@@ -210,4 +210,11 @@ if (common.hasIntl) {
     // Encoding may not be available, e.g. small-icu builds
     assert.strictEqual(e.code, 'ERR_ENCODING_NOT_SUPPORTED');
   }
+}
+
+{
+  const buffer = new ArrayBuffer(1);
+  new MessageChannel().port1.postMessage(buffer, [buffer]); // buffer is detached
+  const decoder = new TextDecoder();
+  assert.strictEqual(decoder.decode(buffer), '');
 }

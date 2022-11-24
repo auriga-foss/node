@@ -50,6 +50,7 @@
 #include "node_buffer.h"
 #include "node_errors.h"
 #include "node_internals.h"
+#include "string_bytes.h"
 #include "util-inl.h"
 #include "v8.h"
 
@@ -96,7 +97,6 @@ using v8::NewStringType;
 using v8::Object;
 using v8::ObjectTemplate;
 using v8::String;
-using v8::Uint8Array;
 using v8::Value;
 
 namespace i18n {
@@ -436,16 +436,27 @@ void ConverterObject::Create(const FunctionCallbackInfo<Value>& args) {
 void ConverterObject::Decode(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  CHECK_GE(args.Length(), 3);  // Converter, Buffer, Flags
+  CHECK_GE(args.Length(), 4);  // Converter, Buffer, Flags, Encoding
 
   ConverterObject* converter;
   ASSIGN_OR_RETURN_UNWRAP(&converter, args[0].As<Object>());
+
+  if (!(args[1]->IsArrayBuffer() || args[1]->IsSharedArrayBuffer() ||
+        args[1]->IsArrayBufferView())) {
+    return node::THROW_ERR_INVALID_ARG_TYPE(
+        env->isolate(),
+        "The \"input\" argument must be an instance of SharedArrayBuffer, "
+        "ArrayBuffer or ArrayBufferView.");
+  }
+
   ArrayBufferViewContents<char> input(args[1]);
   int flags = args[2]->Uint32Value(env->context()).ToChecked();
 
+  CHECK(args[3]->IsString());
+  Local<String> from_encoding = args[3].As<String>();
+
   UErrorCode status = U_ZERO_ERROR;
   MaybeStackBuffer<UChar> result;
-  MaybeLocal<Object> ret;
 
   UBool flush = (flags & CONVERTER_FLAGS_FLUSH) == CONVERTER_FLAGS_FLUSH;
 
@@ -501,23 +512,38 @@ void ConverterObject::Decode(const FunctionCallbackInfo<Value>& args) {
         converter->set_bom_seen(true);
       }
     }
-    ret = ToBufferEndian(env, &result);
-    if (omit_initial_bom && !ret.IsEmpty()) {
+
+    Local<Value> error;
+    UChar* output = result.out();
+    size_t beginning = 0;
+    size_t length = result.length() * sizeof(UChar);
+
+    if (omit_initial_bom) {
       // Perform `ret = ret.slice(2)`.
-      CHECK(ret.ToLocalChecked()->IsUint8Array());
-      Local<Uint8Array> orig_ret = ret.ToLocalChecked().As<Uint8Array>();
-      ret = Buffer::New(env,
-                        orig_ret->Buffer(),
-                        orig_ret->ByteOffset() + 2,
-                        orig_ret->ByteLength() - 2)
-                            .FromMaybe(Local<Uint8Array>());
+      beginning += 2;
+      length -= 2;
     }
-    if (!ret.IsEmpty())
-      args.GetReturnValue().Set(ret.ToLocalChecked());
-    return;
+
+    char* value = reinterpret_cast<char*>(output) + beginning;
+
+    if (IsBigEndian()) {
+      SwapBytes16(value, length);
+    }
+
+    MaybeLocal<Value> encoded =
+        StringBytes::Encode(env->isolate(), value, length, UCS2, &error);
+
+    Local<Value> ret;
+    if (encoded.ToLocal(&ret)) {
+      args.GetReturnValue().Set(ret);
+      return;
+    }
   }
 
-  args.GetReturnValue().Set(status);
+  node::THROW_ERR_ENCODING_INVALID_ENCODED_DATA(
+      env->isolate(),
+      "The encoded data was not valid for encoding %s",
+      *node::Utf8Value(env->isolate(), from_encoding));
 }
 
 ConverterObject::ConverterObject(

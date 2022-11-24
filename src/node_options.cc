@@ -152,9 +152,9 @@ void EnvironmentOptions::CheckOptions(std::vector<std::string>* errors,
       errors->push_back("either --test or --interactive can be used, not both");
     }
 
-    if (watch_mode) {
-      // TODO(MoLow): Support (incremental?) watch mode within test runner
-      errors->push_back("either --test or --watch can be used, not both");
+    if (watch_mode_paths.size() > 0) {
+      errors->push_back(
+          "--watch-path cannot be used in combination with --test");
     }
 
 #ifndef ALLOW_ATTACHING_DEBUGGER_IN_TEST_RUNNER
@@ -709,6 +709,7 @@ PerIsolateOptionsParser::PerIsolateOptionsParser(
             V8Option{},
             kAllowedInEnvvar);
   AddOption("--max-old-space-size", "", V8Option{}, kAllowedInEnvvar);
+  AddOption("--max-semi-space-size", "", V8Option{}, kAllowedInEnvvar);
   AddOption("--perf-basic-prof", "", V8Option{}, kAllowedInEnvvar);
   AddOption(
       "--perf-basic-prof-only-functions", "", V8Option{}, kAllowedInEnvvar);

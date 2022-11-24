@@ -35,10 +35,13 @@ release.
 </tr>
 <tr>
   <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V19.md#19.0.0">19.0.0</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V19.md#19.1.0">19.1.0</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V19.md#19.0.1">19.0.1</a><br/>
+<a href="doc/changelogs/CHANGELOG_V19.md#19.0.0">19.0.0</a><br/>
   </td>
   <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V18.md#18.12.0">18.12.0</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V18.md#18.12.1">18.12.1</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V18.md#18.12.0">18.12.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V18.md#18.11.0">18.11.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V18.md#18.10.0">18.10.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V18.md#18.9.1">18.9.1</a><br/>
@@ -54,7 +57,9 @@ release.
 <a href="doc/changelogs/CHANGELOG_V18.md#18.0.0">18.0.0</a><br/>
   </td>
   <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V16.md#16.17.1">16.17.1</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V16.md#16.18.1">16.18.1</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V16.md#16.18.0">16.18.0</a><br/>
+<a href="doc/changelogs/CHANGELOG_V16.md#16.17.1">16.17.1</a><br/>
 <a href="doc/changelogs/CHANGELOG_V16.md#16.17.0">16.17.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V16.md#16.16.0">16.16.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V16.md#16.15.1">16.15.1</a><br/>
@@ -86,7 +91,9 @@ release.
 <a href="doc/changelogs/CHANGELOG_V16.md#16.0.0">16.0.0</a><br/>
     </td>
     <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V14.md#14.20.1">14.20.1</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V14.md#14.21.1">14.21.1</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V14.md#14.21.0">14.21.0</a><br/>
+<a href="doc/changelogs/CHANGELOG_V14.md#14.20.1">14.20.1</a><br/>
 <a href="doc/changelogs/CHANGELOG_V14.md#14.20.0">14.20.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V14.md#14.19.3">14.19.3</a><br/>
 <a href="doc/changelogs/CHANGELOG_V14.md#14.19.2">14.19.2</a><br/>
