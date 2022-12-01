@@ -1,11 +1,33 @@
 use nk.base._
 
-/* Declaration of entities. */
-use EDL kl.core.Core
+/* Declaration of main system entities. */
 use EDL Einit
-use EDL kl.TlsEntity
+use EDL env.Env
+use EDL kl.core.Core
 use EDL kl.core.NameServer
+
+/* Declaration of entities. */
+use EDL kl.VfsNet
+use EDL kl.VfsRamFs
+use EDL kl.TlsEntity
+use EDL kl.rump.Dhcpcd
 use EDL kl.CertificateStorageEntity
+
+/* Declaration of drivers entities. */
+use EDL kl.drivers.BSP
+use EDL kl.drivers.GPIO
+use EDL kl.drivers.UART
+use EDL kl.drivers.RAMDisk
+
+/* Declaration of KLog entities. */
+use EDL klog.KlogEntity
+use EDL klog_storage.KlogStorageEntity
+
+/* Return of errors is allowed */
+error
+{
+    grant()
+}
 
 /**
  * This instruction enables to start up system entities by KOS kernel.
@@ -34,17 +56,48 @@ response src=kl.core.Core, dst=Einit
     grant()
 }
 
-request src=kl.TlsEntity, dst=kl.core.Core
+/**
+ * This instruction enables to start up and initialize non-platform entities.
+ */
+execute src=Einit
 {
     grant()
 }
 
-response src=kl.core.Core, dst=kl.TlsEntity
+/**
+ * This instruction enables to start up and initialize entities.
+ */
+execute src=Einit, dst=env.Env
 {
     grant()
 }
 
-request src=Einit, dst=kl.TlsEntity
+execute src=Einit, dst=kl.VfsNet
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.BSP
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.GPIO
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.UART
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.RAMDisk
 {
     grant()
 }
@@ -54,21 +107,15 @@ execute src=Einit, dst=kl.TlsEntity
     grant()
 }
 
-request src=Einit, dst=kl.TlsEntity
+execute src=Einit, dst=kl.CertificateStorageEntity
 {
     grant()
 }
 
-response src=kl.TlsEntity, dst=Einit
-{
-    grant()
-}
-
-security src=kl.core.NameServer
-{
-    grant()
-}
-
+/**
+ * This code enables to send requests from NameServer entity to KOS kernel and get
+ * responses. It makes able to use system calls by NameServer.
+ */
 request src=kl.core.NameServer, dst=kl.core.Core
 {
     grant()
@@ -89,11 +136,122 @@ response src=kl.core.NameServer
     grant()
 }
 
+/**
+ * This code enables to send requests from Env entity to KOS kernel
+ * and get responses.
+ */
+request src=env.Env, dst=kl.core.Core
+{
+    grant()
+}
 
-/*--------------------------*/
-/* Certificate Storage rules*/
-/*--------------------------*/
+response src=kl.core.Core, dst=env.Env
+{
+    grant()
+}
 
+/**
+ * This code enables to send requests from VfsNet entity to KOS kernel
+ * and get responses.
+ */
+request src=kl.VfsNet, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.VfsNet
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RamFs entity to KOS kernel
+ * and get responses.
+ */
+request src=kl.VfsRamFs, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from Dhcpcd entity to KOS kernel
+ * and get responses.
+ */
+request src = kl.rump.Dhcpcd, dst = kl.core.Core
+{
+    grant()
+}
+
+response src = kl.core.Core, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from UART entity to KOS kernel
+ * and get responses.
+ */
+request src=kl.drivers.UART, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.UART
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from GPIO driver to KOS kernel
+ * and get responses.
+ */
+request src=kl.drivers.GPIO, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.GPIO
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from BSP driver to  KOS kernel
+ * and get responses.
+ */
+request src=kl.drivers.BSP, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.BSP
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from TlsEntity 
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.TlsEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.TlsEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from CertificateStorageEntity 
+ * entity to KOS kernel and get responses.
+ */
 request src=kl.CertificateStorageEntity, dst=kl.core.Core
 {
     grant()
@@ -104,27 +262,209 @@ response src=kl.core.Core, dst=kl.CertificateStorageEntity
     grant()
 }
 
-request src=Einit, dst=kl.CertificateStorageEntity
+/**
+ * This code enables to send requests from RAMDisk driver to KOS kernel
+ * and get responses.
+ */
+request src=kl.drivers.RAMDisk, dst=kl.core.Core
 {
     grant()
 }
 
-execute src=Einit, dst=kl.CertificateStorageEntity
+response src=kl.core.Core, dst=kl.drivers.RAMDisk
 {
     grant()
 }
 
-request src=Einit, dst=kl.CertificateStorageEntity
+/**
+ * This code enables to send requests from KlogEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=klog.KlogEntity, dst=kl.core.Core
 {
     grant()
 }
 
-response src=kl.CertificateStorageEntity, dst=Einit
+response src=kl.core.Core, dst=klog.KlogEntity
+{
+    grant ()
+}
+
+/**
+ * This code enables to send requests from KlogStorageEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=klog_storage.KlogStorageEntity, dst=kl.core.Core
 {
     grant()
 }
 
+response src=kl.core.Core, dst=klog_storage.KlogStorageEntity
+{
+    grant ()
+}
+
+/**
+ * This code enables to send requests from KlogEntity
+ * entity to KlogStorageEntity entity and get responses.
+ */
+request src=klog.KlogEntity, dst=klog_storage.KlogStorageEntity
+{
+    grant()
+}
+
+response src=klog_storage.KlogStorageEntity, dst=klog.KlogEntity
+{
+    grant ()
+}
+
+/**
+ * This code enables to send requests from Env
+ * entity to UART entity and get responses.
+ */
+request src=env.Env, dst=kl.drivers.UART
+{
+    grant()
+}
+
+response src=kl.drivers.UART, dst=env.Env
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from UART
+ * entity to BSP entity and get responses.
+ */
+request src=kl.drivers.UART, dst=kl.drivers.BSP
+{
+    grant()
+}
+
+response src=kl.drivers.BSP, dst=kl.drivers.UART
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from VfsNet entity
+ * to RAMDisk driver and get responses.
+ */
+request src=kl.VfsNet, dst=kl.drivers.RAMDisk
+{
+    grant()
+}
+
+response src=kl.drivers.RAMDisk, dst=kl.VfsNet
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from VfsRamFs entity
+ * to RAMDisk driver and get responses.
+ */
+request src=kl.VfsRamFs, dst=kl.drivers.RAMDisk
+{
+    grant()
+}
+
+response src=kl.drivers.RAMDisk, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from Dhcpcd entity 
+ * to VfsNet entity and get responses.
+ */
+request src = kl.rump.Dhcpcd, dst = kl.VfsNet
+{
+    grant()
+}
+
+response src = kl.rump.Dhcpcd, dst = kl.VfsNet
+{
+    grant()
+}
+
+request src = kl.VfsNet, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+response src = kl.VfsNet, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from Dhcpcd entity 
+ * to VfsRamFs entity and get responses.
+ */
+request src = kl.rump.Dhcpcd, dst = kl.VfsRamFs
+{
+    grant()
+}
+
+response src = kl.VfsRamFs, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from TlsEntity 
+ * entity to VfsNet entity and get responses.
+ */
+request src=kl.TlsEntity, dst=kl.VfsNet
+{
+    grant()
+}
+
+response src=kl.TlsEntity, dst=kl.VfsNet
+{
+    grant()
+}
+
+request src=kl.VfsNet, dst=kl.TlsEntity
+{
+    grant()
+}
+
+response src=kl.VfsNet, dst=kl.TlsEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from TlsEntity 
+ * entity to VfsRamFs entity and get responses.
+ */
+request src=kl.TlsEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=kl.TlsEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from CertificateStorageEntity 
+ * entity to TlsEntity entity and get responses.
+ */
 request src=kl.TlsEntity, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.TlsEntity, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+request src=kl.CertificateStorageEntity, dst=kl.TlsEntity
 {
     grant()
 }
@@ -134,12 +474,26 @@ response src=kl.CertificateStorageEntity, dst=kl.TlsEntity
     grant()
 }
 
-request src=kl.TlsEntity, dst=kl.CertificateStorageEntity
+/**
+ * This code enables to send requests from CertificateStorageEntity 
+ * entity to VfsRamFs entity and get responses.
+ */
+request src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
 {
     grant()
 }
 
-response src=kl.CertificateStorageEntity, dst=kl.TlsEntity
+response src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
 {
     grant()
 }
