@@ -48,11 +48,7 @@ else()
     set (FS_BACKEND ${precompiled_vfsVfsRamFs})
 endif()
 
-set (FILES
-        $ENV{RAMDISK0}
-        $ENV{BUILD_ROOT}/image_builder/resources/certs/server.crt
-        $ENV{BUILD_ROOT}/image_builder/resources/certs/server.key
-        $ENV{BUILD_ROOT}/image_builder/resources/certs/rootCA.crt)
+set (FILES $ENV{RAMDISK0})
 
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")
     set (PROG_ARGS "args:")
@@ -71,23 +67,17 @@ set (EXTRA_CONNECTIONS "\
 
 set_target_properties (${tls_ENTITY} PROPERTIES
     ${vfs_ENTITY}_REPLACEMENT ""
-    EXTRA_CONNECTIONS "\
-  - target: kl.VfsNet
-    id: kl.VfsNet
-  - target: ${ROOTFS_ENTITY}
-    id: ${ROOTFS_ENTITY}
-  - target: kl.CertificateStorageEntity
-    id: {var: CERTIFICATE_STORAGE_CONNECTION_ID, include: certificate_storage/common.h}"
-    EXTRA_ENV "\
-    VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}
-    VFS_NETWORK_BACKEND: client:kl.VfsNet"
+    EXTRA_CONNECTIONS ${EXTRA_CONNECTIONS}
     EXTRA_ARGS "\
     - --cacert
-    - /romfs/rootCA.crt
+    - /certs/rootCA.crt
     - --cert
-    - /romfs/server.crt
+    - /certs/server.crt
     - --key
-    - /romfs/server.key")
+    - /certs/server.key"
+    EXTRA_ENV "\
+    VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}
+    VFS_NETWORK_BACKEND: client:kl.VfsNet")
 
 set_target_properties (${rump_DHCPCD_ENTITY} PROPERTIES
     DEPENDS_ON_ENTITY ""
@@ -120,6 +110,34 @@ set_target_properties (${FS_BACKEND} PROPERTIES
     - nodev /var ramfs 0
     - -l
     - devfs /dev devfs 0")
+
+# Create Root CA key
+add_custom_command (OUTPUT rootCA.key
+                    COMMAND openssl genrsa -out rootCA.key 2048)
+
+# Create and self sign the Root Certificate
+add_custom_command (OUTPUT rootCA.crt
+                    COMMAND openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.crt -subj '/CN=localhost'
+                    DEPENDS rootCA.key)
+
+# Create the client certificate key
+add_custom_command (OUTPUT client.key
+                    COMMAND openssl genrsa -out client.key 2048)
+
+# Create the certificate signing request (csr)
+add_custom_command (OUTPUT client.csr
+                    COMMAND openssl req -new -sha256 -key client.key -subj '/C=US/ST=CA/O=MyOrg, Inc./CN=localhost' -out client.csr
+                    DEPENDS client.key)
+
+# Generate the certificate
+add_custom_command (OUTPUT client.crt
+                    COMMAND openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -days 500 -sha256 -out client.crt
+                    DEPENDS client.csr rootCA.crt rootCA.key)
+
+add_custom_command (OUTPUT $ENV{RAMDISK0}
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different client.crt $ENV{ROOTFS_SOURCE}/ramdisk0/certs/
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different client.key $ENV{ROOTFS_SOURCE}/ramdisk0/certs/
+                    DEPENDS rootCA.crt client.crt client.key)
 
 set (INIT_KlogEntity_PATH "KlogEntityHw")
 # Building Kaspersky OS solution image for a hardware platform.

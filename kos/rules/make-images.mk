@@ -32,6 +32,7 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@cp -r $(BUILD_ROOT)/image_builder/resources/ramfs/* $@
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
+	@cp -r $(BUILD_ROOT)/image_builder/resources/certs $@
 
 $(PART_0): $(ROOTFS_DIR)
 	@echo "Preparing partition for ramdisk ..."
