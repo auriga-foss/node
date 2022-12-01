@@ -99,14 +99,14 @@ So the solution will start.
 * `image_builder` - sources and CMake-based build system for KOS images along
   with build output files.
   * `build-<arch>` - architecture-specific KOS build artifacts.
-  * `certs` - TLS-related stuff.
   * `einit`, `env`, `klog_storage` - sources and CMake build rules for
     corresponding entities.
   * `node` - CMake build rules for Node.js itself.
   * `resources` - description files for all the entities.
+    * `certs` - TLS-related stuff.
+    * `edl` - entities *.edl description files
+    * `ramfs` - additional files to be added to the KOS image filesystems.
   * `CMakeLists.txt` - project-level CMake build rules.
-* `resources` - additional files to be added to the KOS image filesystems.
-* `rootfs` - Node.js files to be added to the KOS image filesystems.
 * `rules` - build rules for the aarch64 Node.js customized project (all the files
   from this folder are included into main Makefile, see above).
   * `make-images.mk` - a set of rules to build KOS images.
