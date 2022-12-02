@@ -61,6 +61,7 @@ realhw:
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
+		-D USE_TLS=$(USE_TLS) \
 		$(UART_OPTION) \
 		../ && make kos-image
 	@echo "Image ($(BUILD)/einit/kos-image) with node arg='$(NODE_ARG)' ready."

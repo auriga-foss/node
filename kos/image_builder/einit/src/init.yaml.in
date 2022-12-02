@@ -5,7 +5,7 @@ entities:
 
 - name: node.Node
   env:
-    VFS_NETWORK_BACKEND: client:kl.TlsEntity
+    VFS_NETWORK_BACKEND: @NODE_VFS_NETWORK_BACKEND@
     VFS_FILESYSTEM_BACKEND: client:@ROOTFS_ENTITY@
     PATH: /opt/node/
   @NODE_ARGS@

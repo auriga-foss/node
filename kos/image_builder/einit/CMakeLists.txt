@@ -48,6 +48,12 @@ else()
     set (FS_BACKEND ${precompiled_vfsVfsRamFs})
 endif()
 
+if (USE_TLS)
+    set (NODE_VFS_NETWORK_BACKEND "client:kl.TlsEntity")
+else()
+    set (NODE_VFS_NETWORK_BACKEND "client:kl.VfsNet")
+endif()
+
 set (FILES $ENV{RAMDISK0})
 
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")

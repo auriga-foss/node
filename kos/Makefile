@@ -78,6 +78,7 @@ qemubuild: ${RAMDISK0}
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
+		-D USE_TLS=$(USE_TLS) \
 		$(UART_OPTION) \
 		../ && make kos-qemu-image
 ifeq  ($(QEMU_NET),1)
