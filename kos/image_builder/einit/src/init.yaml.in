@@ -10,6 +10,8 @@ entities:
     PATH: /opt/node/
   @NODE_ARGS@
   connections:
+    - target: execution_manager.ExecMgrEntity
+      id: ExecMgrEntity
     - target: env.Env
       id: {var: ENV_SERVICE_NAME, include: env/env.h}
     - target: kl.VfsNet
@@ -19,6 +21,15 @@ entities:
     - target: kl.TlsEntity
       id: kl.TlsEntity
   @INIT_Node_ENTITY_CONNECTIONS+@
+
+- name: execution_manager.ExecMgrEntity
+  path: ExecMgrEntity
+  env:
+    VFS_FILESYSTEM_BACKEND: client:@ROOTFS_ENTITY@
+  connections:
+   - target: @ROOTFS_ENTITY@
+     id: @ROOTFS_ENTITY@
+@INIT_ExecMgrEntity_ENTITY_CONNECTIONS@
 
 @INIT_KLOG_ENTITY@
 

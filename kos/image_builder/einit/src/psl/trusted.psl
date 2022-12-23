@@ -17,6 +17,11 @@ use EDL kl.drivers.BSP
 use EDL kl.drivers.GPIO
 use EDL kl.drivers.UART
 
+/* Declaration of Execution Manager entities. */
+use EDL execution_manager.ExecMgrEntity
+use EDL kl.bc.BlobContainer
+use EDL kl.romfs_storage.RomfsStorage
+
 /* Return of errors is allowed */
 error
 {
@@ -94,6 +99,21 @@ execute src=Einit, dst=kl.core.NameServer
 }
 
 execute src=Einit, dst=kl.rump.Dhcpcd
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+execute src=Einit, dst=execution_manager.ExecMgrEntity
 {
     grant()
 }
@@ -235,6 +255,48 @@ response src=kl.core.Core, dst=kl.CertificateStorageEntity
 }
 
 /**
+ * This code enables to send requests from BlobContainerEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.bc.BlobContainer, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from ExecMgrEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=execution_manager.ExecMgrEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RomfsStorage
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.romfs_storage.RomfsStorage, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+/**
  * This code enables to send requests from Env
  * entity to UART entity and get responses.
  */
@@ -333,3 +395,62 @@ response src=kl.CertificateStorageEntity, dst=kl.TlsEntity
 {
     grant()
 }
+
+/**
+ * This code enables to send requests from BlobContainerEntity
+ * entity to ExecMgrEntity entity and get responses.
+ */
+request src=execution_manager.ExecMgrEntity, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=execution_manager.ExecMgrEntity, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+request src=kl.bc.BlobContainer, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RomfsStorage
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.romfs_storage.RomfsStorage, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response src=kl.romfs_storage.RomfsStorage, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+request src=execution_manager.ExecMgrEntity, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+response src=execution_manager.ExecMgrEntity, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+request src=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+

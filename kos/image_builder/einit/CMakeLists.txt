@@ -28,7 +28,10 @@ set (ENTITIES
         ${tls_ENTITY}
         ${rump_DHCPCD_ENTITY}
         ${ns_ENTITY}
-        ${certificate_storage_ENTITY})
+        ${certificate_storage_ENTITY}
+        ExecMgrEntity
+        ${blob_container_ENTITY}
+        ${romfs_storage_ENTITY})
 
 if (USE_KLOG)
     list (APPEND ENTITIES KlogStorageEntity)
@@ -101,6 +104,14 @@ set_target_properties (${certificate_storage_ENTITY} PROPERTIES
   - target: ${ROOTFS_ENTITY}
     id: ${ROOTFS_ENTITY}"
     EXTRA_ENV "\
+    VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
+
+set_target_properties (${blob_container_ENTITY} PROPERTIES
+    ${vfs_ENTITY}_REPLACEMENT ""
+    EXTRA_CONNECTIONS "\
+  - target: ${ROOTFS_ENTITY}
+    id: ${ROOTFS_ENTITY}"
+        EXTRA_ENV "\
     VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
 
 set_target_properties (${FS_BACKEND} PROPERTIES

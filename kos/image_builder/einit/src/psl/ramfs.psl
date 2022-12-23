@@ -128,3 +128,76 @@ response src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
 {
     grant()
 }
+
+/**
+ * This code enables to send requests from ExecMgrEntity
+ * entity to VfsRamFs entity and get responses.
+ */
+
+response src=execution_manager.ExecMgrEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=execution_manager.ExecMgrEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from CertificateStorageEntity 
+ * entity to VfsRamFs entity and get responses.
+ */
+request src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+response src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from BlobContainerEntity
+ * entity to VfsRamFs entity and get responses.
+ */
+request src=kl.bc.BlobContainer, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=kl.VfsRamFs, dst=kl.bc.BlobContainer
+{
+    grant()
+}
