@@ -31,7 +31,7 @@ endif
 
 TARGET       := aarch64-kos
 HOST          = x86_64-linux-gnu
-SDK_VERSION  ?= 1.1.1.10
+SDK_VERSION  ?= 1.1.0.438
 DEST_CPU      = arm64
 ARCH_CFG_ARGS =
 QEMU          = qemu-system-aarch64
