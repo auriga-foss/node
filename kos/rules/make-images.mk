@@ -42,6 +42,7 @@ endif
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
 	@cp -r $(BUILD_ROOT)/image_builder/resources/certs $@
+	$(Q)cp -r $(BUILD_ROOT)/image_builder/application/application $@
 
 $(PART_0): $(ROOTFS_DIR)
 	@echo "Preparing partition for ramdisk ..."
@@ -108,3 +109,4 @@ clean-image:
 	@rm -f $(SD_CARD0)
 	@rm -rf ${ROOTFS_SOURCE}/root
 	@rm -f  ${ROOTFS_SOURCE}/Node
+	@rm -f  ../application/application*

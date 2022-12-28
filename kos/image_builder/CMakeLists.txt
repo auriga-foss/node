@@ -77,5 +77,8 @@ if (USE_KLOG)
 	add_subdirectory (klog_storage)
 endif()
 
+# Test entity for spawn() in NodeJS
+add_subdirectory (application)
+
 # Binary image of KasperskyOS.
 add_subdirectory (einit)

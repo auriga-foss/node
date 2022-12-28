@@ -56,6 +56,8 @@ else()
     set (NODE_VFS_NETWORK_BACKEND "client:kl.VfsNet")
 endif()
 
+list (APPEND FILES $ENV{BUILD_ROOT}/image_builder/application/application)
+
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")
     set (PROG_ARGS "args:")
     list (APPEND PROG_PARAMS $ENV{NODE_ARG})
@@ -105,6 +107,9 @@ set_target_properties (${certificate_storage_ENTITY} PROPERTIES
     id: ${ROOTFS_ENTITY}"
     EXTRA_ENV "\
     VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
+
+set_target_properties (ExecMgrEntity PROPERTIES
+        ${vfs_ENTITY}_REPLACEMENT "")
 
 set_target_properties (${blob_container_ENTITY} PROPERTIES
     ${vfs_ENTITY}_REPLACEMENT ""

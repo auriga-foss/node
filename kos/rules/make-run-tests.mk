@@ -50,6 +50,20 @@ build-test-addon:
 test-addon:
 	$(Q)$(MAKE) $(ACT) NODE_ARG='\"/opt/node/test/kos/test_addon.js\"'
 
+.PHONY: test-spawn
+test-spawn: test-application-for-spawn
+	$(Q)$(MAKE) run NODE_ARG='\"/opt/node/test/kos/spawn.js\"'
+
+INCLUDEDIR = -I $(SDK_PREFIX)/toolchain/aarch64-kos/include/c++/9.2.1 \
+			 -I $(SDK_PREFIX)/toolchain/aarch64-kos/include \
+			 -I $(SDK_PREFIX)/sysroot-aarch64-kos/include \
+			 -I include
+
+.PHONY: test-application-for-spawn
+test-application-for-spawn:
+	$(Q)$(CXX) -fexceptions --std=c++17 $(INCLUDEDIR) -c $(BUILD_ROOT)/image_builder/application/src/application.cpp -o $(BUILD_ROOT)/image_builder/application/application.o
+	$(Q)$(CXX) -o $(BUILD_ROOT)/image_builder/application/application $(BUILD_ROOT)/image_builder/application/application.o
+
 .PHONY: tests
 tests: clean-arch
 	python ./test.py $(options)

@@ -26,6 +26,7 @@ entities:
   path: ExecMgrEntity
   env:
     VFS_FILESYSTEM_BACKEND: client:@ROOTFS_ENTITY@
+    LOG_LEVEL: LOG_DEBUG
   connections:
    - target: @ROOTFS_ENTITY@
      id: @ROOTFS_ENTITY@

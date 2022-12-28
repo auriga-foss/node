@@ -14,3 +14,5 @@ add_executable (Node IMPORTED GLOBAL)
 set_property (TARGET Node PROPERTY IMPORTED_LOCATION $ENV{ROOTFS_SOURCE}/Node)
 add_dependencies (Node node_edl_files)
 target_link_libraries (Node)
+
+add_dependencies (Node application)

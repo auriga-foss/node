@@ -1,6 +1,7 @@
 use trusted._
 
 use EDL node.Node
+use EDL application.Application
 
 /**
  * Conditional declaration of KLog entities
@@ -118,6 +119,45 @@ execute src=execution_manager.ExecMgrEntity, dst=node.Node
 }
 
 execute src=kl.bc.BlobContainer, dst=node.Node
+{
+    grant()
+}
+
+/*-------------*/
+/* Test entity */
+/*-------------*/
+
+request src=application.Application, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=application.Application
+{
+    grant()
+}
+
+execute src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+request src=application.Application, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+request src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+response src=application.Application, dst=kl.bc.BlobContainer
 {
     grant()
 }
