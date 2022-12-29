@@ -11,14 +11,16 @@ include (platform/install)
 # Toolchain for work with NK-parser.
 include (platform/nk)
 
-# Add package importing components for building audit entity and connecting
-# to it.
-find_package (klog REQUIRED)
-include_directories (${klog_INCLUDE})
+if (USE_KLOG)
+    # Add package importing components for building audit entity and connecting
+    # to it.
+    find_package (klog REQUIRED)
+    include_directories (${klog_INCLUDE})
 
-# Add package importing `klog_storage_entity`.
-find_package (klog_storage REQUIRED)
-include_directories (${klog_storage_INCLUDE})
+    # Add package importing `klog_storage_entity`.
+    find_package (klog_storage REQUIRED)
+    include_directories (${klog_storage_INCLUDE})
+endif()
 
 # Attach a package with the dhcpcd entity implementation.
 find_package (rump REQUIRED COMPONENTS DHCPCD_ENTITY)
@@ -50,7 +52,10 @@ include_directories (${certificate_storage_INCLUDE})
 # Payload
 add_subdirectory (node)
 add_subdirectory (env)
-add_subdirectory (klog_storage)
+
+if (USE_KLOG)
+	add_subdirectory (klog_storage)
+endif()
 
 # Binary image of KasperskyOS.
 add_subdirectory (einit)

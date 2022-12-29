@@ -1,0 +1,55 @@
+/* USE_KLOG = 1: Declaration of KLog entities. */
+use EDL klog.KlogEntity
+use EDL klog_storage.KlogStorageEntity
+
+/**
+ * This code enables to send requests from KlogEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=klog.KlogEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=klog.KlogEntity
+{
+    grant ()
+}
+
+/**
+ * This code enables to send requests from KlogStorageEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=klog_storage.KlogStorageEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=klog_storage.KlogStorageEntity
+{
+    grant ()
+}
+
+/**
+ * This code enables to send requests from KlogEntity
+ * entity to KlogStorageEntity entity and get responses.
+ */
+request src=klog.KlogEntity, dst=klog_storage.KlogStorageEntity
+{
+    grant()
+}
+
+response src=klog_storage.KlogStorageEntity, dst=klog.KlogEntity
+{
+    grant ()
+}
+
+execute src=Einit, dst=klog.KlogEntity
+{
+    grant()
+}
+
+execute src=Einit, dst=klog_storage.KlogStorageEntity
+{
+    grant()
+}

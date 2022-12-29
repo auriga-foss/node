@@ -58,14 +58,19 @@ realhw: image
 	$(Q)rm -f $(ROOTFS_SOURCE)/Node
 	$(Q)cp ../out/Release/node  $(ROOTFS_SOURCE)/Node
 	@echo "UART_OPTION: $(UART_OPTION)"
+	@rm -f $(BUILD_ROOT)/image_builder/einit/src/use_klog.psl
+	@ln -s $(BUILD_ROOT)/image_builder/einit/src/use_klog_$(USE_KLOG).psl \
+		$(BUILD_ROOT)/image_builder/einit/src/use_klog.psl
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
 		cmake -G "Unix Makefiles" \
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
 		-D USE_TLS=$(USE_TLS) \
+		-D USE_KLOG=$(USE_KLOG) \
 		$(UART_OPTION) \
 		../ && make kos-image
+	@rm -f $(BUILD_ROOT)/image_builder/einit/src/use_klog.psl
 	@echo "Image ($(BUILD)/einit/kos-image) with node arg='$(NODE_ARG)' ready."
 
 

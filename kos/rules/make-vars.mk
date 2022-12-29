@@ -9,6 +9,7 @@ GDB_SUPPORT   ?= y
 QEMU_SERIAL_PORT ?= 12345
 
 USE_TLS          ?= 0
+USE_KLOG         ?= 0
 
 # simple helper to enable/disable commands echoing
 ifeq ($(strip $(V)),1)
@@ -121,3 +122,4 @@ export GDB_SUPPORT
 export DEBUG_ENABLED
 export QEMU_SERIAL_PORT
 export USE_TLS
+export USE_KLOG

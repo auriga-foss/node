@@ -6,28 +6,22 @@ include (platform/image)
 # Set compilation flags.
 project_header_default ("STANDARD_GNU_11:YES" "STRICT_WARNINGS:NO")
 
-# Add target for klog's edl translation.
-nk_build_edl_files (klog_edl_files NK_MODULE "klog" EDL
-                    "${CMAKE_SOURCE_DIR}/resources/edl/KlogEntity.edl")
-# HACK: make edl depends on storage because they are needed much earlier
-# (i.e on KSS build stage) and we do not want to depend on KOS internal targets.
-add_dependencies (KlogStorageEntity klog_edl_files)
+if (USE_KLOG)
+	# Make Klog targets by platforms, Klog hardly connected with KSS.
+	# Klog built and included in entites list as KSS, by image build scripts,
+	# and that is the reason why klog src must be in einit/src.
+	add_executable (KlogEntityQemu "src/klog_entity.c")
+	add_executable (KlogEntityHw "src/klog_entity.c")
 
-# Make Klog targets by platforms, Klog hardly connected with KSS.
-# Klog built and included in entites list as KSS, by image build scripts,
-# and that is the reason why klog src must be in einit/src.
-add_executable (KlogEntityQemu "src/klog_entity.c")
-add_executable (KlogEntityHw "src/klog_entity.c")
+	add_dependencies (KlogEntityQemu klog_edl_files)
+	add_dependencies (KlogEntityHw klog_edl_files)
 
-add_dependencies (KlogEntityQemu klog_edl_files)
-add_dependencies (KlogEntityHw klog_edl_files)
-
-target_link_libraries (KlogEntityQemu ${klog_SYSTEM_AUDIT_LIB})
-target_link_libraries (KlogEntityHw ${klog_SYSTEM_AUDIT_LIB})
+	target_link_libraries (KlogEntityQemu ${klog_SYSTEM_AUDIT_LIB})
+	target_link_libraries (KlogEntityHw ${klog_SYSTEM_AUDIT_LIB})
+endif()
 
 # Define an ENTITIES variable with a list of entities.
 set (ENTITIES
-        KlogStorageEntity
         Node
         ${precompiled_vfsVfsNet}
         Env
@@ -35,6 +29,10 @@ set (ENTITIES
         ${rump_DHCPCD_ENTITY}
         ${ns_ENTITY}
         ${certificate_storage_ENTITY})
+
+if (USE_KLOG)
+    list (APPEND ENTITIES KlogStorageEntity)
+endif()
 
 set (SECURITY_PSL_FILE "src/security.psl")
 
@@ -145,22 +143,52 @@ add_custom_command (OUTPUT $ENV{RAMDISK0}
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different client.key $ENV{ROOTFS_SOURCE}/ramdisk0/certs/
                     DEPENDS rootCA.crt client.crt client.key)
 
-set (INIT_KlogEntity_PATH "KlogEntityHw")
+set (INIT_KlogEntity_PATH "")
+
+if (USE_KLOG)
+    set (KLOG_YAML "- name: klog.KlogEntity")
+    __append_string_on_new_line (KLOG_YAML "  path: KlogEntityHw")
+    __append_string_on_new_line (KLOG_YAML "  connections:")
+    __append_string_on_new_line (KLOG_YAML "    - target: klog_storage.KlogStorageEntity")
+    __append_string_on_new_line (KLOG_YAML "      id: {var: KLOG_STORAGE_SERVER_CONNECTION_ID, include: klog_storage/client.h}")
+
+    set (KLOG_STORAGE_YAML "- name: klog_storage.KlogStorageEntity")
+
+    set (INIT_KLOG_ENTITY ${KLOG_YAML})
+    set (INIT_KLOG_STORAGE_ENTITY ${KLOG_STORAGE_YAML})
+    set (INIT_KlogEntity_PATH KlogEntityHw)
+endif()
+
 # Building Kaspersky OS solution image for a hardware platform.
 build_kos_hw_image (kos-image
                     EINIT_ENTITY EinitHw
                     CONNECTIONS_CFG "src/init.yaml.in"
                     SECURITY_PSL ${SECURITY_PSL_FILE}
-                    KLOG_ENTITY KlogEntityHw
+                    KLOG_ENTITY ${INIT_KlogEntity_PATH}
                     IMAGE_FILES ${ENTITIES}
                                 ${FILES})
 
-set (INIT_KlogEntity_PATH "KlogEntityQemu")
+set (INIT_KlogEntity_PATH "")
+
+if (USE_KLOG)
+    set (KLOG_YAML "- name: klog.KlogEntity")
+    __append_string_on_new_line (KLOG_YAML "  path: KlogEntityQemu")
+    __append_string_on_new_line (KLOG_YAML "  connections:")
+    __append_string_on_new_line (KLOG_YAML "    - target: klog_storage.KlogStorageEntity")
+    __append_string_on_new_line (KLOG_YAML "      id: {var: KLOG_STORAGE_SERVER_CONNECTION_ID, include: klog_storage/client.h}")
+
+    set (KLOG_STORAGE_YAML "- name: klog_storage.KlogStorageEntity")
+
+    set (INIT_KLOG_ENTITY ${KLOG_YAML})
+    set (INIT_KLOG_STORAGE_ENTITY ${KLOG_STORAGE_YAML})
+    set (INIT_KlogEntity_PATH KlogEntityQemu)
+endif()
+
 # Building Kaspersky OS solution image for a QEMU platform.
 build_kos_qemu_image (kos-qemu-image
                       EINIT_ENTITY EinitQemu
                       CONNECTIONS_CFG "src/init.yaml.in"
                       SECURITY_PSL ${SECURITY_PSL_FILE}
-                      KLOG_ENTITY KlogEntityQemu
+                      KLOG_ENTITY ${INIT_KlogEntity_PATH}
                       IMAGE_FILES ${ENTITIES}
                                   ${FILES})
