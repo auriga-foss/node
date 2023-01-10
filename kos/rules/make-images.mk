@@ -53,8 +53,10 @@ $(RAMDISK0): $(PART_0)
 
 # target to build image to be used on real hardware
 .PHONY: realhw
-realhw:
+realhw: image
 	@echo "Preparing test HW image with node arg='$(NODE_ARG)' ..."
+	$(Q)rm -f $(ROOTFS_SOURCE)/Node
+	$(Q)cp ../out/Release/node  $(ROOTFS_SOURCE)/Node
 	@echo "UART_OPTION: $(UART_OPTION)"
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
 		cmake -G "Unix Makefiles" \
