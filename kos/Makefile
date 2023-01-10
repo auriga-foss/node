@@ -47,7 +47,8 @@ help:
 	@echo "  realhw          - do build image to be flashed and started on"
 	@echo "                    real HW;"
 	@echo "  helloworld      - build, link and run test project image using"
-	@echo "                    qemu (with selected architecture);"
+	@echo "                    qemu (with selected architecture)."
+	@echo "                    or to build an image for HW, add FOR_HW=1;"
 	@echo "  dump-vars       - [DEBUG] dump build control variables."
 
 .PHONY: configure
