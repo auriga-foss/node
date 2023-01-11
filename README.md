@@ -140,10 +140,12 @@ So the solution will start.
     is an empty string).
 16. `getaddrinfo` failures (returns `EAI_AGAIN` or `ENOTFOUND`) on Raspberry
     Pi 4B target (for instance `test-async-exec-resource-http.js`);
-18. KOS image transfer failures over TFTP (for instance `test-async-local-storage-promises.js`);
-19. Timeouts (for instance `test-esm-loader-thenable.mjs`): 2 minutes per test
+17. KOS image transfer failures over TFTP (for instance `test-async-local-storage-promises.js`);
+18. Timeouts (for instance `test-esm-loader-thenable.mjs`): 2 minutes per test
     isn't enough for real HW every now and then, even though typical test takes
     roughly 1 minute.
+19. No dynamic loading of C++ addons because dynamic libraries are not supported. 
+    At the moment static linking of the addon is used as a workaround.
 
 ## How to run tests
 
