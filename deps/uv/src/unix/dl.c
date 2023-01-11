@@ -57,7 +57,6 @@ static void* get_addon_handle(const char* filename) {
   int i;
   for (i = 0; i < sizeof(addons) / sizeof(addons[0]); i++) {
     if (!strcmp(addons[i].file_name, filename)) {
-      fprintf(stderr, "GET ADDON HANDLE\n");
       return (void*)&addons[i];
     }
   }
