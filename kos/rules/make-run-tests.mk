@@ -41,6 +41,11 @@ crypto-classes:
 crypto-hash:
 	$(Q)$(MAKE) $(ACT) NODE_ARG='\"/opt/node/test/parallel/test-crypto-hash.js\"'
 
+.PHONY: build-test-addon
+build-test-addon:
+	$(Q)CC=$(CC) CXX=$(CXX) node-gyp --arch aarch64 --fully-static configure build --directory=./addons --nodedir $(PWD)/../ 
+	mv ./addons/build/Release/test_addon.a ./addons/build/Release/libtest_addon.a
+
 .PHONY: test-addon
 test-addon:
 	$(Q)$(MAKE) $(ACT) NODE_ARG='\"/opt/node/test/kos/test_addon.js\"'
