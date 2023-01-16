@@ -2,6 +2,12 @@ use trusted._
 
 use EDL node.Node
 
+/**
+ * Conditional declaration of KLog entities
+ * depending on USE_KLOG option
+ */
+use use_klog._
+
 /*
   Simplest audit rule for debugging
 

@@ -34,7 +34,7 @@ if (USE_KLOG)
     list (APPEND ENTITIES KlogStorageEntity)
 endif()
 
-set (SECURITY_PSL_FILE "src/security.psl")
+set (SECURITY_PSL_FILE "src/psl/security.psl")
 
 if (ROOTFS_SDCARD)
     set (ROOTFS_ENTITY "kl.VfsSdCardFs")

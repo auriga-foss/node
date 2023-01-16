@@ -164,3 +164,6 @@ __pycache__
 
 # === Rules for C++ development ===
 compile_commands.json
+
+# ignore KOS-related build directory
+kos/image_builder/einit/src/psl/use_klog.psl

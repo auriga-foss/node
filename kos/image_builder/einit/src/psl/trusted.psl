@@ -19,8 +19,6 @@ use EDL kl.drivers.GPIO
 use EDL kl.drivers.UART
 use EDL kl.drivers.RAMDisk
 
-use use_klog._
-
 /* Return of errors is allowed */
 error
 {
@@ -50,14 +48,6 @@ request src=Einit, dst=kl.core.Core
 }
 
 response src=kl.core.Core, dst=Einit
-{
-    grant()
-}
-
-/**
- * This instruction enables to start up and initialize non-platform entities.
- */
-execute src=Einit
 {
     grant()
 }
@@ -106,6 +96,16 @@ execute src=Einit, dst=kl.TlsEntity
 }
 
 execute src=Einit, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.core.NameServer
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.rump.Dhcpcd
 {
     grant()
 }
