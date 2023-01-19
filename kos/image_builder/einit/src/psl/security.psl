@@ -62,6 +62,16 @@ response src=kl.VfsRamFs, dst=node.Node
     grant()
 }
 
+request src=node.Node, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src=kl.VfsSdCardFs, dst=node.Node
+{
+    grant()
+}
+
 request src=node.Node, dst=kl.TlsEntity
 {
     grant()

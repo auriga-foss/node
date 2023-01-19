@@ -11,6 +11,14 @@ QEMU_SERIAL_PORT ?= 12345
 USE_TLS          ?= 0
 USE_KLOG         ?= 0
 
+ROOTFS_SDCARD    ?= 0
+
+ifeq ($(strip $(ROOTFS_SDCARD)),1)
+ROOTFS_IMAGE = $(SD_CARD0)
+else
+ROOTFS_IMAGE = $(RAMDISK0)
+endif
+
 # simple helper to enable/disable commands echoing
 ifeq ($(strip $(V)),1)
 Q=
@@ -41,9 +49,15 @@ SDK_PREFIX     = /opt/KasperskyOS-Community-Edition-$(SDK_VERSION)
 PATH          :=/usr/sbin:$(SDK_PREFIX)/toolchain/bin:${PATH}
 BUILD          = $(BUILD_ROOT)/image_builder/build-$(TARGET_ARCH)
 ROOTFS_SOURCE  = $(BUILD)/rootfs
+ROOTFS_DIR     = $(ROOTFS_SOURCE)/root
 RAMDISK0       = $(BUILD)/ramdisk0.img
+SD_CARD0       = $(BUILD)/sdcard0.img
 INSTALL_PREFIX = $(BUILD)/../install
 PKG_CONFIG     = ""
+
+ifeq ($(strip $(ROOTFS_SDCARD)),1)
+QEMU_OPTS += -drive file=$(SD_CARD0),if=sd,format=raw
+endif
 
 CC=$(TARGET)-gcc
 CXX=$(TARGET)-g++
@@ -91,7 +105,7 @@ endif
 # ok, we're all set now. lets export build control variables to let
 # subsequent make call(s) 'see' them properly
 
-# export NodeJS config & build conrol variables
+# export NodeJS config & build control variables
 export CONFIG_ARGS
 export CC
 export CCX
@@ -103,11 +117,17 @@ export PATH
 export BUILD_ROOT
 export BUILD
 export ROOTFS_SOURCE
+export ROOTFS_DIR
 export RAMDISK0
+export SD_CARD0
+export ROOTFS_IMAGE
 export INSTALL_PREFIX
 export PKG_CONFIG
 export NODE_ADDONS_BUILD_PATH
 export NODE_ADDONS_LIB_ENABLED
+export USE_TLS
+export USE_KLOG
+export ROOTFS_SDCARD
 
 # export qemu control variabled
 export QEMU_OPTS
@@ -121,5 +141,3 @@ export LANG=C
 export GDB_SUPPORT
 export DEBUG_ENABLED
 export QEMU_SERIAL_PORT
-export USE_TLS
-export USE_KLOG

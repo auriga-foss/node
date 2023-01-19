@@ -9,6 +9,7 @@ use EDL kl.core.NameServer
 /* Declaration of entities. */
 use EDL kl.VfsNet
 use EDL kl.VfsRamFs
+use EDL kl.VfsSdCardFs
 use EDL kl.TlsEntity
 use EDL kl.rump.Dhcpcd
 use EDL kl.CertificateStorageEntity
@@ -18,6 +19,7 @@ use EDL kl.drivers.BSP
 use EDL kl.drivers.GPIO
 use EDL kl.drivers.UART
 use EDL kl.drivers.RAMDisk
+use EDL kl.drivers.SDCard
 
 /* Return of errors is allowed */
 error
@@ -70,6 +72,11 @@ execute src=Einit, dst=kl.VfsRamFs
     grant()
 }
 
+execute src=Einit, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
 execute src=Einit, dst=kl.drivers.BSP
 {
     grant()
@@ -86,6 +93,11 @@ execute src=Einit, dst=kl.drivers.UART
 }
 
 execute src=Einit, dst=kl.drivers.RAMDisk
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.SDCard
 {
     grant()
 }
@@ -172,6 +184,16 @@ request src=kl.VfsRamFs, dst=kl.core.Core
 }
 
 response src=kl.core.Core, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsSdCardFs, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.VfsSdCardFs
 {
     grant()
 }
@@ -274,6 +296,16 @@ response src=kl.core.Core, dst=kl.drivers.RAMDisk
     grant()
 }
 
+request src=kl.drivers.SDCard, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
 /**
  * This code enables to send requests from Env
  * entity to UART entity and get responses.
@@ -316,6 +348,16 @@ response src=kl.drivers.RAMDisk, dst=kl.VfsNet
     grant()
 }
 
+request src=kl.VfsNet, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+response src=kl.drivers.SDCard, dst=kl.VfsNet
+{
+    grant()
+}
+
 /**
  * This code enables to send requests from VfsRamFs entity
  * to RAMDisk driver and get responses.
@@ -326,6 +368,36 @@ request src=kl.VfsRamFs, dst=kl.drivers.RAMDisk
 }
 
 response src=kl.drivers.RAMDisk, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsSdCardFs, dst=kl.drivers.RAMDisk
+{
+    grant()
+}
+
+response src=kl.drivers.RAMDisk, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+request src=kl.VfsRamFs, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+response src=kl.drivers.SDCard, dst=kl.VfsRamFs
+{
+    grant()
+}
+
+request src=kl.VfsSdCardFs, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+response src=kl.drivers.SDCard, dst=kl.VfsSdCardFs
 {
     grant()
 }
@@ -368,6 +440,16 @@ response src = kl.VfsRamFs, dst = kl.rump.Dhcpcd
     grant()
 }
 
+request src = kl.rump.Dhcpcd, dst = kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src = kl.VfsSdCardFs, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
 /**
  * This code enables to send requests from TlsEntity 
  * entity to VfsNet entity and get responses.
@@ -402,6 +484,16 @@ request src=kl.TlsEntity, dst=kl.VfsRamFs
 }
 
 response src=kl.VfsRamFs, dst=kl.TlsEntity
+{
+    grant()
+}
+
+request src=kl.TlsEntity, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src=kl.VfsSdCardFs, dst=kl.TlsEntity
 {
     grant()
 }
@@ -444,12 +536,32 @@ response src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
     grant()
 }
 
+request src=kl.CertificateStorageEntity, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src=kl.CertificateStorageEntity, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
 request src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
 {
     grant()
 }
 
 response src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+request src=kl.VfsSdCardFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.VfsSdCardFs, dst=kl.CertificateStorageEntity
 {
     grant()
 }

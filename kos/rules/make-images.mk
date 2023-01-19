@@ -2,9 +2,8 @@
 FDISK     = /usr/sbin/fdisk
 MKFS_EXT2 = /usr/sbin/mkfs.ext2
 PART_0    = $(BUILD)/partition_0.img
-ROOTFS_DIR ?= $(ROOTFS_SOURCE)/ramdisk0
 
-# prepare test files to be placed to ramfs partition 0
+# prepare test files to be placed to rootfs partition 0
 $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@echo "First re-create $@"
 	@rm -rf $@ && mkdir -p $@/deps/v8/src
@@ -29,7 +28,7 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@cp -r $(BUILD_ROOT)/../config.gypi $@
 	mkdir -p $@/opt/node/doc/api
 	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/opt/node/doc/api
-	@cp -r $(BUILD_ROOT)/image_builder/resources/ramfs/* $@
+	@cp -r $(BUILD_ROOT)/image_builder/resources/rootfs/* $@
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
 	@cp -r $(BUILD_ROOT)/image_builder/resources/certs $@
@@ -50,6 +49,12 @@ $(RAMDISK0): $(PART_0)
 	@printf "o\nn\np\n1\n\n\nw" | $(FDISK) $@
 	@dd if=$< of=$@ bs=512 seek=2048 conv=notrunc
 	@echo "Image '$@' is ready"
+
+# target to build SD card fat32 image
+$(SD_CARD0): $(ROOTFS_DIR)
+	@echo "Preparing $(SD_CARD0) image"
+	@$(SDK_PREFIX)/common/prepare_hdd_img.sh -d $< -s 64 -f fat32 -img $(SD_CARD0)
+	@echo "Image $(SD_CARD0) is ready"
 
 # target to build image to be used on real hardware
 .PHONY: realhw
@@ -73,20 +78,19 @@ realhw: image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	@echo "Image ($(BUILD)/einit/kos-image) with node arg='$(NODE_ARG)' ready."
 
-
 # the target 'image' is used for debug purposes to check disk image generation
 .PHONY: image
-image: $(RAMDISK0)
+image: $(ROOTFS_IMAGE)
 	@echo "$@ Done."
-
 
 # image(s) clean-up rule
 .PHONY: clean-image
 clean-image:
 	@echo " RM 	$(RAMDISK0)"
-	@rm $(RAMDISK0)
+	@rm -f $(RAMDISK0)
 	@echo " RM	$(PART_0)"
-	@rm $(PART_0)
-	@rm -rf ${ROOTFS_SOURCE}/ramdisk0
-	@rm -rf ./rootfs/ramdisk0
-	@rm -f  ./rootfs/Node
+	@rm -f $(PART_0)
+	@echo " RM 	$(SD_CARD0)"
+	@rm -f $(SD_CARD0)
+	@rm -rf ${ROOTFS_SOURCE}/root
+	@rm -f  ${ROOTFS_SOURCE}/Node

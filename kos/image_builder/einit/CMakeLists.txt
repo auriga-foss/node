@@ -44,6 +44,7 @@ else()
     set (ROOTFS_ENTITY "kl.VfsRamFs")
     list (APPEND ENTITIES ${precompiled_vfsVfsRamFs})
     set (FS_BACKEND ${precompiled_vfsVfsRamFs})
+    set (FILES $ENV{ROOTFS_IMAGE})
 endif()
 
 if (USE_TLS)
@@ -51,8 +52,6 @@ if (USE_TLS)
 else()
     set (NODE_VFS_NETWORK_BACKEND "client:kl.VfsNet")
 endif()
-
-set (FILES $ENV{RAMDISK0})
 
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")
     set (PROG_ARGS "args:")
@@ -138,9 +137,9 @@ add_custom_command (OUTPUT client.crt
                     COMMAND openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -days 500 -sha256 -out client.crt
                     DEPENDS client.csr rootCA.crt rootCA.key)
 
-add_custom_command (OUTPUT $ENV{RAMDISK0}
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different client.crt $ENV{ROOTFS_SOURCE}/ramdisk0/certs/
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different client.key $ENV{ROOTFS_SOURCE}/ramdisk0/certs/
+add_custom_command (OUTPUT $ENV{ROOTFS_IMAGE}
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different client.crt $ENV{ROOTFS_DIR}/certs/
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different client.key $ENV{ROOTFS_DIR}/certs/
                     DEPENDS rootCA.crt client.crt client.key)
 
 set (INIT_KlogEntity_PATH "")

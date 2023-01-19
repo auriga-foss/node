@@ -14,6 +14,8 @@ dump-vars:
 	@echo "	[VAR]	SDK_VERSION=$(SDK_VERSION)"
 	@echo "	[VAR]	ROOTFS_SOURCE=$(ROOTFS_SOURCE)"
 	@echo "	[VAR]	RAMDISK0=$(RAMDISK0)"
+	@echo "	[VAR]	SD_CARD0=$(SD_CARD0)"
+	@echo "	[VAR]	ROOTFS_IMAGE=$(ROOTFS_IMAGE)"
 	@echo "	[VAR]	PATH=$(PATH)"
 	@echo "	[VAR]	TARGET=$(TARGET)"
 	@echo "	[VAR]   NODE_ADDONS_LIB_ENABLED=$(NODE_ADDONS_LIB_ENABLED)"
@@ -29,15 +31,18 @@ help:
 	@echo " test application linked with KOS image (qemu or HW)."
 	@echo " Build is controlled via the following variables:"
 	@echo ""
-	@echo "  QEMU_NET    - could be set to 0 or 1; enables qemu start with"
-	@echo "                simulated network card, disabled by default;"
-	@echo "  NODE_PORT   - NodeJS port number to be assigned upon node"
-	@echo "                server start."
+	@echo "  QEMU_NET        - could be set to 0 or 1; enables qemu start with"
+	@echo "                    simulated network card, disabled by default;"
+	@echo "  NODE_PORT       - NodeJS port number to be assigned upon node"
+	@echo "                    server start;"
+	@echo "  ROOTFS_SDCARD   - could be set to 0 or 1; if enabled, the"
+	@echo "                    VfsSdCardFs entity is used as a default"
+	@echo "                    filesystem backend."
 	@echo ""
 	@echo " Makefile has the following (most used) targets:"
 	@echo ""
 	@echo "  NOTE: invoking make without any target will act like 'make all'"
-	@echo "  all             - build compile and ramdisk0 for the specified"
+	@echo "  all             - build compile and disk image for the specified"
 	@echo "                    architecture;"
 	@echo "  configure       - do NodeJS configure with respect to KOS"
 	@echo "                    project;"
@@ -63,12 +68,12 @@ compile:
 	$(Q)CC=$(CC) CXX=$(CXX) CC_host=$(CC_HOST) CXX_host=$(CCX_HOST) $(MAKE) -C ../
 
 .PHONY: run
-run: clean-arch ${RAMDISK0}
+run: clean-arch ${ROOTFS_IMAGE}
 	$(Q)$(MAKE) qemubuild
 	$(Q)$(MAKE) qemurun
 
 .PHONY: qemubuild
-qemubuild: ${RAMDISK0}
+qemubuild: ${ROOTFS_IMAGE}
 	@echo "Running QEMU ($(QEMU)) with node arg='${NODE_ARG}'"
 	$(Q)rm -f $(ROOTFS_SOURCE)/Node
 	$(Q)cp ../out/Release/node  $(ROOTFS_SOURCE)/Node
@@ -84,6 +89,7 @@ qemubuild: ${RAMDISK0}
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
 		-D USE_TLS=$(USE_TLS) \
 		-D USE_KLOG=$(USE_KLOG) \
+		-D ROOTFS_SDCARD=$(ROOTFS_SDCARD) \
 		$(UART_OPTION) \
 		../ && make kos-qemu-image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
