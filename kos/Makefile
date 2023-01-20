@@ -80,8 +80,11 @@ qemubuild: ${ROOTFS_IMAGE}
 	@echo "UART_OPTION: $(UART_OPTION)"
 	@echo " Linking test (ramdisk) with KOS-qemu image ..."
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog_$(USE_KLOG).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/$(ROOTFS_PSL) \
+		$(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
 		cmake -G "Unix Makefiles" \
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
@@ -93,6 +96,7 @@ qemubuild: ${ROOTFS_IMAGE}
 		$(UART_OPTION) \
 		../ && make kos-qemu-image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 ifeq  ($(QEMU_NET),1)
 ifneq (${NODE_PORT},0)
 	@echo "NodeJS TCP:8080 exposed to 127.0.0.1:${NODE_PORT}"

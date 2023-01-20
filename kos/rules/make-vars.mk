@@ -15,8 +15,10 @@ ROOTFS_SDCARD    ?= 0
 
 ifeq ($(strip $(ROOTFS_SDCARD)),1)
 ROOTFS_IMAGE = $(SD_CARD0)
+ROOTFS_PSL   = sdcard.psl
 else
 ROOTFS_IMAGE = $(RAMDISK0)
+ROOTFS_PSL   = ramfs.psl
 endif
 
 # simple helper to enable/disable commands echoing

@@ -64,8 +64,11 @@ realhw: image
 	$(Q)cp ../out/Release/node  $(ROOTFS_SOURCE)/Node
 	@echo "UART_OPTION: $(UART_OPTION)"
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog_$(USE_KLOG).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/$(ROOTFS_PSL) \
+		$(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
 		cmake -G "Unix Makefiles" \
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
@@ -76,6 +79,7 @@ realhw: image
 		$(UART_OPTION) \
 		../ && make kos-image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	@echo "Image ($(BUILD)/einit/kos-image) with node arg='$(NODE_ARG)' ready."
 
 # the target 'image' is used for debug purposes to check disk image generation

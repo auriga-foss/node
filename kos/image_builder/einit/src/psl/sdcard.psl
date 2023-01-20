@@ -1,0 +1,130 @@
+use EDL kl.VfsSdCardFs
+use EDL kl.drivers.SDCard
+
+request src=node.Node, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src=kl.VfsSdCardFs, dst=node.Node
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RamFs entity to KOS kernel
+ * and get responses.
+ */
+request src=kl.VfsSdCardFs, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RAMDisk driver to KOS kernel
+ * and get responses.
+ */
+request src=kl.drivers.SDCard, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from VfsNet entity
+ * to RAMDisk driver and get responses.
+ */
+request src=kl.VfsNet, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+response src=kl.drivers.SDCard, dst=kl.VfsNet
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from VfsRamFs entity
+ * to RAMDisk driver and get responses.
+ */
+request src=kl.VfsSdCardFs, dst=kl.drivers.SDCard
+{
+    grant()
+}
+
+response src=kl.drivers.SDCard, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from Dhcpcd entity
+ * to VfsRamFs entity and get responses.
+ */
+request src = kl.rump.Dhcpcd, dst = kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src = kl.VfsSdCardFs, dst = kl.rump.Dhcpcd
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from TlsEntity
+ * entity to VfsRamFs entity and get responses.
+ */
+request src=kl.TlsEntity, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src=kl.VfsSdCardFs, dst=kl.TlsEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from CertificateStorageEntity
+ * entity to VfsRamFs entity and get responses.
+ */
+request src=kl.CertificateStorageEntity, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+response src=kl.CertificateStorageEntity, dst=kl.VfsSdCardFs
+{
+    grant()
+}
+
+request src=kl.VfsSdCardFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}
+
+response src=kl.VfsSdCardFs, dst=kl.CertificateStorageEntity
+{
+    grant()
+}

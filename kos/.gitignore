@@ -1,3 +1,7 @@
 /rootfs/*
 image_builder/build-*
 addons/build
+
+# ignore temporary symlinks to psl
+kos/image_builder/einit/src/psl/use_klog.psl
+kos/image_builder/einit/src/psl/rootfs.psl
