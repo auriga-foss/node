@@ -108,17 +108,6 @@ set_target_properties (${certificate_storage_ENTITY} PROPERTIES
     EXTRA_ENV "\
     VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
 
-set_target_properties (ExecMgrEntity PROPERTIES
-        ${vfs_ENTITY}_REPLACEMENT "")
-
-set_target_properties (${blob_container_ENTITY} PROPERTIES
-    ${vfs_ENTITY}_REPLACEMENT ""
-    EXTRA_CONNECTIONS "\
-  - target: ${ROOTFS_ENTITY}
-    id: ${ROOTFS_ENTITY}"
-        EXTRA_ENV "\
-    VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
-
 set_target_properties (${FS_BACKEND} PROPERTIES
     EXTRA_ARGS "\
     - -l
@@ -172,6 +161,34 @@ if (USE_KLOG)
     set (INIT_KLOG_ENTITY ${KLOG_YAML})
     set (INIT_KLOG_STORAGE_ENTITY ${KLOG_STORAGE_YAML})
     set (INIT_KlogEntity_PATH KlogEntityHw)
+endif()
+
+if (USE_EXECMGR)
+    set (EXECMGR_YAML "- name: execution_manager.ExecMgrEntity")
+    __append_string_on_new_line (EXECMGR_YAML "  path: ExecMgrEntity")
+    __append_string_on_new_line (EXECMGR_YAML "  env:")
+    __append_string_on_new_line (EXECMGR_YAML "    VFS_FILESYSTEM_BACKEND: client:task:${ROOTFS_ENTITY}")
+    __append_string_on_new_line (EXECMGR_YAML "    LOG_LEVEL: LOG_DEBUG")
+    __append_string_on_new_line (EXECMGR_YAML "  connections:")
+    __append_string_on_new_line (EXECMGR_YAML "  - target: ${ROOTFS_ENTITY}")
+    __append_string_on_new_line (EXECMGR_YAML "    id: ${ROOTFS_ENTITY}")
+
+    set (NODE_EXEC_MGR_CONNECTION "  - target: execution_manager.ExecMgrEntity")
+    __append_string_on_new_line (NODE_EXEC_MGR_CONNECTION "    id: ExecMgrEntity")
+    set (INIT_NODE_EXEC_MGR_CONNECTION ${NODE_EXEC_MGR_CONNECTION})
+
+    set (INIT_EXECMGR_ENTITY ${EXECMGR_YAML})
+
+    set_target_properties (ExecMgrEntity PROPERTIES
+        ${vfs_ENTITY}_REPLACEMENT "")
+
+    set_target_properties (${blob_container_ENTITY} PROPERTIES
+    ${vfs_ENTITY}_REPLACEMENT ""
+    EXTRA_CONNECTIONS "\
+  - target: ${ROOTFS_ENTITY}
+    id: ${ROOTFS_ENTITY}"
+        EXTRA_ENV "\
+    VFS_FILESYSTEM_BACKEND: client:task:${ROOTFS_ENTITY}")
 endif()
 
 # Building Kaspersky OS solution image for a hardware platform.

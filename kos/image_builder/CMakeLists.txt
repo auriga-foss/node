@@ -11,9 +11,6 @@ include (platform/install)
 # Toolchain for work with NK-parser.
 include (platform/nk)
 
-# Include functions for file storages.
-include (platform/storage)
-
 if (USE_KLOG)
     # Add package importing components for building audit entity and connecting
     # to it.
@@ -25,26 +22,40 @@ if (USE_KLOG)
     include_directories (${klog_storage_INCLUDE})
 endif()
 
+if (USE_EXECMGR)
+    # Include functions for file storages.
+    include (platform/storage)
+
+    # Import package with romfs_storage entity.
+    find_package (romfs_storage REQUIRED)
+    initialize_storage_generator ()
+
+    # Attach a entity_launcher_client for blob_container
+    find_package (entity_launcher_client REQUIRED)
+
+    # Attach a blob_container for Execution Manager
+    find_package (blob_container REQUIRED)
+
+    # Attach a Execution Manager package
+    find_package (execution_manager REQUIRED)
+    include_directories (${execution_manager_INCLUDE})
+
+    # Execution Manager entity
+    add_subdirectory (execution_manager)
+endif()
+
 # Attach a package with the dhcpcd entity implementation.
 find_package (rump REQUIRED COMPONENTS DHCPCD_ENTITY)
 include_directories (${rump_INCLUDE})
 
-# Import package with romfs_storage entity.
-find_package (romfs_storage REQUIRED)
-initialize_storage_generator ()
+# Attach a package with the ramdisk implementation.
+find_package (ramdisk REQUIRED)
+include_directories (${ramdisk_INCLUDE})
 
-# Attach a entity_launcher_client for blob_container
-find_package (entity_launcher_client REQUIRED)
-
-# Attach a blob_container for Execution Manager
-find_package (blob_container REQUIRED)
-
-# Attach a Execution Manager package
-find_package (execution_manager REQUIRED)
-include_directories (${execution_manager_INCLUDE})
-
-# Execution Manager entity
-add_subdirectory (execution_manager)
+# Connect a package that imports components
+# to work with the ext2/ext3/ext4 file systems.
+find_package (LWEXT4 REQUIRED)
+include_directories (${LWEXT4_INCLUDE})
 
 # Attach a package with VFS entities implementation
 find_package (precompiled_vfs REQUIRED)

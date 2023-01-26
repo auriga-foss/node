@@ -155,30 +155,6 @@ response src=kl.VfsRamFs, dst=execution_manager.ExecMgrEntity
 }
 
 /**
- * This code enables to send requests from CertificateStorageEntity 
- * entity to VfsRamFs entity and get responses.
- */
-request src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
-{
-    grant()
-}
-
-response src=kl.CertificateStorageEntity, dst=kl.VfsRamFs
-{
-    grant()
-}
-
-request src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
-{
-    grant()
-}
-
-response src=kl.VfsRamFs, dst=kl.CertificateStorageEntity
-{
-    grant()
-}
-
-/**
  * This code enables to send requests from BlobContainerEntity
  * entity to VfsRamFs entity and get responses.
  */

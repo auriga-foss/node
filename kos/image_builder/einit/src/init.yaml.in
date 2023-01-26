@@ -6,30 +6,24 @@ entities:
 - name: node.Node
   env:
     VFS_NETWORK_BACKEND: @NODE_VFS_NETWORK_BACKEND@
-    VFS_FILESYSTEM_BACKEND: client:@ROOTFS_ENTITY@
+    VFS_FILESYSTEM_BACKEND: client:task:@ROOTFS_ENTITY@
     PATH: /opt/node/
   @NODE_ARGS@
   connections:
-    - target: execution_manager.ExecMgrEntity
-      id: ExecMgrEntity
-    - target: env.Env
-      id: {var: ENV_SERVICE_NAME, include: env/env.h}
-    - target: kl.VfsNet
-      id: kl.VfsNet
-    - target: @ROOTFS_ENTITY@
-      id: @ROOTFS_ENTITY@
-    - target: kl.TlsEntity
-      id: kl.TlsEntity
-  @INIT_Node_ENTITY_CONNECTIONS+@
+  - target: kl.core.NameServer
+    id: NSConnection
+  - target: env.Env
+    id: {var: ENV_SERVICE_NAME, include: env/env.h}
+  - target: kl.VfsNet
+    id: kl.VfsNet
+  - target: @ROOTFS_ENTITY@
+    id: @ROOTFS_ENTITY@
+  - target: kl.TlsEntity
+    id: kl.TlsEntity
+@INIT_NODE_EXEC_MGR_CONNECTION@
+@INIT_Node_ENTITY_CONNECTIONS+@
 
-- name: execution_manager.ExecMgrEntity
-  path: ExecMgrEntity
-  env:
-    VFS_FILESYSTEM_BACKEND: client:@ROOTFS_ENTITY@
-    LOG_LEVEL: LOG_DEBUG
-  connections:
-   - target: @ROOTFS_ENTITY@
-     id: @ROOTFS_ENTITY@
+@INIT_EXECMGR_ENTITY@
 @INIT_ExecMgrEntity_ENTITY_CONNECTIONS@
 
 @INIT_KLOG_ENTITY@

@@ -1,0 +1,192 @@
+/* Declaration of Execution Manager entities. */
+use EDL execution_manager.ExecMgrEntity
+use EDL kl.bc.BlobContainer
+use EDL kl.romfs_storage.RomfsStorage
+
+execute src=Einit, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+execute src=Einit, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from BlobContainerEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.bc.BlobContainer, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from ExecMgrEntity
+ * entity to KOS kernel and get responses.
+ */
+request src=execution_manager.ExecMgrEntity, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RomfsStorage
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.romfs_storage.RomfsStorage, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from BlobContainerEntity
+ * entity to ExecMgrEntity entity and get responses.
+ */
+request src=execution_manager.ExecMgrEntity, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=execution_manager.ExecMgrEntity, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+request src=kl.bc.BlobContainer, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+/**
+ * This code enables to send requests from RomfsStorage
+ * entity to KOS kernel and get responses.
+ */
+request src=kl.romfs_storage.RomfsStorage, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response src=kl.romfs_storage.RomfsStorage, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+request src=execution_manager.ExecMgrEntity, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+response src=execution_manager.ExecMgrEntity, dst=kl.romfs_storage.RomfsStorage
+{
+    grant()
+}
+
+request src=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+request src=node.Node, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=node.Node
+{
+    grant()
+}
+
+request src=node.Node, dst=execution_manager.ExecMgrEntity
+{
+    grant()
+}
+
+response src=execution_manager.ExecMgrEntity, dst=node.Node
+{
+    grant()
+}
+
+/*
+ * Let Execution Manager launch some entities
+ */
+execute src=execution_manager.ExecMgrEntity, dst=node.Node
+{
+    grant()
+}
+
+execute src=kl.bc.BlobContainer, dst=node.Node
+{
+    grant()
+}
+
+
+/*-------------*/
+/* Test entity */
+/*-------------*/
+
+request src=application.Application, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=application.Application
+{
+    grant()
+}
+
+execute src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+request src=application.Application, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+request src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+response src=application.Application, dst=kl.bc.BlobContainer
+{
+    grant()
+}

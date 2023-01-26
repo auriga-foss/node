@@ -10,6 +10,12 @@ use EDL application.Application
 use use_klog._
 
 /**
+ * Conditional declaration of KLog entities
+ * depending on USE_KLOG option
+ */
+use use_execmgr._
+
+/**
  * Conditional declaration of VfsRamFs
  * or VfsSdCardFs entity depending on
  * ROOTFS_SDCARD option
@@ -86,78 +92,6 @@ response src=env.Env, dst=node.Node
 }
 
 request src=node.Node, dst=env.Env
-{
-    grant()
-}
-
-request src=node.Node, dst=kl.bc.BlobContainer
-{
-    grant()
-}
-
-response src=kl.bc.BlobContainer, dst=node.Node
-{
-    grant()
-}
-
-request src=node.Node, dst=execution_manager.ExecMgrEntity
-{
-    grant()
-}
-
-response src=execution_manager.ExecMgrEntity, dst=node.Node
-{
-    grant()
-}
-
-/*
- * Let Execution Manager launch some entities
- */
-execute src=execution_manager.ExecMgrEntity, dst=node.Node
-{
-    grant()
-}
-
-execute src=kl.bc.BlobContainer, dst=node.Node
-{
-    grant()
-}
-
-/*-------------*/
-/* Test entity */
-/*-------------*/
-
-request src=application.Application, dst=kl.core.Core
-{
-    grant()
-}
-
-response src=kl.core.Core, dst=application.Application
-{
-    grant()
-}
-
-execute src=kl.bc.BlobContainer, dst=application.Application
-{
-    grant()
-}
-
-request src=application.Application, dst=kl.bc.BlobContainer
-{
-    grant()
-}
-
-response src=kl.bc.BlobContainer, dst=application.Application
-{
-    grant()
-}
-
-request src=kl.bc.BlobContainer, dst=application.Application
-{
-    grant()
-}
-
-response src=application.Application, dst=kl.bc.BlobContainer
 {
     grant()
 }

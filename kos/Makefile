@@ -80,9 +80,12 @@ qemubuild: ${ROOTFS_IMAGE}
 	@echo "UART_OPTION: $(UART_OPTION)"
 	@echo " Linking test (ramdisk) with KOS-qemu image ..."
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog_$(USE_KLOG).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr_$(USE_EXECMGR).psl \
+		$(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/$(ROOTFS_PSL) \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
@@ -92,10 +95,12 @@ qemubuild: ${ROOTFS_IMAGE}
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
 		-D USE_TLS=$(USE_TLS) \
 		-D USE_KLOG=$(USE_KLOG) \
+		-D USE_EXECMGR=$(USE_EXECMGR) \
 		-D ROOTFS_SDCARD=$(ROOTFS_SDCARD) \
 		$(UART_OPTION) \
 		../ && make kos-qemu-image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 ifeq  ($(QEMU_NET),1)
 ifneq (${NODE_PORT},0)

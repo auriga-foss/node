@@ -60,6 +60,13 @@ ifeq ($(strip $(ROOTFS_SDCARD)),1)
 QEMU_OPTS += -drive file=$(SD_CARD0),if=sd,format=raw
 endif
 
+# this is temporary solution - release versions of the CE-SDK doesn't contain the Execution Manager and all dependencies for it
+ifneq (,$(wildcard $(SDK_PREFIX)/sysroot-aarch64-kos/lib/libexecution_manager_proxy.a))
+	USE_EXECMGR = 1
+else
+	USE_EXECMGR = 0
+endif
+
 CC=$(TARGET)-gcc
 CXX=$(TARGET)-g++
 
@@ -127,6 +134,7 @@ export NODE_ADDONS_BUILD_PATH
 export NODE_ADDONS_LIB_ENABLED
 export USE_TLS
 export USE_KLOG
+export USE_EXECMGR
 export ROOTFS_SDCARD
 
 # export qemu control variabled
