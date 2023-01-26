@@ -11,7 +11,16 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 				" the whole 'test' folder"
 	mkdir -p $@/opt/node/
 	@cp -r $< $@/opt/node/
-	# copy files needed by tests
+ifeq (${NODE_DEMO}, 1)
+	@echo "Copy demo files"
+	mkdir -p $@/demos/cms
+	@cp -r $(BUILD_ROOT)/../../kasperskyos-nodejs-cms-demo/* $@/demos/cms
+	mkdir -p $@/demos/filemanager
+	@cp -r $(BUILD_ROOT)/../../kasperskyos-nodejs-filemanager-demo/* $@/demos/filemanager
+	mkdir -p $@/demos/messenger
+	@cp -r $(BUILD_ROOT)/../../kasperskyos-nodejs-messenger-demo/* $@/demos/messenger
+else
+	@echo "Copy files needed by tests"
 	mkdir -p $@/opt/node/benchmark
 	@cp -r $(BUILD_ROOT)/../benchmark/_cli.js $@/opt/node/benchmark/
 	mkdir -p $@/opt/node/deps/corepack
@@ -28,6 +37,7 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	@cp -r $(BUILD_ROOT)/../config.gypi $@
 	mkdir -p $@/opt/node/doc/api
 	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/opt/node/doc/api
+endif
 	@cp -r $(BUILD_ROOT)/image_builder/resources/rootfs/* $@
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
