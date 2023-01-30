@@ -28,13 +28,14 @@ set (ENTITIES
         ${tls_ENTITY}
         ${rump_DHCPCD_ENTITY}
         ${ns_ENTITY}
-        ${certificate_storage_ENTITY}
-        ExecMgrEntity
-        ${blob_container_ENTITY}
-        ${romfs_storage_ENTITY})
+        ${certificate_storage_ENTITY})
 
 if (USE_KLOG)
     list (APPEND ENTITIES KlogStorageEntity)
+endif()
+
+if (USE_EXECMGR)
+    list (APPEND ENTITIES ExecMgrEntity ${blob_container_ENTITY} ${romfs_storage_ENTITY})
 endif()
 
 set (SECURITY_PSL_FILE "src/psl/security.psl")

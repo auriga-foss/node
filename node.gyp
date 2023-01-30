@@ -29,6 +29,7 @@
     'node_builtin_modules_path%': '',
     'node_addons_lib_enabled': '<!(echo $NODE_ADDONS_LIB_ENABLED)',
     'node_addons_lib_path': '<!(echo $NODE_ADDONS_BUILD_PATH)',
+    'node_use_execmgr': '<!(echo $USE_EXECMGR)',
     # We list the deps/ files out instead of globbing them in js2c.py since we
     # only include a subset of all the files under these directories.
     # The lengths of their file names combined should not exceed the
@@ -196,8 +197,15 @@
           'ldflags': [
             '-Wl,--whole-archive',
             '-lvfs_remote',
-            '-lromfs_storage_lib',
             '-Wl,--no-whole-archive'
+          ],
+        }],
+        ['OS == "kos" and node_use_execmgr==1', {
+          'defines': [
+            'USE_EXECMGR=1',
+          ],
+          'ldflags': [
+            '-lromfs_storage_lib',
           ],
         }],
         ['OS=="kos" and node_addons_lib_enabled==1', {

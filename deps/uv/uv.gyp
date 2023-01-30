@@ -1,6 +1,7 @@
 {
   'variables': {
     'node_addons_lib_enabled': '<!(echo $NODE_ADDONS_LIB_ENABLED)',
+    'node_use_execmgr': '<!(echo $USE_EXECMGR)',
     'conditions': [
       ['OS=="win"', {
         'shared_unix_defines': [ ],
@@ -162,6 +163,9 @@
             ],
           },
         }, { # Not Windows i.e. POSIX
+          'defines': [
+            'USE_EXECMGR=node_use_execmgr',
+          ],
           'sources': [
             'include/uv/unix.h',
             'include/uv/linux.h',
@@ -275,8 +279,10 @@
           },
         }],
         [ 'OS=="kos"', {
-          'cflags_cc': [ '-fexceptions' ],
-          'defines': [ '_GNU_SOURCE' ],
+          'defines': [
+            '_GNU_SOURCE',
+            'USE_EXECMGR=node_use_execmgr'
+          ],
           'sources': [
             'src/unix/core.c',
             'src/unix/fs.c',
@@ -292,6 +298,16 @@
             'src/unix/procfs-exepath.c',
             'src/unix/random-getrandom.c',
             'src/kos/random-sysctl-kos.c',
+          ],
+        }],
+        ['OS == "kos" and node_use_execmgr==1', {
+          'cflags_cc': [
+            '-fexceptions'
+          ],
+          'defines': [
+            'USE_EXECMGR=1',
+          ],
+          'sources': [
             'src/kos/kos-execmgr.cc',
           ],
           'link_settings': {

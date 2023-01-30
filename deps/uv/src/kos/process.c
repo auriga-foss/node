@@ -33,10 +33,14 @@
 #include <fcntl.h>
 #include <poll.h>
 #include "kos-trace.h"
+
+#if (USE_EXECMGR == 1)
 #include "kos-execmgr.h"
+#endif
 
 extern char **environ;
 
+#if (USE_EXECMGR == 1)
 static void uv__chld(uv_timer_t* handle) {
   uv_process_t* process;
   uv_loop_t* loop;
@@ -91,6 +95,73 @@ static void uv__chld(uv_timer_t* handle) {
   }
   assert(QUEUE_EMPTY(&pending));
 }
+#else
+static void uv__chld(uv_signal_t* handle, int signum) {
+  uv_process_t* process;
+  uv_loop_t* loop;
+  int exit_status;
+  int term_signal;
+  int status;
+  pid_t pid;
+  QUEUE pending;
+  QUEUE* q;
+  QUEUE* h;
+
+  assert(signum == SIGCHLD);
+
+  QUEUE_INIT(&pending);
+  loop = handle->loop;
+
+  h = &loop->process_handles;
+  q = QUEUE_HEAD(h);
+  while (q != h) {
+    process = QUEUE_DATA(q, uv_process_t, queue);
+    q = QUEUE_NEXT(q);
+
+    do
+      pid = waitpid(process->pid, &status, WNOHANG);
+    while (pid == -1 && errno == EINTR);
+
+    if (pid == 0)
+      continue;
+
+    if (pid == -1) {
+      if (errno != ECHILD)
+        abort();
+      continue;
+    }
+
+    process->status = status;
+    QUEUE_REMOVE(&process->queue);
+    QUEUE_INSERT_TAIL(&pending, &process->queue);
+  }
+
+  h = &pending;
+  q = QUEUE_HEAD(h);
+  while (q != h) {
+    process = QUEUE_DATA(q, uv_process_t, queue);
+    q = QUEUE_NEXT(q);
+
+    QUEUE_REMOVE(&process->queue);
+    QUEUE_INIT(&process->queue);
+    uv__handle_stop(process);
+
+    if (process->exit_cb == NULL)
+      continue;
+
+    exit_status = 0;
+    if (WIFEXITED(process->status))
+      exit_status = WEXITSTATUS(process->status);
+
+    term_signal = 0;
+    if (WIFSIGNALED(process->status))
+      term_signal = WTERMSIG(process->status);
+
+    process->exit_cb(process, exit_status, term_signal);
+  }
+  assert(QUEUE_EMPTY(&pending));
+}
+#endif
 
 /*
  * Used for initializing stdio streams like options.stdin_stream. Returns
@@ -186,6 +257,8 @@ static void uv__write_errno(int error_fd) {
 int uv_spawn(uv_loop_t* loop,
              uv_process_t* process,
              const uv_process_options_t* options) {
+
+#if (USE_EXECMGR == 1)
   KOS_TEST_INF("[attempt to SPAWN (fork)]");
 
   assert(options->file != NULL);
@@ -222,6 +295,11 @@ int uv_spawn(uv_loop_t* loop,
   process->exit_cb = options->exit_cb;
 
   return !err ? 0 : UV_ENOSYS;
+#else
+    KOS_TEST_INF("[attempt to SPAWN (fork)]");
+  /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
+  return UV_ENOSYS;
+#endif
 }
 
 
@@ -231,9 +309,16 @@ int uv_process_kill(uv_process_t* process, int signum) {
 
 
 int uv_kill(int pid, int signum) {
+#if (USE_EXECMGR == 1)
   int err = kos_execmgr_kill(pid);
 
   return !err ? 0 : UV_ENOSYS;
+#else
+  if (kill(pid, signum))
+    return UV__ERR(errno);
+  else
+    return 0;
+#endif
 }
 
 
@@ -241,5 +326,9 @@ void uv__process_close(uv_process_t* handle) {
   QUEUE_REMOVE(&handle->queue);
   uv__handle_stop(handle);
   if (QUEUE_EMPTY(&handle->loop->process_handles))
+#if (USE_EXECMGR == 1)
     uv_timer_stop(&handle->loop->child_watcher);
+#else
+    uv_signal_stop(&handle->loop->child_watcher);
+#endif
 }

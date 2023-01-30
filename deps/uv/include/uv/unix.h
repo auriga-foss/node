@@ -221,7 +221,7 @@ typedef struct {
   char* errmsg;
 } uv_lib_t;
 
-#ifdef __KOS__
+#if (USE_EXECMGR == 1)
 #define CHILD_WATCHER uv_timer_t
 #else
 #define CHILD_WATCHER uv_signal_t
