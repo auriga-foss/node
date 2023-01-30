@@ -52,7 +52,7 @@ test-addon:
 
 .PHONY: test-spawn
 test-spawn: test-application-for-spawn
-	$(Q)$(MAKE) run NODE_ARG='\"/opt/node/test/kos/spawn.js\"'
+	$(Q)$(MAKE) run NODE_ARG='\"/opt/node/test/kos/spawn.js\"' ADD_TEST=1
 
 INCLUDEDIR = -I $(SDK_PREFIX)/toolchain/aarch64-kos/include/c++/9.2.1 \
 			 -I $(SDK_PREFIX)/toolchain/aarch64-kos/include \

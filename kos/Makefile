@@ -96,6 +96,7 @@ qemubuild: ${ROOTFS_IMAGE}
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
 		-D USE_TLS=$(USE_TLS) \
 		-D USE_KLOG=$(USE_KLOG) \
+		-D ADD_TEST=$(ADD_TEST) \
 		-D USE_EXECMGR=$(USE_EXECMGR) \
 		-D ROOTFS_SDCARD=$(ROOTFS_SDCARD) \
 		$(UART_OPTION) \

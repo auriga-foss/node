@@ -42,7 +42,9 @@ endif
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
 	@cp -r $(BUILD_ROOT)/image_builder/resources/certs $@
+ifeq ($(ADD_TEST), 1)
 	$(Q)cp -r $(BUILD_ROOT)/image_builder/application/application $@
+endif
 
 $(PART_0): $(ROOTFS_DIR)
 	@echo "Preparing partition for ramdisk ..."
@@ -89,6 +91,7 @@ realhw: image
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
 		-D USE_TLS=$(USE_TLS) \
+		-D ADD_TEST=$(ADD_TEST) \
 		-D USE_KLOG=$(USE_KLOG) \
 		-D USE_EXECMGR=$(USE_EXECMGR) \
 		$(UART_OPTION) \

@@ -57,7 +57,9 @@ else()
     set (NODE_VFS_NETWORK_BACKEND "client:kl.VfsNet")
 endif()
 
-list (APPEND FILES $ENV{BUILD_ROOT}/image_builder/application/application)
+if (ADD_TEST)
+    list (APPEND FILES $ENV{BUILD_ROOT}/image_builder/application/application)
+endif()
 
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")
     set (PROG_ARGS "args:")
