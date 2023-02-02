@@ -111,6 +111,16 @@ set_target_properties (${certificate_storage_ENTITY} PROPERTIES
     EXTRA_ENV "\
     VFS_FILESYSTEM_BACKEND: client:${ROOTFS_ENTITY}")
 
+set_target_properties (${precompiled_vfsVfsNet} PROPERTIES
+    EXTRA_ARGS "\
+    - -l
+    - devfs /dev devfs 0
+    - -l
+    - romfs /etc romfs 0")
+
+# add hosts file to romfs image, to be used by application
+list (APPEND FILES $ENV{BUILD_ROOT}/image_builder/resources/rootfs/etc/hosts)
+
 set_target_properties (${FS_BACKEND} PROPERTIES
     EXTRA_ARGS "\
     - -l
