@@ -12,6 +12,7 @@ CRASH_UNKNOWN=`cat $1 | grep CRASH,-,-,- | wc -l`
 FAILED=`cat $1 | grep FAIL, | wc -l`
 FAILED_SPAWN=`cat $1 | grep FAIL,+ | wc -l`
 FAILED_SKIPPED=`cat $1 | grep FAIL,- | grep -v FAIL,-,- | wc -l`
+FAILED_NOT_SUPPORTED=`cat $1 | grep FAIL,-,-,-,+ | wc -l`
 
 # we need to remove local paths from report, so let's build a proper
 # search string for sed without the 'kos' folder name
@@ -31,7 +32,7 @@ if [ x"$X86_TESTS_CNT" != x"0" ]; then
   FAILED_UNKNOWN=`cat status.list | grep FAIL,pass | wc -l`
 
 else
-  FAILED_UNKNOWN=`cat $1 | grep FAIL,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e "s#${SUPRESS_STR}##g" | tee failed_unknown.list | wc -l`;
+  FAILED_UNKNOWN=`cat $1 | grep FAIL,-,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e "s#${SUPRESS_STR}##g" | tee failed_unknown.list | wc -l`;
 fi
 
 echo "Total         : $TOTAL"
@@ -47,5 +48,5 @@ echo " - by skipped : $FAILED_SKIPPED"
 if [ x"$X86_TESTS_CNT" != x"0"  ]; then
   echo " - by x86     : $FAILED_X86"
 fi
-
+echo " - unsupported : $FAILED_NOT_SUPPORTED"
 echo " - unknown    : $FAILED_UNKNOWN"

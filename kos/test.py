@@ -128,7 +128,7 @@ class ProgressIndicator(object):
     self.shutdown_event = threading.Event()
     self.file = open("report.csv", mode="w", encoding='utf-8')
     self.file_writer = csv.writer(self.file, delimiter = ",", lineterminator="\r")
-    self.file_writer.writerow(["NAME", "COMMAND", "PATH", "STATUS", "SPAWN", "SKIP", "SEGFAULT"])
+    self.file_writer.writerow(["NAME", "COMMAND", "PATH", "STATUS", "SPAWN", "SKIP", "SEGFAULT", "UNSUPPORTED"])
 
   def GetFailureOutput(self, failure):
     output = []
@@ -244,7 +244,7 @@ class ProgressIndicator(object):
           outcome = 'FAIL'
       else:
         outcome = 'pass'
-      self.file_writer.writerow([output.test.GetName(), output.command, output.command[len(output.command)-1], outcome, output.output.spawned, output.output.skipped, output.output.segfault])
+      self.file_writer.writerow([output.test.GetName(), output.command, output.command[len(output.command)-1], outcome, output.output.spawned, output.output.skipped, output.output.segfault, output.output.not_supported])
       self.lock.release()
 
 
@@ -564,7 +564,7 @@ PROGRESS_INDICATORS = {
 
 class CommandOutput(object):
 
-  def __init__(self, exit_code, timed_out, stdout, stderr, spawned, skipped, segfault):
+  def __init__(self, exit_code, timed_out, stdout, stderr, spawned, skipped, segfault, not_supported):
     self.exit_code = exit_code
     self.timed_out = timed_out
     self.stdout = stdout
@@ -573,6 +573,7 @@ class CommandOutput(object):
     self.spawned = spawned
     self.skipped = skipped
     self.segfault = segfault
+    self.not_supported = not_supported
     self.reach_test_body = False
 
 
@@ -757,6 +758,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
   spawned = '-'
   skipped = '-'
   segfault = '-'
+  not_supported = '-'
 
   while exit_code is None:
     if (not end_time is None) and (time.time() >= end_time):
@@ -783,6 +785,10 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
           segfault = '+'
           print("\nCall trace detected")
 
+        if line.find(b'function not implemented') != -1:
+          not_supported = '+'
+          print("\nENOSYS trace detected")
+
         if line.find(b'1..0 # Skipped:') != -1:
           skipped = line.decode('utf-8').rstrip()
           KillTimedOutProcess(context, process.pid)
@@ -806,7 +812,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
       if sleep_time > MAX_SLEEP_TIME:
         sleep_time = MAX_SLEEP_TIME
   #shutil.rmtree(build_dir, ignore_errors = True)
-  return (exit_code, timed_out, spawned, skipped, segfault)
+  return (exit_code, timed_out, spawned, skipped, segfault, not_supported)
 
 
 def PrintError(str):
@@ -856,7 +862,7 @@ def Execute(args, context, timeout=None, env=None, disable_core_files=False, std
       resource.setrlimit(resource.RLIMIT_CORE, (0,0))
     preexec_fn = disableCoreFiles
 
-  (exit_code, timed_out, spawned, skipped, segfault) = RunProcess(
+  (exit_code, timed_out, spawned, skipped, segfault, not_supported) = RunProcess(
     context,
     timeout,
     fd_out,
@@ -876,7 +882,7 @@ def Execute(args, context, timeout=None, env=None, disable_core_files=False, std
   CheckedUnlink(outname)
   CheckedUnlink(errname)
 
-  return CommandOutput(exit_code, timed_out, output, errors, spawned, skipped, segfault)
+  return CommandOutput(exit_code, timed_out, output, errors, spawned, skipped, segfault, not_supported)
 
 
 def CarCdr(path):
@@ -1795,7 +1801,7 @@ def Main():
         if not exists(vm):
           print("Can't find shell executable: '%s'" % vm)
           continue
-        archEngineContext = CommandOutput(0, 0, "arm", "", "", "", "") #Execute([vm, "-p", "process.arch"], context)
+        archEngineContext = CommandOutput(0, 0, "arm", "", "", "", "", "") #Execute([vm, "-p", "process.arch"], context)
         vmArch = archEngineContext.stdout.rstrip()
         if archEngineContext.exit_code != 0 or vmArch == "undefined":
           print("Can't determine the arch of: '%s'" % vm)
