@@ -18,7 +18,7 @@ FAILED_SKIPPED=`cat $1 | grep FAIL,- | grep -v FAIL,-,- | wc -l`
 SUPRESS_STR=`dirname $PWD | sed -e 's#\/#\\\/#g'`
 if [ x"$X86_TESTS_CNT" != x"0" ]; then
 
-  LIST=`cat $1 | grep FAIL,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e 's#${SUPRESS_STR}##g'`;
+  LIST=`cat $1 | grep FAIL,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e "s#${SUPRESS_STR}##g"`;
 
   echo "NAME,STATUS_KOS,STATUS_X86" > status.list
 
@@ -31,7 +31,7 @@ if [ x"$X86_TESTS_CNT" != x"0" ]; then
   FAILED_UNKNOWN=`cat status.list | grep FAIL,pass | wc -l`
 
 else
-  FAILED_UNKNOWN=`cat $1 | grep FAIL,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e 's#${SUPRESS_STR}##g' | tee failed_unknown.list | wc -l`;
+  FAILED_UNKNOWN=`cat $1 | grep FAIL,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e "s#${SUPRESS_STR}##g" | tee failed_unknown.list | wc -l`;
 fi
 
 echo "Total         : $TOTAL"
