@@ -16,7 +16,6 @@ FAILED_SKIPPED=`cat $1 | grep FAIL,- | grep -v FAIL,-,- | wc -l`
 # we need to remove local paths from report, so let's build a proper
 # search string for sed without the 'kos' folder name
 SUPRESS_STR=`dirname $PWD | sed -e 's#\/#\\\/#g'`
-echo "suppress string:" $SUPRESS_STR
 if [ x"$X86_TESTS_CNT" != x"0" ]; then
 
   LIST=`cat $1 | grep FAIL,-,-,- | awk -vFPAT='([^,]*)|("[^"]+")' -vOFS=, '{print $4}' | sed -e 's#${SUPRESS_STR}##g'`;
