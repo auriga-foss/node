@@ -6,3 +6,5 @@ addons/build
 kos/image_builder/einit/src/psl/use_klog.psl
 kos/image_builder/einit/src/psl/rootfs.psl
 image_builder/application/application*
+*.csv
+*.log
