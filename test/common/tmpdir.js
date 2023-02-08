@@ -8,14 +8,8 @@ function rmSync(pathname) {
   fs.rmSync(pathname, { maxRetries: 3, recursive: true, force: true });
 }
 
-const testRoot = process.env.NODE_TEST_DIR ?
+const tmpPath = process.env.NODE_TEST_DIR ?
   fs.realpathSync(process.env.NODE_TEST_DIR) : path.resolve(__dirname, '..');
-
-// Using a `.` prefixed name, which is the convention for "hidden" on POSIX,
-// gets tools to ignore it by default or by simple rules, especially eslint.
-const tmpdirName = '.tmp.' +
-  (process.env.TEST_SERIAL_ID || process.env.TEST_THREAD_ID || '0');
-const tmpPath = path.join(testRoot, tmpdirName);
 
 let firstRefresh = true;
 function refresh() {
@@ -33,7 +27,7 @@ function refresh() {
 function onexit() {
   // Change directory to avoid possible EBUSY
   if (isMainThread)
-    process.chdir(testRoot);
+    process.chdir(tmpPath);
 
   try {
     rmSync(tmpPath);
