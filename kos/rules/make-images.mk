@@ -39,6 +39,8 @@ else
 	@cp -r $(BUILD_ROOT)/../doc/api/cli.md $@/opt/node/doc/api
 endif
 	@cp -r $(BUILD_ROOT)/image_builder/resources/rootfs/* $@
+	#generate fake node executable in ramdisk for tests pass
+	@dd if=/dev/zero of=$@/Node bs=1M count=1
 	@echo "Please keep /etc/hosts and /etc/resolv.conf updated with respect to" \
 				" your OS config"
 	@cp -r $(BUILD_ROOT)/image_builder/resources/certs $@
