@@ -158,7 +158,8 @@ int main(int argc, char** argv) {
     _VFS_NETWORK_BACKEND"=client:"_TLS_CONNECTION_ID,
 #endif
     _VFS_FILESYSTEM_BACKEND"=client:"RAM_FS_VFS_CONNECTION,
-    "PATH=/opt/node/"
+    "PATH=/opt/node/",
+    "NODE_TEST_DIR=/tmp/"
   };
 
   envRegisterArgs("Node", (int)found_parameters, NodeArgs);
