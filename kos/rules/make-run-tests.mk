@@ -33,14 +33,6 @@ http:
 	$(Q)$(MAKE) $(ACT) NODE_ARG='\"/opt/node/test/kos/http.js\"' \
 		NODE_PORT=$(NODE_PORT) QEMU_NET=1
 
-.PHONY: crypto-classes
-crypto-classes:
-	$(Q)$(MAKE) $(ACT) NODE_ARG='\"/opt/node/test/parallel/test-crypto-classes.js\"'
-
-.PHONY: crypto-hash
-crypto-hash:
-	$(Q)$(MAKE) $(ACT) NODE_ARG='\"/opt/node/test/parallel/test-crypto-hash.js\"'
-
 .PHONY: build-test-addon
 build-test-addon:
 	$(Q)CC=$(CC) CXX=$(CXX) node-gyp --arch aarch64 --fully-static configure build --directory=./addons --nodedir $(PWD)/../ 
