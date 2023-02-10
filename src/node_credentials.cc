@@ -381,11 +381,11 @@ static void SetGroups(const FunctionCallbackInfo<Value>& args) {
 
     groups[i] = gid;
   }
-
+#if !defined(__KOS__)
   int rc = setgroups(size, *groups);
 
   if (rc == -1) return env->ThrowErrnoException(errno, "setgroups");
-
+#endif
   args.GetReturnValue().Set(0);
 }
 
@@ -422,11 +422,13 @@ static void InitGroups(const FunctionCallbackInfo<Value>& args) {
     return args.GetReturnValue().Set(2);
   }
 
+#if !defined(__KOS__)
   int rc = initgroups(user, extra_group);
 
   if (must_free) free(user);
 
   if (rc) return env->ThrowErrnoException(errno, "initgroups");
+#endif
 
   args.GetReturnValue().Set(0);
 }
