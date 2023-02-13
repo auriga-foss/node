@@ -785,7 +785,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
           segfault = '+'
           print("\nCall trace detected")
 
-        if line.find(b'function not implemented') != -1:
+        if line.find(b'unction not implemented') != -1:
           not_supported = '+'
           print("\nENOSYS trace detected")
 
