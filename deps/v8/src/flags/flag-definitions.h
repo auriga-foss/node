@@ -744,8 +744,14 @@ DEFINE_SIZE_T(
     "max size of the shared heap (in Mbytes); "
     "other heap size flags (e.g. max_shared_heap_size) take precedence")
 
+#ifndef __KOS__
 DEFINE_BOOL(write_code_using_rwx, true,
+            "flip permissions to rw to write page instead of rwx")
+#else /* for KasperskyOS we can't write code with RWX */
+DEFINE_BOOL(write_code_using_rwx, false,
             "flip permissions to rwx to write page instead of rw")
+#endif
+
 DEFINE_NEG_IMPLICATION(jitless, write_code_using_rwx)
 
 // Flags for concurrent recompilation.
