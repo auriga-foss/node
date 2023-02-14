@@ -26,7 +26,7 @@ examples of how you can bridge it with your solution, are located in the folder:
 ./kos
 ````
 
-Please note that the minimal version of KasperskyOS SDK, which is required is **1.1.0.24**.
+Please note that the minimal version of KasperskyOS SDK, which is required is **1.1.1.13**.
 The recent SDK release could be download from the project official [page](https://os.kaspersky.com/download-community-edition/).
 
 ### Build NodejS
@@ -136,15 +136,14 @@ So the solution will start.
    more threads is likely to cause `Unhandled Page Fault`).
 13. Single core configurations (i.e. `QEMU` option `-smp 1`) aren't supported.
 14. Unix domain sockets (i.e. `AF_UNIX`/`AF_LOCAL`) are not bindable.
-15. Host name isn't picked up from `/etc/hostname` file (default host name
     is an empty string).
-16. `getaddrinfo` failures (returns `EAI_AGAIN` or `ENOTFOUND`) on Raspberry
+15. `getaddrinfo` failures (returns `EAI_AGAIN` or `ENOTFOUND`) on Raspberry
     Pi 4B target (for instance `test-async-exec-resource-http.js`);
-17. KOS image transfer failures over TFTP (for instance `test-async-local-storage-promises.js`);
-18. Timeouts (for instance `test-esm-loader-thenable.mjs`): 2 minutes per test
+16. KOS image transfer failures over TFTP (for instance `test-async-local-storage-promises.js`);
+17. Timeouts (for instance `test-esm-loader-thenable.mjs`): 2 minutes per test
     isn't enough for real HW every now and then, even though typical test takes
     roughly 1 minute.
-19. No dynamic loading of C++ addons because dynamic libraries are not supported. 
+18. No dynamic loading of C++ addons because dynamic libraries are not supported.
     At the moment static linking of the addon is used as a workaround.
 
 ## How to run tests
