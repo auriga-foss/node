@@ -1,7 +1,7 @@
 # Node.JS (v20.0.0-pre) for KasperskyOS
 This is a fork of [Node.js project](https://github.com/nodejs/node) adapted to
 be used with KasperskyOS. For more information about the target OS, please refer
-to [KaspeksyOS Community Edition](https://support.kaspersky.com/help/KCE/1.1/en-US/community_edition.htm).
+to [KasperskyOS Community Edition](https://support.kaspersky.com/help/KCE/1.1/en-US/community_edition.htm).
 
 Please note, that to be able to develop your own NodeJS application with KasperskyOS
 you'd need to build OS principles understanding (see mention link for examples, API and so on).
