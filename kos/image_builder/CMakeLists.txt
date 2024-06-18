@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.12)
 project (node)
 
-# Initialize CMake library for Kaspersky OS SDK.
+# Initialize CMake library for KasperskyOS SDK.
 include (platform)
-initialize_platform ()
+initialize_platform (FORCE_STATIC)
 
 # Add functions for installing artefacts.
 include (platform/install)
@@ -43,6 +43,10 @@ if (USE_EXECMGR)
     # Execution Manager entity
     add_subdirectory (execution_manager)
 endif()
+
+# Add a package for working with the virtual file system.
+find_package (vfs REQUIRED)
+include_directories (${vfs_INCLUDE})
 
 # Attach a package with the dhcpcd entity implementation.
 find_package (rump REQUIRED COMPONENTS DHCPCD_ENTITY)
@@ -89,7 +93,9 @@ if (USE_KLOG)
 endif()
 
 # Test entity for spawn() in NodeJS
-add_subdirectory (application)
+if (ADD_TEST)
+    add_subdirectory (application)
+endif()
 
 # Binary image of KasperskyOS.
 add_subdirectory (einit)

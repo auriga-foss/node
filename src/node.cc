@@ -403,8 +403,8 @@ void RegisterSignalHandler(int signal,
 #if !defined(__KOS__)
   sa.sa_flags = reset_handler ? SA_RESETHAND : 0;
 #else
-  // KOS: TODO: POSIX signals aren't supported, so there is
-  //            nothing to restore. Disable it to prevent system failure.
+  // KasperskyOS: TODO: POSIX signals aren't supported, so there is
+  //                    nothing to restore. Disable it to prevent system failure.
   sa.sa_flags = 0;
 #endif
   sigfillset(&sa.sa_mask);

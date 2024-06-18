@@ -1,4 +1,4 @@
-// Interface to KOS Execute Manager abstraction library
+// Interface to KasperskyOS Execute Manager abstraction library
 
 #if defined(__cplusplus)
 #define cpp_noexcept noexcept

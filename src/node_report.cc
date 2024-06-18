@@ -266,7 +266,7 @@ static void PrintVersionInformation(JSONWriter* writer) {
   if (libc_version != nullptr)
     writer->json_keyvalue("glibcVersionRuntime", (*libc_version)());
 #else /* __KOS__ */
-  writer->json_keyvalue("glibcVersionRuntime", "Not supported by KOS SDK");
+  writer->json_keyvalue("glibcVersionRuntime", "Not supported by KasperskyOS SDK");
 #endif /* __KOS__ */
 #endif /* _WIN32 */
 

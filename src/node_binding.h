@@ -73,7 +73,7 @@ class DLib {
   const int flags_;
   std::string errmsg_;
   void* handle_;
-// KOS: TODO: can't use #ifdef __KOS__ due to build
+// KasperskyOS: TODO: can't use #ifdef __KOS__ due to build
 //            system limitation. Disable it for now.
 // #ifndef __POSIX__
   uv_lib_t lib_;

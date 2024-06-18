@@ -18,7 +18,7 @@ constexpr int kOobSignal = SIGSEGV;
 #elif V8_OS_DARWIN
 constexpr int kOobSignal = SIGBUS;
 #else
-#error Posix trap handlers are only supported on Linux, MacOSX, KOS and FreeBSD.
+#error Posix trap handlers are only supported on Linux, MacOSX, KasperskyOS and FreeBSD.
 #endif
 
 void HandleSignal(int signum, siginfo_t* info, void* context);

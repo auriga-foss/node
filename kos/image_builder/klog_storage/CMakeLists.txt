@@ -2,7 +2,7 @@
 nk_build_edl_files (klog_edl_files NK_MODULE "klog" EDL
                     "${CMAKE_SOURCE_DIR}/resources/edl/KlogEntity.edl")
 # HACK: make edl depends on storage because they are needed much earlier
-# (i.e on KSS build stage) and we do not want to depend on KOS internal targets.
+# (i.e on KSS build stage) and we do not want to depend on KasperskyOS internal targets.
 
 nk_build_edl_files (klog_storage_edl_files
                     NK_MODULE "klog_storage"

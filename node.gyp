@@ -995,7 +995,7 @@
         ['OS=="kos"', {
           'ldflags': [ '-fsanitize=fuzzer' ]
         }],
-        # Ensure that ossfuzz flag has been set and that we are on Linux or KOS
+        # Ensure that ossfuzz flag has been set and that we are on Linux or KasperskyOS
         [ 'OS not in "linux kos" or ossfuzz!="true"', {
           'type': 'none',
         }],

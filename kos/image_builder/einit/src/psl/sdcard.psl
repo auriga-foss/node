@@ -22,7 +22,7 @@ execute src=Einit, dst=kl.drivers.SDCard
 }
 
 /**
- * This code enables to send requests from RamFs entity to KOS kernel
+ * This code enables to send requests from RamFs entity to KasperskyOS kernel
  * and get responses.
  */
 request src=kl.VfsSdCardFs, dst=kl.core.Core
@@ -36,7 +36,7 @@ response src=kl.core.Core, dst=kl.VfsSdCardFs
 }
 
 /**
- * This code enables to send requests from RAMDisk driver to KOS kernel
+ * This code enables to send requests from RAMDisk driver to KasperskyOS kernel
  * and get responses.
  */
 request src=kl.drivers.SDCard, dst=kl.core.Core

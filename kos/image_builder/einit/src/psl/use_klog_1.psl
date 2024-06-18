@@ -4,7 +4,7 @@ use EDL klog_storage.KlogStorageEntity
 
 /**
  * This code enables to send requests from KlogEntity
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=klog.KlogEntity, dst=kl.core.Core
 {
@@ -18,7 +18,7 @@ response src=kl.core.Core, dst=klog.KlogEntity
 
 /**
  * This code enables to send requests from KlogStorageEntity
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=klog_storage.KlogStorageEntity, dst=kl.core.Core
 {

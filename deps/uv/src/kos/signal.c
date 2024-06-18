@@ -18,7 +18,7 @@
  * IN THE SOFTWARE.
  */
 
-/* KOS: TODO: put stub due to KOS specifics. */
+/* KasperskyOS: TODO: put stub due to KasperskyOS specifics. */
 static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
                           void (*child)(void)) {
   return 0;
@@ -153,8 +153,8 @@ static void uv__signal_block_and_lock(sigset_t* saved_sigmask) {
   /* to shut up valgrind */
   sigemptyset(saved_sigmask);
   if (pthread_sigmask(SIG_SETMASK, &new_mask, saved_sigmask)) {
-    /* KOS: TODO: don't abort, but put user log. */
-    KOS_DEBUG_INF("KOS limitation on 'pthread_sigmask', ignoring");
+    /* KasperskyOS: TODO: don't abort, but put user log. */
+    KOS_DEBUG_INF("KasperskyOS limitation on 'pthread_sigmask', ignoring");
   }
 
   if (uv__signal_lock())
@@ -167,8 +167,8 @@ static void uv__signal_unlock_and_unblock(sigset_t* saved_sigmask) {
     abort();
 
   if (pthread_sigmask(SIG_SETMASK, saved_sigmask, NULL)) {
-    /* KOS: TODO: don't abort, but put user log. */
-    KOS_DEBUG_INF("KOS limitation on 'pthread_sigmask', ignoring");
+    /* KasperskyOS: TODO: don't abort, but put user log. */
+    KOS_DEBUG_INF("KasperskyOS limitation on 'pthread_sigmask', ignoring");
   }
 }
 

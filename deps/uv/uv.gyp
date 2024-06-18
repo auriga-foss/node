@@ -222,7 +222,7 @@
           ],
         }],
         ['OS not in "win kos"', {
-          'sources': [ # Unix specific sources list, except KOS
+          'sources': [ # Unix specific sources list, except KasperskyOS
             'src/unix/core.c',
             'src/unix/fs.c',
             'src/unix/process.c',
@@ -279,6 +279,9 @@
           },
         }],
         [ 'OS=="kos"', {
+          'cflags': [
+            '--std=gnu99'
+          ],
           'defines': [
             '_GNU_SOURCE',
             'USE_EXECMGR=node_use_execmgr'

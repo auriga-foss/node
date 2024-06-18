@@ -330,7 +330,7 @@ static struct global_handle_map_t {
 DLib::DLib(const char* filename, int flags)
     : filename_(filename), flags_(flags), handle_(nullptr) {}
 
-// KOS: TODO: due to KOS specifics we can't use dynamic linking
+// KasperskyOS: TODO: due to KasperskyOS specifics we can't use dynamic linking
 //            so will use UV calls instead (at least for now).
 #if defined(__POSIX__) && !defined(__KOS__)
 bool DLib::Open() {
@@ -480,7 +480,7 @@ void DLOpen(const FunctionCallbackInfo<Value>& args) {
 #if defined(__KOS__)
 #if _DL_USE_FAKE_LOAD == 1
     if (mp == nullptr) {
-      /* KOS:
+      /* KasperskyOS:
        *     in order to trigger dlopen() .. call flow we need to name our
        *     addon module with '.node' suffix (in the file system). Then in
        *     order to properly 'find' such addon in the external modules linked

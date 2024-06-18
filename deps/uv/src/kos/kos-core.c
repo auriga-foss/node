@@ -37,12 +37,13 @@
 #include <kos/thread.h>
 /* The following include is needed to use perfomance counters. */
 #include <coresrv/profiler/profiler_api.h>
+#include <coresrv/task/task_api.h>
 
 #include <net/if.h>
 #define BUFFER_SIZE UINT32_C(100)
-#define KOS_CPU_INFO_NOT_SUPPORTED "CPU info is not supported by KOS SDK"
-/* KOS: TODO: complete stub (to be used instead of sys/epoll.h), bogus return
- *            for now.
+#define KOS_CPU_INFO_NOT_SUPPORTED "CPU info is not supported by KasperskyOS SDK"
+/* KasperskyOS: TODO: complete stub (to be used instead of sys/epoll.h), bogus return
+ *              for now.
 */
 
 #include <ifaddrs.h>
@@ -80,6 +81,11 @@
 #undef NANOSEC
 #define NANOSEC ((uint64_t) 1e9)
 
+#undef MICROSEC
+#define MICROSEC ((uint64_t) 1e3)
+
+#define TASK_NAME_LEN UINT32_C(100)
+
 uint64_t uv__hrtime(uv_clocktype_t type) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -103,7 +109,15 @@ static int uv__get_memory_metric(const char* metric_name) {
 
 
 int uv_resident_set_memory(size_t* rss) {
-  *rss = uv__get_memory_metric("node.Node.allocated");
+  const char metric[] = ".allocated";
+  char fullMetric[TASK_NAME_LEN + sizeof(metric)];
+  
+  Retcode rc = KnTaskGetName(fullMetric, TASK_NAME_LEN);
+  if (rc != rcOk)
+    return UV_EINVAL;
+
+  strcat(fullMetric, metric);
+  *rss = uv__get_memory_metric(fullMetric);
   return 0;
 }
 
@@ -298,7 +312,7 @@ int uv_os_getpriority(uv_pid_t pid, int* priority) {
   if (r != rcOk)
     return UV__ERR(r);
 
-  /* Map KOS ThreadPriority to Unix nice values */
+  /* Map KasperskyOS ThreadPriority to Unix nice values */
   if (kos_thread_priority < ThreadPriorityNormal)
     *priority = UV_PRIORITY_LOW;
   else if (kos_thread_priority > ThreadPriorityNormal)
@@ -314,7 +328,7 @@ int uv_os_setpriority(uv_pid_t pid, int priority) {
   Retcode r;
   ThreadPriority kos_thread_priority;
 
-  /* Map Unix nice values to KOS ThreadPriority */
+  /* Map Unix nice values to KasperskyOS ThreadPriority */
   if (priority < UV_PRIORITY_HIGHEST || priority > UV_PRIORITY_LOW)
     return UV_EINVAL;
   else if (priority < UV_PRIORITY_NORMAL)
@@ -331,6 +345,35 @@ int uv_os_setpriority(uv_pid_t pid, int priority) {
   r = KnThreadSetPriority((Tid)pid, kos_thread_priority);
   if (r != rcOk)
     return UV__ERR(r);
+
+  return 0;
+}
+
+
+int uv_getrusage(uv_rusage_t* rusage) {
+  Retcode retCode;
+  rtl_uint64_t ns;
+  char taskName[TASK_NAME_LEN];
+
+  memset(rusage, 0, sizeof(uv_rusage_t));
+
+  Retcode rc = KnTaskGetName(taskName, TASK_NAME_LEN);
+  if (rc != rcOk)
+    return UV_EINVAL;
+
+  retCode = KnProfilerGetCounterAsUInt64(taskName, ".time.user", &ns);
+  if (retCode != rcOk)
+    return UV_EINVAL;
+
+  rusage->ru_utime.tv_sec = ns / NANOSEC;
+  rusage->ru_utime.tv_usec = (ns % NANOSEC) / MICROSEC;
+
+  retCode = KnProfilerGetCounterAsUInt64(taskName, ".time.kernel", &ns);
+  if (retCode != rcOk)
+    return UV_EINVAL;
+
+  rusage->ru_stime.tv_sec = ns / NANOSEC;
+  rusage->ru_stime.tv_usec = (ns % NANOSEC) / MICROSEC;
 
   return 0;
 }

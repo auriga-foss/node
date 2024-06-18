@@ -20,7 +20,7 @@ execute src=Einit, dst=execution_manager.ExecMgrEntity
 
 /**
  * This code enables to send requests from BlobContainerEntity
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=kl.bc.BlobContainer, dst=kl.core.Core
 {
@@ -34,7 +34,7 @@ response src=kl.core.Core, dst=kl.bc.BlobContainer
 
 /**
  * This code enables to send requests from ExecMgrEntity
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=execution_manager.ExecMgrEntity, dst=kl.core.Core
 {
@@ -48,7 +48,7 @@ response src=kl.core.Core, dst=execution_manager.ExecMgrEntity
 
 /**
  * This code enables to send requests from RomfsStorage
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=kl.romfs_storage.RomfsStorage, dst=kl.core.Core
 {
@@ -86,7 +86,7 @@ response src=kl.bc.BlobContainer, dst=execution_manager.ExecMgrEntity
 
 /**
  * This code enables to send requests from RomfsStorage
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=kl.romfs_storage.RomfsStorage, dst=execution_manager.ExecMgrEntity
 {
@@ -147,46 +147,6 @@ execute src=execution_manager.ExecMgrEntity, dst=node.Node
 }
 
 execute src=kl.bc.BlobContainer, dst=node.Node
-{
-    grant()
-}
-
-
-/*-------------*/
-/* Test entity */
-/*-------------*/
-
-request src=application.Application, dst=kl.core.Core
-{
-    grant()
-}
-
-response src=kl.core.Core, dst=application.Application
-{
-    grant()
-}
-
-execute src=kl.bc.BlobContainer, dst=application.Application
-{
-    grant()
-}
-
-request src=application.Application, dst=kl.bc.BlobContainer
-{
-    grant()
-}
-
-response src=kl.bc.BlobContainer, dst=application.Application
-{
-    grant()
-}
-
-request src=kl.bc.BlobContainer, dst=application.Application
-{
-    grant()
-}
-
-response src=application.Application, dst=kl.bc.BlobContainer
 {
     grant()
 }

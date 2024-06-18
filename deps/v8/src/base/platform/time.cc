@@ -112,12 +112,12 @@ V8_INLINE int64_t ClockNow(clockid_t clk_id) {
 #if defined(TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
 #error "test and remove w/a"
 #else
-#warning "WA Check if new version of KOS now supports " \
+#warning "WA Check if new version of KasperskyOS now supports " \
 "CLOCK_THREAD_CPUTIME_ID and CLOCK_PROCESS_CPUTIME_ID"
 #endif
   if (clk_id == CLOCK_THREAD_CPUTIME_ID || clk_id == CLOCK_PROCESS_CPUTIME_ID) {
     // CLOCK_THREAD_CPUTIME_ID and CLOCK_PROCESS_CPUTIME_ID aren't supported
-    // in KOS
+    // in KasperskyOS
     return 0;
   }
 #endif

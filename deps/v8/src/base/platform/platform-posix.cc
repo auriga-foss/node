@@ -201,7 +201,7 @@ int GetProtectionFromMemoryPermission(OS::MemoryPermission access) {
   UNREACHABLE();
 }
 
-// KOS: TODO: enforce code for KOS platform.
+// KasperskyOS: TODO: enforce code for KasperskyOS platform.
 #if V8_OS_LINUX || V8_OS_FREEBSD || defined(V8_OS_KOS)
 #ifdef __arm__
 

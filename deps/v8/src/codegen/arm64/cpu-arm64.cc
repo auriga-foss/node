@@ -47,7 +47,7 @@ class CacheLineSizes {
 };
 
 void CpuFeatures::FlushICache(void* address, size_t length) {
-// KOS: TODO: disable with respect to KOS limitation.
+// KasperskyOS: TODO: disable with respect to KasperskyOS limitation.
 #if !defined(USE_SIMULATOR) && !defined(__KOS__)
 #if defined(V8_HOST_ARCH_ARM64)
 #if defined(V8_OS_WIN)

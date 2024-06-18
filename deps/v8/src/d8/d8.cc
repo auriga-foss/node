@@ -308,7 +308,7 @@ class MultiMappedAllocator : public ArrayBufferAllocatorBase {
           mremap(real_alloc, 0, kChunkSize, MREMAP_MAYMOVE | MREMAP_FIXED,
                  reinterpret_cast<void*>(to_map));
 #else
-         // Due to KOS-specifics we can't have mremap() call.
+         // Due to KasperskyOS-specifics we can't have mremap() call.
          ((void*)-1);
 #endif
       if (reinterpret_cast<intptr_t>(result) == -1) {

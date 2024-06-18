@@ -19,7 +19,7 @@
  * IN THE SOFTWARE.
  */
 
-/* KOS: TODO: due to KOS specifics put local stub. */
+/* KasperskyOS: TODO: due to KasperskyOS specifics put local stub. */
 #ifdef __KOS__
 static int pthread_atfork(void (*prepare)(void), void (*parent)(void),
                           void (*child)(void)) {

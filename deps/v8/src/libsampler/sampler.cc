@@ -71,7 +71,7 @@ using zx_thread_state_general_regs_t = zx_arm64_general_regs_t;
 #include "src/base/atomic-utils.h"
 #include "src/base/platform/platform.h"
 
-// KOS: TODO: supplementary structures for KOS build.
+// KasperskyOS: TODO: supplementary structures for KasperskyOS build.
 #if (V8_OS_KOS) && defined(__arm__)
   // Completely bogus structure, only for first compile purposes.
   struct mcontext_t {

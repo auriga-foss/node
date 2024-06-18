@@ -58,7 +58,7 @@ else()
 endif()
 
 if (ADD_TEST)
-    list (APPEND FILES $ENV{BUILD_ROOT}/image_builder/application/application)
+    list (APPEND FILES application)
 endif()
 
 if (NOT "$ENV{NODE_ARG}" STREQUAL "")
@@ -71,10 +71,10 @@ if (NOT "$ENV{NODE_ARG}" STREQUAL "")
 endif()
 
 set (EXTRA_CONNECTIONS "\
-    - target: kl.VfsNet
-      id: kl.VfsNet
-    - target: ${ROOTFS_ENTITY}
-      id: ${ROOTFS_ENTITY}")
+  - target: kl.VfsNet
+    id: kl.VfsNet
+  - target: ${ROOTFS_ENTITY}
+    id: ${ROOTFS_ENTITY}")
 
 set_target_properties (${tls_ENTITY} PROPERTIES
     ${vfs_ENTITY}_REPLACEMENT ""
@@ -116,7 +116,7 @@ set_target_properties (${precompiled_vfsVfsNet} PROPERTIES
     - -l
     - devfs /dev devfs 0
     - -l
-    - romfs /etc romfs 0")
+    - romfs /etc romfs ro")
 
 # add hosts file to romfs image, to be used by application
 list (APPEND FILES $ENV{BUILD_ROOT}/image_builder/resources/rootfs/etc/hosts)
@@ -128,7 +128,7 @@ set_target_properties (${FS_BACKEND} PROPERTIES
     - -l
     - nodev /tmp ramfs 0
     - -l
-    - romfs /romfs romfs 0
+    - romfs /romfs romfs ro
     - -l
     - nodev /var ramfs 0
     - -l
@@ -206,7 +206,7 @@ if (USE_EXECMGR)
     VFS_FILESYSTEM_BACKEND: client:task:${ROOTFS_ENTITY}")
 endif()
 
-# Building Kaspersky OS solution image for a hardware platform.
+# Building KasperskyOS solution image for a hardware platform.
 build_kos_hw_image (kos-image
                     EINIT_ENTITY EinitHw
                     CONNECTIONS_CFG "src/init.yaml.in"
@@ -231,7 +231,7 @@ if (USE_KLOG)
     set (INIT_KlogEntity_PATH KlogEntityQemu)
 endif()
 
-# Building Kaspersky OS solution image for a QEMU platform.
+# Building KasperskyOS solution image for a QEMU platform.
 build_kos_qemu_image (kos-qemu-image
                       EINIT_ENTITY EinitQemu
                       CONNECTIONS_CFG "src/init.yaml.in"

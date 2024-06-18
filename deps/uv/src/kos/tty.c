@@ -37,7 +37,7 @@ static uv_spinlock_t termios_spinlock = UV_SPINLOCK_INITIALIZER;
 
 static int uv__tty_is_slave(const int fd) {
   int result;
-  /* KOS: TODO: update when KOS has proper support of pseudo terminals. */
+  /* KasperskyOS: TODO: update when KasperskyOS has proper support of pseudo terminals. */
   result = 0;
   return result;
 }
@@ -67,7 +67,7 @@ int uv_tty_init(uv_loop_t* loop, uv_tty_t* tty, int fd, int unused) {
   do {
     saved_flags = fcntl(fd, F_GETFL);
     /* KNOWN_TEMP_FIX
-     * Since KOS libc returns O_RDONLY for stderr instead of O_RDWR returned by
+     * Since KasperskyOS libc returns O_RDONLY for stderr instead of O_RDWR returned by
      * Linux libc, deps/uv/src/unix/stream.c -> uv__check_before_write fails on
      * if (!(stream->flags & UV_HANDLE_WRITABLE))
      *   return UV_EPIPE;
@@ -78,7 +78,7 @@ int uv_tty_init(uv_loop_t* loop, uv_tty_t* tty, int fd, int unused) {
 #if defined (TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
 #error "test and remove w/a"
 #else
-#warning "WA for stderr wrong O_RDONLY flag coming from KOS libc"
+#warning "WA for stderr wrong O_RDONLY flag coming from KasperskyOS libc"
     if (fd==stderr->_file) saved_flags = (O_NOCTTY | O_RDWR);
 #endif /* defined (TEST_KOS_SDK) && (TEST_KOS_SDK == 1) */
   }

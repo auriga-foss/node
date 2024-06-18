@@ -593,7 +593,7 @@
           'OPENSSL_NO_PINSHARED'
         ],
       }],
-      # KOS: TODO: need to put KOS-specific option and do not change existing one
+      # KasperskyOS: TODO: need to put KasperskyOS-specific option and do not change existing one
       ['node_shared_openssl!="true" and OS!="kos"', {
         # `OPENSSL_THREADS` is defined via GYP for openSSL for all architectures.
         'defines': [

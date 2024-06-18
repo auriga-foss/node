@@ -10,6 +10,8 @@ QEMU_SERIAL_PORT ?= 12345
 
 USE_TLS          ?= 0
 USE_KLOG         ?= 0
+ADD_TEST         ?= 0
+USE_EXECMGR      ?= 0
 
 ROOTFS_SDCARD    ?= 0
 
@@ -31,7 +33,7 @@ endif
 
 TARGET       := aarch64-kos
 HOST          = x86_64-linux-gnu
-SDK_VERSION  ?= 1.1.1.13
+SDK_VERSION  ?= 1.2.0.89
 DEST_CPU      = arm64
 ARCH_CFG_ARGS =
 QEMU          = qemu-system-aarch64
@@ -60,18 +62,13 @@ ifeq ($(strip $(ROOTFS_SDCARD)),1)
 QEMU_OPTS += -drive file=$(SD_CARD0),if=sd,format=raw
 endif
 
-# this is temporary solution - release versions of the CE-SDK doesn't contain the Execution Manager and all dependencies for it
-ifneq (,$(wildcard $(SDK_PREFIX)/sysroot-aarch64-kos/lib/libexecution_manager_proxy.a))
-	USE_EXECMGR = 1
-else
-	USE_EXECMGR = 0
-endif
-
 CC=$(TARGET)-gcc
 CXX=$(TARGET)-g++
 
 CC_HOST=$(HOST)-gcc
 CCX_HOST=$(HOST)-g++
+
+СMAKE = $(SDK_PREFIX)/toolchain/bin/cmake
 
 # In order to statically link addons we need to supply proper path to C++ addons
 # build folder.

@@ -29,7 +29,7 @@ help:
 	@echo "Help:"
 	@echo ""
 	@echo " Makefile is used to generate and start (using qemu) image with"
-	@echo " test application linked with KOS image (qemu or HW)."
+	@echo " test application linked with KasperskyOS image (qemu or HW)."
 	@echo " Build is controlled via the following variables:"
 	@echo ""
 	@echo "  QEMU_NET        - could be set to 0 or 1; enables qemu start with"
@@ -45,7 +45,7 @@ help:
 	@echo "  NOTE: invoking make without any target will act like 'make all'"
 	@echo "  all             - build compile and disk image for the specified"
 	@echo "                    architecture;"
-	@echo "  configure       - do NodeJS configure with respect to KOS"
+	@echo "  configure       - do NodeJS configure with respect to KasperskyOS"
 	@echo "                    project;"
 	@echo "  compile         - do compile NodeJS and its' dependencies;"
 	@echo "  run NODE_ARG=<> - build and run using qemu (same as"
@@ -82,15 +82,18 @@ qemubuild: ${ROOTFS_IMAGE}
 	@echo " Linking test (ramdisk) with KOS-qemu image ..."
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_application.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog_$(USE_KLOG).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr_$(USE_EXECMGR).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
+	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_application_$(ADD_TEST).psl \
+		$(BUILD_ROOT)/image_builder/einit/src/psl/use_application.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/$(ROOTFS_PSL) \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
-		cmake -G "Unix Makefiles" \
+		$(СMAKE) -G "Unix Makefiles" \
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
@@ -103,6 +106,7 @@ qemubuild: ${ROOTFS_IMAGE}
 		../ && make kos-qemu-image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_application.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 ifeq  ($(QEMU_NET),1)
 ifneq (${NODE_PORT},0)

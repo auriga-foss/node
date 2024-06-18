@@ -106,9 +106,9 @@ for (let i = PRIORITY_HIGHEST; i <= PRIORITY_LOW; i++) {
 
   // Specifying the actual pid works.
   if (common.isKOS) {
-    // We can't get/set priority for process (entity) in KOS,
+    // We can't get/set priority for process (entity) in KasperskyOS,
     // it works only for thread id.
-    console.log("[KOS limitation] Skip 'Specifying the actual pid works' step");
+    console.log("[KasperskyOS limitation] Skip 'Specifying the actual pid works' step");
   } else {
     os.setPriority(process.pid, i);
     checkPriority(process.pid, i);
@@ -128,7 +128,7 @@ function checkPriority(pid, expected) {
   const priority = os.getPriority(pid);
 
   // Verify that the priority values match on Unix, and are range mapped on
-  // Windows or KOS.
+  // Windows or KasperskyOS.
   if (!common.isWindows && !common.isKOS) {
     assert.strictEqual(priority, expected);
     return;

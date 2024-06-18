@@ -84,7 +84,7 @@ void* OS::RemapShared(void* old_address, void* new_address, size_t size) {
 #ifndef V8_OS_KOS
       mremap(old_address, 0, size, MREMAP_FIXED | MREMAP_MAYMOVE, new_address);
 #else
-      // Due to KOS-specific we can't have mremap() call.
+      // Due to KasperskyOS-specific we can't have mremap() call.
       MAP_FAILED;
 #endif
 

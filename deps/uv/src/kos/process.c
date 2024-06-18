@@ -67,7 +67,7 @@ static void uv__chld(uv_timer_t* handle) {
     if (res != KOS_EXECMGR_NONEXIST_ENTITY)
       abort();
 
-    // Always 0 due KOS limitation
+    // Always 0 due KasperskyOS limitation
     process->status = 0;
     QUEUE_REMOVE(&process->queue);
     QUEUE_INSERT_TAIL(&pending, &process->queue);
@@ -86,7 +86,7 @@ static void uv__chld(uv_timer_t* handle) {
     if (process->exit_cb == NULL)
       continue;
 
-    // KOS Limitation: can't pass exit status from process
+    // KasperskyOS Limitation: can't pass exit status from process
     // or signal to process
     exit_status = 0;
     term_signal = 0;
@@ -291,7 +291,7 @@ int uv_spawn(uv_loop_t* loop,
   }
 
   process->status = 0;
-  process->pid = pid; // FIXME: KOS PID is wider than pid_t, can be silently truncated
+  process->pid = pid; // FIXME: KasperskyOS PID is wider than pid_t, can be silently truncated
   process->exit_cb = options->exit_cb;
 
   return !err ? 0 : UV_ENOSYS;

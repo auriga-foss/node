@@ -12,6 +12,6 @@ nk_build_edl_files (application_edl_files
 
 add_executable (application IMPORTED GLOBAL)
 
-set_property(TARGET application PROPERTY IMPORTED_LOCATION $ENV{ROOTFS_SOURCE}/application)
+set_property(TARGET application PROPERTY IMPORTED_LOCATION $ENV{BUILD_ROOT}/image_builder/application/application)
 add_dependencies (application application_edl_files)
 

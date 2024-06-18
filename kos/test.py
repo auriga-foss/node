@@ -575,6 +575,7 @@ class CommandOutput(object):
     self.segfault = segfault
     self.not_supported = not_supported
     self.reach_test_body = False
+    self.reach_test_exit = False
 
 
 class TestCase(object):
@@ -599,16 +600,22 @@ class TestCase(object):
     return output.failed
 
   def IgnoreLine(self, line, output):
-    if output.reach_test_body:
-      #Ignore KOS debug messages and dhcp message
+    if output.reach_test_exit:
+      #Ignore KasperskyOS messages after Node exited
+      return True
+    elif output.reach_test_body:
+      #Ignore Node exit message
+      if line.startswith('Node exit_code'):
+          output.reach_test_exit = True
+          return True
+      #Ignore KasperskyOS debug messages and dhcp message
       return line.startswith('!!!') or line.startswith('KOS') \
              or line.startswith('en0:') \
-             or line.startswith('no interfaces have a carrier') \
-             or line.startswith('Node exit_code')
+             or line.startswith('no interfaces have a carrier')
     else:
       if line.startswith('Node started'):
         output.reach_test_body = True;
-      #Ignore all input before !!! KOS - sysinfo !!!
+      #Ignore all input before !!! KasperskyOS - sysinfo !!!
       return True
 
   def IsFailureOutput(self, output):
@@ -802,7 +809,7 @@ def RunProcess(context, timeout, fd_out, fd_err, args, **rest):
           KillTimedOutProcess(context, process.pid)
           exit_code = -1
           print("\nNODE CRASHED")
-        elif line.find(b'Node exit_code') != -1 or line.find(b'Node.js v') != -1:
+        elif line.find(b'Node exit_code') != -1:
           KillTimedOutProcess(context, process.pid)
           exit_code = 1
           print("\nNODE FAILED")
@@ -1415,7 +1422,7 @@ ARCH_GUESS = utils.GuessArchitecture()
 
 def BuildOptions():
   result = optparse.OptionParser()
-  result.add_option("-k", "--kos_target", help="KOS target: qemu_arm32, qemu_arm64",
+  result.add_option("-k", "--kos_target", help="KasperskyOS target: qemu_arm32, qemu_arm64",
                     default='qemu_arm64')
   result.add_option("-m", "--mode", help="The test modes in which to run (comma-separated)",
       default='release')
@@ -1704,16 +1711,11 @@ def prepare_common_build_tree(kos_target):
   shutil.rmtree(build_dir + kos_rootfs_path, ignore_errors = True)
   copy_whole_tests(build_dir)
   shutil.copy("../out/Release/node", build_dir + kos_rootfs_path + "/../Node")
+  pathlib.Path("image_builder/env/src/cmdline.txt").unlink(missing_ok = True)
 
-  #clear image build dir
-  #shutil.rmtree(build_dir + "/image_builder/build", ignore_errors = True)
-  #pathlib.Path(build_dir + "/image_builder/build").mkdir(parents = True, exist_ok = True)
-  #copy_kos_env(build_dir, kos_target)
-  pathlib.Path("image_builder/env/src/cmdline.txt").unlink(missing_ok=True)
-
-def build_qemu_image(timeout):
+def build_qemu_image(timeout_in):
   try:
-    subprocess.run(["make", "qemubuild", "UART_OPTION=-D PORT_QEMU=uart0"], timeout=60, check=True)
+    subprocess.run(["make", "qemubuild", "UART_OPTION=-D PORT_QEMU=uart0"], timeout=timeout_in, check=True)
   except subprocess.TimeoutExpired as e:
     return (0, True)
   except subprocess.CalledProcessError as e:
@@ -1787,7 +1789,7 @@ def Main():
   prepare_common_build_tree(options.kos_target)
   (return_code, timeout) = build_qemu_image(options.timeout)
   if timeout or return_code != 0:
-    print(return_code, timeout)
+    print("build_qemu_image(timeout = %d) failed: (return_code = %d, timeout = %s)" % (options.timeout, return_code, timeout))
     return 1
   # List the tests
   all_cases = [ ]

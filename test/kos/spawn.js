@@ -1,11 +1,11 @@
 console.log('[TEST_SPAWN_LOG]: Check child_process module');
 const { spawn } = require('child_process');
 
-console.log('[TEST_SPAWN_LOG]: Attempt to create child object be KOS-specific spawn() from ramfs');
+console.log('[TEST_SPAWN_LOG]: Attempt to create child object be KasperskyOS-specific spawn() from ramfs');
 const childRamFs = spawn('/application',  ["ARG1", "ARG2", "ARG3"]);
 console.log('[TEST_SPAWN_LOG]: Success')
 
-// console.log('[TEST_SPAWN_LOG]: Attempt to create child object be KOS-specific spawn() from romfs');
+// console.log('[TEST_SPAWN_LOG]: Attempt to create child object be KasperskyOS-specific spawn() from romfs');
 // const childRomFs = spawn('/romfs/application',  ["ARG1", "ARG2", "ARG3"]);
 // console.log('[TEST_SPAWN_LOG]: Success')
 

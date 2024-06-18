@@ -11,6 +11,9 @@ use EDL kl.VfsNet
 use EDL kl.TlsEntity
 use EDL kl.rump.Dhcpcd
 use EDL kl.CertificateStorageEntity
+use EDL kl.EntropyEntity
+use EDL kl.drivers.DNetSrv
+use EDL kl.drivers.Bcm2711MboxArmToVc
 
 /* Declaration of drivers entities. */
 use EDL kl.drivers.BSP
@@ -24,7 +27,7 @@ error
 }
 
 /**
- * This instruction enables to start up system entities by KOS kernel.
+ * This instruction enables to start up system entities by KasperskyOS kernel.
  */
 execute src=kl.core.Core, dst=kl.core.Core
 {
@@ -37,7 +40,7 @@ execute src=kl.core.Core, dst=Einit
 }
 
 /**
- * This code enables to send requests from Einit entity to KOS kernel and get
+ * This code enables to send requests from Einit entity to KasperskyOS kernel and get
  * responses. It makes able to use system calls by Einit.
  */
 request src=Einit, dst=kl.core.Core
@@ -54,6 +57,11 @@ response src=kl.core.Core, dst=Einit
  * This instruction enables to start up and initialize entities.
  */
 execute src=Einit, dst=env.Env
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.EntropyEntity
 {
     grant()
 }
@@ -98,8 +106,18 @@ execute src=Einit, dst=kl.rump.Dhcpcd
     grant()
 }
 
+execute src=Einit, dst=kl.drivers.DNetSrv
+{
+    grant()
+}
+
+execute src=Einit, dst=kl.drivers.Bcm2711MboxArmToVc
+{
+    grant()
+}
+
 /**
- * This code enables to send requests from NameServer entity to KOS kernel and get
+ * This code enables to send requests from NameServer entity to KasperskyOS kernel and get
  * responses. It makes able to use system calls by NameServer.
  */
 request src=kl.core.NameServer, dst=kl.core.Core
@@ -123,7 +141,7 @@ response src=kl.core.NameServer
 }
 
 /**
- * This code enables to send requests from Env entity to KOS kernel
+ * This code enables to send requests from Env entity to KasperskyOS kernel
  * and get responses.
  */
 request src=env.Env, dst=kl.core.Core
@@ -137,7 +155,7 @@ response src=kl.core.Core, dst=env.Env
 }
 
 /**
- * This code enables to send requests from VfsNet entity to KOS kernel
+ * This code enables to send requests from VfsNet entity to KasperskyOS kernel
  * and get responses.
  */
 request src=kl.VfsNet, dst=kl.core.Core
@@ -151,7 +169,7 @@ response src=kl.core.Core, dst=kl.VfsNet
 }
 
 /**
- * This code enables to send requests from Dhcpcd entity to KOS kernel
+ * This code enables to send requests from Dhcpcd entity to KasperskyOS kernel
  * and get responses.
  */
 request src = kl.rump.Dhcpcd, dst = kl.core.Core
@@ -165,7 +183,7 @@ response src = kl.core.Core, dst = kl.rump.Dhcpcd
 }
 
 /**
- * This code enables to send requests from UART entity to KOS kernel
+ * This code enables to send requests from UART entity to KasperskyOS kernel
  * and get responses.
  */
 request src=kl.drivers.UART, dst=kl.core.Core
@@ -179,7 +197,7 @@ response src=kl.core.Core, dst=kl.drivers.UART
 }
 
 /**
- * This code enables to send requests from GPIO driver to KOS kernel
+ * This code enables to send requests from GPIO driver to KasperskyOS kernel
  * and get responses.
  */
 request src=kl.drivers.GPIO, dst=kl.core.Core
@@ -193,7 +211,7 @@ response src=kl.core.Core, dst=kl.drivers.GPIO
 }
 
 /**
- * This code enables to send requests from BSP driver to  KOS kernel
+ * This code enables to send requests from BSP driver to  KasperskyOS kernel
  * and get responses.
  */
 request src=kl.drivers.BSP, dst=kl.core.Core
@@ -208,7 +226,7 @@ response src=kl.core.Core, dst=kl.drivers.BSP
 
 /**
  * This code enables to send requests from TlsEntity 
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=kl.TlsEntity, dst=kl.core.Core
 {
@@ -222,7 +240,7 @@ response src=kl.core.Core, dst=kl.TlsEntity
 
 /**
  * This code enables to send requests from CertificateStorageEntity 
- * entity to KOS kernel and get responses.
+ * entity to KasperskyOS kernel and get responses.
  */
 request src=kl.CertificateStorageEntity, dst=kl.core.Core
 {

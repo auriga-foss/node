@@ -1,7 +1,6 @@
 use trusted._
 
 use EDL node.Node
-use EDL application.Application
 
 /**
  * Conditional declaration of KLog entities
@@ -10,10 +9,19 @@ use EDL application.Application
 use use_klog._
 
 /**
- * Conditional declaration of KLog entities
- * depending on USE_KLOG option
+ * Conditional declaration of ExecutionManager entities
+ * depending on USE_EXECMGR option.
+ * WARNING! ExecutionManager is under development. May not work correctly.
  */
 use use_execmgr._
+
+/**
+ * Conditional declaration of application.Application entity
+ * depending on ADD_TEST option.
+ * WARNING! application.Application is a test application for ExecutionManager. 
+ * May not work correctly.
+ */
+use use_application._
 
 /**
  * Conditional declaration of VfsRamFs
@@ -92,6 +100,99 @@ response src=env.Env, dst=node.Node
 }
 
 request src=node.Node, dst=env.Env
+{
+    grant()
+}
+
+request src=node.Node, dst=kl.EntropyEntity
+{
+    grant()
+}
+
+response src=node.Node, dst=kl.EntropyEntity
+{
+    grant()
+}
+
+request src=kl.EntropyEntity, dst=node.Node
+{
+    grant()
+}
+
+response src=kl.EntropyEntity, dst=node.Node
+{
+    grant()
+}
+
+request src = kl.EntropyEntity, dst = kl.core.Core
+{
+    grant()
+}
+
+response src = kl.core.Core, dst = kl.EntropyEntity
+{
+    grant()
+}
+
+request interface = kl.Entropy, dst = kl.EntropyEntity
+{
+    grant()
+}
+
+response interface = kl.Entropy, src = kl.EntropyEntity
+{
+    grant()
+}
+
+/**
+ * Allows the tasks with the kl.drivers.DNetSrv class to send requests to the KasperskyOS kernel and get
+ * responses. This enables the DNetSrv program to use core endpoints.
+ */
+request src = kl.drivers.DNetSrv, dst = kl.core.Core
+{
+    grant()
+}
+
+response src = kl.core.Core, dst = kl.drivers.DNetSrv
+{
+    grant()
+}
+
+/**
+ * Allows the tasks with the kl.VfsNet class to send requests to the tasks
+ * with the kl.drivers.DNetSrv class and get responses. This enables the
+ * VfsNet program to communicate with the DNetSrv program.
+ */
+request src = kl.VfsNet, dst = kl.drivers.DNetSrv
+{
+    grant()
+}
+
+response src = kl.drivers.DNetSrv, dst = kl.VfsNet
+{
+    grant()
+}
+
+request src = kl.drivers.DNetSrv, dst = kl.drivers.Bcm2711MboxArmToVc
+{
+    grant()
+}
+
+response src = kl.drivers.Bcm2711MboxArmToVc, dst = kl.drivers.DNetSrv
+{
+    grant()
+}
+
+/**
+ * Allows the tasks with the kl.drivers.Bcm2711MboxArmToVc class to send requests to the KasperskyOS kernel and get
+ * responses. This enables the Bcm2711MboxArmToVc program to use core endpoints.
+ */
+request src = kl.drivers.Bcm2711MboxArmToVc, dst = kl.core.Core
+{
+    grant()
+}
+
+response src = kl.core.Core, dst = kl.drivers.Bcm2711MboxArmToVc
 {
     grant()
 }

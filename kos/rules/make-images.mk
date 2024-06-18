@@ -12,13 +12,13 @@ $(ROOTFS_DIR): $(BUILD_ROOT)/../test
 	mkdir -p $@/opt/node/
 	@cp -r $< $@/opt/node/
 ifeq (${NODE_DEMO}, 1)
+ifeq ($(strip $(DEMO_PATH)),)
+	$(error DEMO_PATH variable is empty or not defined!)
+else
 	@echo "Copy demo files"
-	mkdir -p $@/demos/cms
-	@cp -r $(BUILD_ROOT)/../../kasperskyos-nodejs-cms-demo/* $@/demos/cms
-	mkdir -p $@/demos/filemanager
-	@cp -r $(BUILD_ROOT)/../../kasperskyos-nodejs-filemanager-demo/* $@/demos/filemanager
-	mkdir -p $@/demos/messenger
-	@cp -r $(BUILD_ROOT)/../../kasperskyos-nodejs-messenger-demo/* $@/demos/messenger
+	mkdir -p $@/demo
+	@cp -r $(DEMO_PATH)/* $@/demo
+endif
 else
 	@echo "Copy files needed by tests"
 	mkdir -p $@/opt/node/benchmark
@@ -50,16 +50,16 @@ endif
 
 $(PART_0): $(ROOTFS_DIR)
 	@echo "Preparing partition for ramdisk ..."
-	@dd if=/dev/zero of=$@ bs=1M count=63
+	@dd if=/dev/zero of=$@ bs=1M count=95
 	@$(MKFS_EXT2) $@ -d $< -L "TST_PART_0" -t ext2 -b 1024
 
 # the ramdisk image is dependant on application(s) binaries
-# which are build with respect tp KOS requirements
+# which are build with respect to KasperskyOS requirements
 $(RAMDISK0): $(PART_0)
 	@echo "Preparing $@ image"
 	@mkdir -p $(dir $@)
 	@echo "Creating empty image .."
-	@dd if=/dev/zero of=$@ bs=1M count=64
+	@dd if=/dev/zero of=$@ bs=1M count=96
 	@echo "Creating partition ..."
 	@printf "o\nn\np\n1\n\n\nw" | $(FDISK) $@
 	@dd if=$< of=$@ bs=512 seek=2048 conv=notrunc
@@ -80,15 +80,18 @@ realhw: image
 	@echo "UART_OPTION: $(UART_OPTION)"
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_application.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog_$(USE_KLOG).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr_$(USE_EXECMGR).psl \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
+	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/use_application_$(ADD_TEST).psl \
+		$(BUILD_ROOT)/image_builder/einit/src/psl/use_application.psl
 	$(Q)ln -s $(BUILD_ROOT)/image_builder/einit/src/psl/$(ROOTFS_PSL) \
 		$(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	$(Q)mkdir -p $(BUILD) && cd $(BUILD)/ && \
-		cmake -G "Unix Makefiles" \
+		$(СMAKE) -G "Unix Makefiles" \
 		-D CMAKE_BUILD_TYPE:STRING=Debug \
 		-D CMAKE_INSTALL_PREFIX:STRING=$(INSTALL_PREFIX) \
 		-D CMAKE_TOOLCHAIN_FILE=$(SDK_PREFIX)/toolchain/share/toolchain-$(TARGET).cmake \
@@ -100,6 +103,7 @@ realhw: image
 		../ && make kos-image
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_klog.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_execmgr.psl
+	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/use_application.psl
 	$(Q)rm -f $(BUILD_ROOT)/image_builder/einit/src/psl/rootfs.psl
 	@echo "Image ($(BUILD)/einit/kos-image) with node arg='$(NODE_ARG)' ready."
 

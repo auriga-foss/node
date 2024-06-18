@@ -1,0 +1,38 @@
+/* Test "application.Application" entity */
+
+use EDL application.Application
+
+request src=application.Application, dst=kl.core.Core
+{
+    grant()
+}
+
+response src=kl.core.Core, dst=application.Application
+{
+    grant()
+}
+
+execute src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+request src=application.Application, dst=kl.bc.BlobContainer
+{
+    grant()
+}
+
+response src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+request src=kl.bc.BlobContainer, dst=application.Application
+{
+    grant()
+}
+
+response src=application.Application, dst=kl.bc.BlobContainer
+{
+    grant()
+}

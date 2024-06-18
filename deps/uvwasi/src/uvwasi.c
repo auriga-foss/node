@@ -29,7 +29,7 @@
 #include "wasi_serdes.h"
 #include "debug.h"
 
-/* IBMi PASE and KOS do not support posix_fadvise() */
+/* IBMi PASE and KasperskyOS do not support posix_fadvise() */
 #if defined(__PASE__) || defined(__KOS__)
 # undef POSIX_FADV_NORMAL
 #endif

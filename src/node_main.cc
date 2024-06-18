@@ -97,7 +97,7 @@ int wmain(int argc, wchar_t* wargv[]) {
 #if defined(TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
 #error "test and remove w/a"
 #else
-// KOS will start dhcp client and node in parallel and when node has already
+// KasperskyOS will start dhcp client and node in parallel and when node has already
 // started - network is not ready.
 // So there is code to wait until network is started.
 #warning "WA Code to wait network ready"
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 #if defined (TEST_KOS_SDK) && (TEST_KOS_SDK == 1)
 #error "test and remove w/a"
 #else
-// KOS will start dhcp client and node in parallel and when node has already
+// KasperskyOS will start dhcp client and node in parallel and when node has already
 // started - network is not ready.
 // So there is code to wait until network is started.
 #warning "WA Code to wait network ready"
