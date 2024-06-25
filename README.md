@@ -1,7 +1,7 @@
 # Node.JS (v20.0.0-pre) for KasperskyOS
 This is a fork of [Node.js project](https://github.com/nodejs/node) adapted to
 be used with KasperskyOS. For more information about the target OS, please refer
-to [KasperskyOS Community Edition Online Help](https://click.kaspersky.com/?hl=en-us&link=online_help&pid=kos&version=1.2&&customization=KCE&helpid=community_edition).
+to [KasperskyOS Community Edition Online Help](https://click.kaspersky.com/?hl=en-us&link=online_help&pid=kos&version=1.2&customization=KCE_community_edition).
 
 Please note, that to be able to develop your own NodeJS application with KasperskyOS
 you'd need to build OS principles understanding (see mention link for examples, API and so on).
@@ -67,12 +67,12 @@ Further instructions describe the way to build and run
 
 First of all it is advised to prepare bootable flash-card following
 instruction from
-the [KasperskyOS Community Edition Online Help](https://click.kaspersky.com/?hl=en-us&link=online_help&pid=kos&version=1.2&&customization=KCE&helpid=preparing_sd_card_rpi) or using either [Raspberry Pi Imager](https://www.raspberrypi.com/news/raspberry-pi-imager-imaging-utility/)
+the [KasperskyOS Community Edition Online Help](https://click.kaspersky.com/?hl=en-us&link=online_help&pid=kos&version=1.2&customization=KCE_preparing_sd_card_rpi) or using either [Raspberry Pi Imager](https://www.raspberrypi.com/news/raspberry-pi-imager-imaging-utility/)
 or grab & flash pre-build board image, which could be found [here](https://www.raspberrypi.com/software/operating-systems/)
 
 As the Raspberry Pi has no u-boot shipped with image, it is required to prepare
 one for you specific board and update board boot configuration to start u-boot
-binary instead of default RaspbianOS kernel (see guide from the [KasperskyOS Community Edition Online Help](https://click.kaspersky.com/?hl=en-us&link=online_help&pid=kos&version=1.2&&customization=KCE&helpid=preparing_sd_card_rpi)
+binary instead of default RaspbianOS kernel (see guide from the [KasperskyOS Community Edition Online Help](https://click.kaspersky.com/?hl=en-us&link=online_help&pid=kos&version=1.2&customization=KCE_preparing_sd_card_rpi)
 or do your own setup).
 
 Then, the easiest way to prepare KasperskyOS image to run on hardware is
